@@ -16,6 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByDetail(Detail detail);
     List<User> findByAddress(Address address);
 
-    User findByDetailNameAndPhoneNumber(String name, String phoneNumber);
+    User findByDetail_NameAndPhoneNumber(String name, String phoneNumber);
     
 }

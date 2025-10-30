@@ -32,22 +32,42 @@ public class UserController {
     @Autowired private DetailRepository detailRepo;
 
     // ✅ สมัครสมาชิก
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        Map<String, Object> response = new HashMap<>();
+@PostMapping("/register")
+public ResponseEntity<?> registerUser(@RequestBody User user) {
+    Map<String, Object> response = new HashMap<>();
 
-        if (userRepo.findByPhoneNumber(user.getPhoneNumber()) != null) {
-            response.put("status", "error");
-            response.put("message", "This phone number is already registered.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        User saved = userRepo.save(user);
-        response.put("status", "success");
-        response.put("message", "User registered successfully");
-        response.put("user", saved);
-        return ResponseEntity.ok(response);
+    // 🔹 ตรวจสอบเบอร์ซ้ำ
+    if (userRepo.findByPhoneNumber(user.getPhoneNumber()) != null) {
+        response.put("status", "error");
+        response.put("message", "This phone number is already registered.");
+        return ResponseEntity.badRequest().body(response);
     }
+
+    // 🔹 บันทึก Detail ใหม่
+    Detail newDetail = user.getDetail();
+    if (newDetail != null) {
+        newDetail = detailRepo.save(newDetail);
+        user.setDetail(newDetail);
+    } else {
+        throw new RuntimeException("Detail is required");
+    }
+
+    // 🔹 ตรวจสอบ Address (ถ้ามี)
+    if (user.getAddress() != null) {
+        Long addressId = user.getAddress().getId();
+        Address address = addressRepo.findById(addressId)
+                .orElseThrow(() -> new RuntimeException("Address not found with ID: " + addressId));
+        user.setAddress(address);
+    }
+
+    // 🔹 บันทึก User สุดท้าย
+    User saved = userRepo.save(user);
+
+    response.put("status", "success");
+    response.put("message", "User registered successfully");
+    response.put("user", saved);
+    return ResponseEntity.ok(response);
+}
 
     // ✅ เข้าสู่ระบบด้วยชื่อ (จาก detail.name) และหมายเลขโทรศัพท์
     @PostMapping("/login")
@@ -57,7 +77,7 @@ public class UserController {
 
         Map<String, Object> response = new HashMap<>();
 
-        User user = userRepo.findByDetailNameAndPhoneNumber(name, phoneNumber);
+        User user = userRepo.findByDetail_NameAndPhoneNumber(name, phoneNumber);
 
         if (user != null) {
             response.put("status", "success");
