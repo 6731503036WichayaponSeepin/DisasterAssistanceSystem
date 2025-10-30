@@ -1,4 +1,4 @@
-package th.mfu.model;
+package th.mfu.model.user;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -10,10 +10,11 @@ public class District {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "province_id")
+    @JoinColumn(name = "province_id",nullable = false)
     private Province province;
 
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)

@@ -1,9 +1,15 @@
-package th.mfu.controller;
+package th.mfu.controller.usercontroller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import th.mfu.model.*;
-import th.mfu.repository.*;
+import th.mfu.model.user.District;
+import th.mfu.model.user.PostalCode;
+import th.mfu.model.user.Province;
+import th.mfu.model.user.Subdistrict;
+import th.mfu.repository.userrepository.DistrictRepository;
+import th.mfu.repository.userrepository.PostalCodeRepository;
+import th.mfu.repository.userrepository.ProvinceRepository;
+import th.mfu.repository.userrepository.SubdistrictRepository;
 
 import java.util.List;
 

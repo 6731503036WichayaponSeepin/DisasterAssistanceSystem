@@ -1,4 +1,4 @@
-package th.mfu.model;
+package th.mfu.model.user;
 
 import jakarta.persistence.*;
 
@@ -9,26 +9,22 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String houseNumber;
+    @Column(length = 255)
     private String moreDetails; // รายละเอียดเพิ่มเติม
 
     @ManyToOne
-    @JoinColumn(name = "subdistrict_id")
+    @JoinColumn(name = "subdistrict_id", nullable = false)
     private Subdistrict subdistrict;
 
     public Address() {}
 
-    public Address(String houseNumber, String moreDetails, Subdistrict subdistrict) {
-        this.houseNumber = houseNumber;
+    public Address(String moreDetails, Subdistrict subdistrict) {
         this.moreDetails = moreDetails;
         this.subdistrict = subdistrict;
     }
 
     // Getters & Setters
     public Long getId() { return id; }
-
-    public String getHouseNumber() { return houseNumber; }
-    public void setHouseNumber(String houseNumber) { this.houseNumber = houseNumber; }
 
     public String getMoreDetails() { return moreDetails; }
     public void setMoreDetails(String moreDetails) { this.moreDetails = moreDetails; }

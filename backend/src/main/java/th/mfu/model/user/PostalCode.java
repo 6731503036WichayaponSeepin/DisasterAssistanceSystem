@@ -1,4 +1,4 @@
-package th.mfu.model;
+package th.mfu.model.user;
 
 import jakarta.persistence.*;
 
@@ -9,10 +9,11 @@ public class PostalCode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String code;
 
     @ManyToOne
-    @JoinColumn(name = "subdistrict_id")
+    @JoinColumn(name = "subdistrict_id",nullable = false)
     private Subdistrict subdistrict;
 
     public PostalCode() {}
