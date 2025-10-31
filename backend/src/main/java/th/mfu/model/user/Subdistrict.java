@@ -1,7 +1,16 @@
 package th.mfu.model.user;
 
-import jakarta.persistence.*;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Subdistrict {
@@ -14,7 +23,7 @@ public class Subdistrict {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "district_id",nullable = false)
+    @JoinColumn(name = "district_id", nullable = false)
     private District district;
 
     @OneToMany(mappedBy = "subdistrict", cascade = CascadeType.ALL)

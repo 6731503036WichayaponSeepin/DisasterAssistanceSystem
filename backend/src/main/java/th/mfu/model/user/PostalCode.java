@@ -1,6 +1,12 @@
 package th.mfu.model.user;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class PostalCode {
@@ -13,7 +19,7 @@ public class PostalCode {
     private String code;
 
     @ManyToOne
-    @JoinColumn(name = "subdistrict_id",nullable = false)
+    @JoinColumn(name = "subdistrict_id", nullable = false)
     private Subdistrict subdistrict;
 
     public PostalCode() {}

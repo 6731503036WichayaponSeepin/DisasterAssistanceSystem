@@ -16,29 +16,34 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ผู้ใช้เชื่อมกับศูนย์กลางข้อมูล (Detail)
+    // 🔹 ใช้เบอร์โทรแทนการระบุตัวตน (unique)
+    @Column(nullable = false, unique = true, length = 10)
+    private String phoneNumber;
+
+    // 🔹 ผู้ใช้เชื่อมกับข้อมูลส่วนกลาง (Detail)
     @ManyToOne
     @JoinColumn(name = "detail_id", nullable = false)
     private Detail detail;
 
-    // ใช้เบอร์โทรแทนการระบุตัวตน
-    @Column(nullable = false, unique = true, length = 10)
-    private String phoneNumber;
-
-    // ผู้ใช้จะมีที่อยู่ (foreign key ไปยัง Address)
+    // 🔹 ผู้ใช้มีที่อยู่
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address address;
 
+    // 🔹 Role
+    @Column(nullable = false)
+    private String role = "USER";
+
     public User() {}
 
-    public User(String phoneNumber, Address address, Detail detail) {
+    public User(String phoneNumber, Address address, Detail detail, String role) {
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.detail = detail;
+        this.role = role;
     }
 
-    // Getters & Setters
+    // ✅ Getters & Setters
     public Long getId() { return id; }
 
     public String getPhoneNumber() { return phoneNumber; }
@@ -49,4 +54,7 @@ public class User {
 
     public Detail getDetail() { return detail; }
     public void setDetail(Detail detail) { this.detail = detail; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }
