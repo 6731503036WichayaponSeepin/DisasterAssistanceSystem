@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkLife</title>
+    <link rel="stylesheet" href="../css/Rescueregistration.css" />
+</head>
+<body>
+    <header class="header">
+<svg onclick="window.history.back()" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.7375 19.5L20.1375 27.9L18 30L6 18L18 6L20.1375 8.1L11.7375 16.5H30V19.5H11.7375Z" fill="white"/>
+</svg>
+
+    <h1>Rescue registration</h1>
+  </header>
+
+
+  <div class="content-container">
+    <form onsubmit="Confirm(event)">
+      <label for="firstname">Firstname</label>
+      <input type="text" id="firstname" name="firstname" placeholder="Enter your firstname" required>
+
+      <label for="lastname">Lastname</label>
+      <input type="text" id="lastname" name="lastname" placeholder="Enter your lastname" required>
+
+      <label for="rescueId">ID</label>
+      <input type="text" id="rescueId" name="rescueId" placeholder="Enter ID" required>
+
+      <button type="submit">Confirm</button>
+    </form>
+  </div>
+
+  <script>
+    function Confirm(event) {
+      event.preventDefault(); // ❗หยุด form ไม่ให้ reload
+
+      // 🔹 ดึงค่าจาก input
+      const firstName = document.getElementById("firstname").value;
+      const lastName = document.getElementById("lastname").value;
+      const rescueId = document.getElementById("rescueId").value;
+
+
+      // 🔹 เก็บค่าไว้ใน localStorage
+      localStorage.setItem("firstName", firstName);
+      localStorage.setItem("lastName", lastName);
+      localStorage.setItem("rescueId", rescueId);
+
+      // 🔹 ไปหน้า home.html (ย้อนขึ้น 1 ระดับ)
+      window.location.href = "Resuehome.html";
+    }
+  </script>
+</body>
+</html>

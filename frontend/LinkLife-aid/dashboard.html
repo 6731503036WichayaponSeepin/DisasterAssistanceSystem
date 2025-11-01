@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - LinkLife</title>
+</head>
+<body>
+  <div class="profile">
+    <p class="name"></p>
+    <p class="phone"></p>
+  </div>
+
+  <script>
+    // ดึงค่าที่เก็บไว้จาก localStorage
+    const name = localStorage.getItem('user_name');
+    const phone = localStorage.getItem('user_phone');
+
+    // แสดงบนหน้าเว็บ
+    document.querySelector('.name').textContent = name || "ชื่อผู้ใช้";
+    document.querySelector('.phone').textContent = phone || "เบอร์โทรศัพท์";
+  </script>
+  <script src="js/home.js"></script>
+
+</body>
+</html>

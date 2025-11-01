@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account</title>
+  <link rel="stylesheet" href="../css/account.css" />
+</head>
+<body>
+  <header class="header">
+    <svg onclick="window.history.back()" width="36" height="36" viewBox="0 0 36 36" fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.7375 19.5L20.1375 27.9L18 30L6 18L18 6L20.1375 8.1L11.7375 16.5H30V19.5H11.7375Z" fill="white"/>
+    </svg>
+    <h1>Account</h1>
+  </header>
+
+  <div class="content-container">
+    <form id="accountForm">
+      <label for="firstname">Firstname</label>
+      <input type="text" id="firstname" name="firstname" placeholder="Enter your firstname" required>
+
+      <label for="lastname">Lastname</label>
+      <input type="text" id="lastname" name="lastname" placeholder="Enter your lastname" required>
+
+      <label for="affiliated">Affiliated unit</label>
+      <input type="text" id="affiliated" name="affiliated_unit" placeholder="Enter your affiliated unit" required>
+
+      <button type="submit" class="submit-btn">Confirm</button>
+      <button type="button" class="signout-btn" id="signOutBtn">Sign out</button>
+    </form>
+  </div>
+
+  <script>
+    // 🔹 ดึงข้อมูลจาก localStorage
+    const firstName = localStorage.getItem("firstName");
+    const lastName = localStorage.getItem("lastName");
+    const affiliated = localStorage.getItem("affiliated");
+
+    // 🔹 ถ้ามีข้อมูลอยู่ ให้เติมในฟอร์ม
+    if (firstName) document.getElementById("firstname").value = firstName;
+    if (lastName) document.getElementById("lastname").value = lastName;
+    if (affiliated) document.getElementById("affiliated").value = affiliated;
+
+    // ✅ เมื่อกด Confirm —> บันทึกข้อมูลใหม่ลง localStorage
+    document.getElementById("accountForm").addEventListener("submit", (e) => {
+      e.preventDefault(); // กันไม่ให้รีเฟรชหน้า
+      const newFirst = document.getElementById("firstname").value;
+      const newLast = document.getElementById("lastname").value;
+      const newAffiliated = document.getElementById("affiliated").value;
+
+      localStorage.setItem("firstName", newFirst);
+      localStorage.setItem("lastName", newLast);
+      localStorage.setItem("affiliated", newAffiliated);
+
+      alert("✅ Your account information has been updated!");
+    });
+
+    // ✅ เมื่อกด Sign out —> ล้างข้อมูลทั้งหมด + กลับหน้า Sign in
+    document.getElementById("signOutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      alert("You have signed out.");
+      window.location.href = "../pages/login.html"; // 🔁 เปลี่ยนเป็นชื่อหน้า Sign in ของคุณ
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkLife</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 { color: #1565c0; }
+    form {
+      border: 2px solid #737373;
+      border-radius: 10px;
+      padding: 30px;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 280px;
+    }
+    div { margin-bottom: 15px; }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 9px;
+      border: 2px solid #737373;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #079c34;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sign Up</h1>
+
+  <form onsubmit="Confirm(event)">
+    <div>
+      <label for="firstname">Firstname</label>
+      <input type="text" id="firstname" name="fname" required>
+    </div>
+    <div>
+      <label for="lastname">Lastname</label>
+      <input type="text" id="lastname" name="lname">
+    </div>
+    <div>
+      <label for="number">Number</label>
+      <input type="tel" id="number" name="phonenumber" required>
+    </div>
+    <div>
+      <button type="submit">Confirm</button>
+    </div>
+  </form>
+
+  <script>
+    function Confirm(event) {
+      event.preventDefault(); // ❗หยุด form ไม่ให้ reload
+
+      // 🔹 ดึงค่าจาก input
+      const firstName = document.getElementById("firstname").value;
+      const lastName = document.getElementById("lastname").value;
+      const number = document.getElementById("number").value;
+
+      // 🔹 เก็บค่าไว้ใน localStorage
+      localStorage.setItem("firstName", firstName);
+      localStorage.setItem("lastName", lastName);
+      localStorage.setItem("number", number);
+
+      // 🔹 ไปหน้า home.html (ย้อนขึ้น 1 ระดับ)
+      window.location.href = "../pages/home.html";
+    }
+  </script>
+</body>
+</html>
