@@ -1,0 +1,222 @@
+body {
+  font-family: "Prompt", sans-serif;
+  margin: 0;
+  background: #f9f9f9;
+}
+
+/* 🔹 Header */
+header {
+  background: #1565c0;
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+header .back {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: Mediem;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+
+.sustain-bg:active {
+  animation: pulse 0.5s ease-in-out;
+}
+
+/* เมนูด้านข้าง */
+.side-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100vh;
+  background: white;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.25);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  padding: 20px;
+  z-index: 1000;
+  display: block;
+}
+
+.side-menu.active {
+  transform: translateX(0);
+}
+
+/* 🔹 ปุ่มลูกศร SVG */
+.arrow-back {
+  position: absolute;   /* ✅ ให้ยึดตำแหน่งแน่น */
+  top: 20px;
+  left: 15px;           /* ✅ ชิดขอบซ้ายของเมนู */
+  cursor: pointer;
+}
+
+.arrow-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.arrow-back svg:hover {
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+.side-menu ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 70px;
+}
+
+.side-menu li {
+  display: flex;           /* ✅ ทำให้ไอคอนกับข้อความอยู่แนวเดียวกัน */
+  align-items: center;     /* ✅ จัดให้อยู่ระดับเดียวกันแนวตั้ง */
+  gap: 10px;               /* ✅ ระยะห่างระหว่างไอคอนกับข้อความ */
+  font-size: 1.1rem;
+  padding: 15px 0;
+  cursor: pointer;
+}
+
+.side-menu .close {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+/* 🔹 ส่วนของฟอร์มด้านล่าง */
+.address-section {
+  position: relative; /* ✅ ไม่ทับแผนที่โดยตรง */
+  background: white;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+   /* ✅ ทับขอบบนของแผนที่เล็กน้อย */
+  z-index: 100;
+}
+
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1.5px solid #ccc;
+  padding: 10px;
+  font-family: inherit;
+  resize: none;
+  font-size: 14px;
+  height: 70px;
+  box-sizing: border-box;
+}
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #06852c;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #06852c;
+}
+
+/* ✅ ให้แสดงสวยบนมือถือ */
+@media (max-width: 600px) {
+  #map { height: 300px; }
+  .address-section { padding: 16px; }
+}
+.address-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid white;
+
+  background: linear-gradient(135deg, #006aff, #008cff);
+  color: white;
+  font-weight: lighter;
+  cursor: pointer;
+  font-size: 15px;
+
+  box-shadow: 0 4px 8px rgba(21, 101, 192, 0.3);
+  transition: all 0.25s ease;
+}
+
+/* 🔹 เอฟเฟกต์เมื่อ hover */
+.address-btn:hover {
+  background: linear-gradient(90deg, #ffffff84, #2196f3);
+  box-shadow: 0 6px 12px rgba(21, 101, 192, 0.45);
+  transform: translateY(-2px); /* เด้งขึ้นนิดนึง */
+}
+
+/* 🔹 เอฟเฟกต์เมื่อคลิก */
+.address-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+#map {
+  width: 100%;
+  height: calc(100vh - 220px); /* เว้นที่ให้ฟอร์มอยู่ในจอ */
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* ปุ่ม locate */
+.locate-btn {
+  position: absolute;
+  bottom: 80px;   /* ⬆️ จาก 20px → 80px เพื่อยกขึ้นเหนือฟอร์ม */
+  right: 20px;
+  background-color: white;
+  border: none;
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 999;
+}
+
+.locate-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.35);
+}
+@media (max-width: 600px) {
+  .locate-btn {
+    bottom: 100px;  /* ยกขึ้นอีกนิดบนจอมือถือ */
+    right: 16px;
+  }
+}

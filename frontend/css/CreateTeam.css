@@ -1,0 +1,128 @@
+body {
+  font-family: "Prompt", sans-serif;
+  margin: 0;
+  background-color: #f4f4f4; /* 🩶 พื้นหลังเทาอ่อน */
+  
+}
+
+/* 🔹 Header สีฟ้า */
+.header {
+  background-color: hsl(212, 80%, 42%);
+  color: rgb(255, 255, 255);
+  padding: 70px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header svg {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.header h1 {
+  position: absolute;
+  z-index: 2;
+  top: 13%;                 /* ✅ กึ่งกลางแนวตั้ง */
+  left: 50%;                /* ✅ กึ่งกลางแนวนอน */
+  transform: translate(-50%, -50%); /* ✅ จัดกลางสมบูรณ์ทั้ง 2 แกน */
+  margin: 0;
+  font-weight: Mediem;
+  font-size: 2rem;
+}
+
+/* 🔹 กล่องพื้นขาวมุมโค้ง */
+ .content-container {
+  background: white;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  margin-top: -25px;
+  padding: 80px 40px;
+  min-height: 100vh;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* ===== 🧩 Card กล่องฟอร์ม ===== */
+.card {
+  background: #fff;
+  border-radius: 30px;
+  padding: 40px 50px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  max-width: 430px;
+  width: 90%;
+  text-align: left;
+  margin-top: -60px; /* ให้ดูเหมือนต่อจาก header */
+  z-index: 2;
+  position: relative;
+}
+
+
+
+/* ===== 🧾 ฟอร์มภายใน Card ===== */
+.create-team-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.create-team-form label {
+  font-weight: 600;
+  text-align: left;
+  color: #333;
+}
+
+.create-team-form input,
+.create-team-form select {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: 0.2s;
+  background-color: #fff;
+}
+
+.create-team-form input:focus,
+.create-team-form select:focus {
+  outline: none;
+  border-color: #1565c0;
+  box-shadow: 0 0 4px rgba(21, 101, 192, 0.4);
+}
+
+/* ปุ่ม Create Team */
+.create-btn {
+  background-color: #2e7d32;
+  color: white;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.25s, transform 0.15s;
+}
+
+.create-btn:hover {
+  background-color: #1b5e20;
+  transform: translateY(-1px);
+}
+
+.create-btn:active {
+  transform: translateY(1px);
+}
+
+/* ===== 🔹 Responsive (มือถือ) ===== */
+@media (max-width: 600px) {
+  .card {
+    padding: 30px 25px;
+    margin-top: -40px;
+  }
+
+  .create-btn {
+    font-size: 15px;
+  }
+}

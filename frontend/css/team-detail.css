@@ -1,0 +1,141 @@
+body {
+  font-family: "Prompt", sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+}
+
+/* 🔹 Header สีฟ้า */
+.header {
+  background-color: hsl(212, 80%, 42%);
+  color: white;
+  display: flex;
+  align-items: center;      /* จัดให้อยู่กลางแนวตั้ง */
+  justify-content: flex-start; /* ชิดซ้าย */
+  padding:  60px 20px;      /* ระยะขอบซ้าย-ขวา */
+  gap: 10px;               /* ระยะห่างระหว่างลูกศรกับข้อความ */
+}
+
+.header svg {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.back-btn {
+  cursor: pointer;
+}
+
+/* ===== 🔹 Team Info ===== */
+.content-container {
+  background-color: white;
+  padding: 20px;
+  margin-top: -20px;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+}
+
+.team-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* ===== 🔹 Member List ===== */
+.member-section {
+  background: white;
+  padding: 20px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-card {
+  background: #eaeaea;
+  padding: 10px 15px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.member-card span {
+  font-weight: 500;
+}
+
+.delete-btn {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #b71c1c;
+}
+
+/* ===== 🔹 Manage Button ===== */
+.manage-btn {
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.manage-btn:hover {
+  background: #125ca3;
+}
+
+/* ===== 🔹 Modal ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+.close-btn {
+  background: #555;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
