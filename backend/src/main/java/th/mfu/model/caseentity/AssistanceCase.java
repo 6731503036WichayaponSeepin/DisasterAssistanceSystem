@@ -24,7 +24,6 @@ public class AssistanceCase {
     @Column(name = "assigned_rescue_id")
     private Long assignedRescueId;
 
-    @Column(name = "case_note")
 
 
     private Double latitude;
