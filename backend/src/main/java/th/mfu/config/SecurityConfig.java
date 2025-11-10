@@ -19,33 +19,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // ✅ ปิด CSRF (เพราะเราจะใช้ JWT ไม่ได้ใช้ session form)
             .csrf(csrf -> csrf.disable())
-
-            // ✅ กำหนดสิทธิ์การเข้าถึงของแต่ละ path
             .authorizeHttpRequests(auth -> auth
-                    // 🔹 เปิดให้เข้าถึงได้โดยไม่ต้องมี token (เช่น login/register)
+                    // 1) เปิดให้ login / register ได้เลย
                     .requestMatchers(
                             "/api/users/login",
                             "/api/users/register",
                             "/api/rescue/login",
-                            "/api/rescue/register"
+                            "/api/rescue/register",
+                            "/api/cases/ping"
                     ).permitAll()
 
-                    // 🔹 เส้นทางของผู้ใช้ทั่วไป ต้อง role = USER
+                    // 2) endpoint ที่ต้องล็อกอินเป็น user
                     .requestMatchers("/api/users/**", "/api/location/**").hasRole("USER")
 
-                    // 🔹 เส้นทางของกู้ภัย ต้อง role = RESCUE
+                    // 3) endpoint ที่ต้องเป็นกู้ภัย
                     .requestMatchers("/api/rescue-teams/**", "/api/rescue/**").hasRole("RESCUE")
 
-                    // 🔹 อื่น ๆ เปิดให้เข้าได้ (หรือจะเปลี่ยนเป็น authenticated() ก็ได้)
+                    // 4) ✅ ของเรา: แจ้งเคสต้องล็อกอินก่อน
+                    .requestMatchers("/api/cases/**").authenticated()
+
+                    // 5) ที่เหลือค่อยว่ากัน
                     .anyRequest().permitAll()
             )
-
-            // ✅ ใช้ Stateless Session (เพราะ JWT ไม่มี session)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-            // ✅ เพิ่ม filter JWT ก่อน AuthenticationFilter ปกติ
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

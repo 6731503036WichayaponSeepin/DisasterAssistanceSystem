@@ -19,4 +19,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // ✅ ดึงผู้ใช้ทั้งหมดที่เชื่อมกับ Detail เดียวกัน (เช่น ในบางกรณี user หลายคนแชร์ข้อมูล detail)
     List<User> findByDetail(Detail detail);
+    
 }
