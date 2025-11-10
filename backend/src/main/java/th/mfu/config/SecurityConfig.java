@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    // 1) เปิดให้ login / register ได้เลย
+                    // 1) เปิดให้เข้าได้โดยไม่ต้องมี token
                     .requestMatchers(
                             "/api/users/login",
                             "/api/users/register",
@@ -30,16 +30,23 @@ public class SecurityConfig {
                             "/api/cases/ping"
                     ).permitAll()
 
-                    // 2) endpoint ที่ต้องล็อกอินเป็น user
+                    // 2) user ทั่วไป
                     .requestMatchers("/api/users/**", "/api/location/**").hasRole("USER")
 
-                    // 3) endpoint ที่ต้องเป็นกู้ภัย
+                    // 3) กลุ่มกู้ภัย
                     .requestMatchers("/api/rescue-teams/**", "/api/rescue/**").hasRole("RESCUE")
+                    // 3.1 กู้ภัยทำกับเคส
+                    .requestMatchers(
+                            "/api/cases/*/follow",
+                            "/api/cases/*/confirm",
+                            "/api/cases/available",
+                            "/api/cases/assigned-to/me"
+                    ).hasRole("RESCUE")
 
-                    // 4) ✅ ของเรา: แจ้งเคสต้องล็อกอินก่อน
+                    // 4) ที่เป็น /api/cases อื่นๆ แค่ต้องล็อกอิน (report ก็อยู่ในนี้)
                     .requestMatchers("/api/cases/**").authenticated()
 
-                    // 5) ที่เหลือค่อยว่ากัน
+                    // 5) อื่นๆ ปล่อย
                     .anyRequest().permitAll()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
