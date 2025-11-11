@@ -1,0 +1,142 @@
+:root{
+  --brand:#1976D2;
+  --sheet:#eeeeee;
+  --danger:#EF4444;
+  --warn:#F59E0B;
+  --shadow:0 6px 20px rgba(0,0,0,.15);
+
+  --sheet-header-h:44px;
+  --peek-amount:calc(var(--sheet-header-h) + 56px);
+}
+
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:"Prompt",sans-serif;
+  background:#fff;
+  height:100dvh;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+
+/* App bar */
+.appbar{
+  height:56px; flex:0 0 auto;
+  background:var(--brand); color:#fff;
+  display:flex; align-items:center; gap:8px; padding:0 12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+}
+.back{border:0;background:transparent;cursor:pointer}
+.back-box{
+  display:inline-grid; place-items:center;
+  width:28px; height:28px; border:2px solid rgba(255,255,255,.9);
+  border-radius:6px;
+}
+
+/* 🔁 เดิมเคยเป็น .map-wrap + .map —> เปลี่ยนเป็นคอนเทนเนอร์เปล่า */
+.content{
+  position:relative;  /* ให้ .sheet อ้างอิง bottom:0 ได้ */
+  flex:1 1 auto;
+  background:#fff;    /* จะใส่ลาย/สีพื้นหลังก็ได้ */
+}
+
+/* Bottom sheet */
+.sheet{
+  position:absolute; left:0; right:0; bottom:0;
+  height:50dvh;
+  background:var(--sheet);
+  border-top-left-radius:24px; border-top-right-radius:24px;
+  box-shadow:var(--shadow);
+  z-index:2;
+  display:flex; flex-direction:column;
+  transform:translateY(0);
+  transition:transform .25s ease-out;
+}
+.sheet.peek{transform:translateY(calc(100% - var(--peek-amount))); }
+.sheet.peek .sheet-body{pointer-events:none;user-select:none;opacity:.98}
+
+/* Header in sheet */
+.sheet-header{
+  height:var(--sheet-header-h);
+  display:flex;align-items:center;gap:10px;
+  padding:8px 16px;background:#9e9e9e;color:#fff;font-weight:600;
+  border-top-left-radius:24px;border-top-right-radius:24px;
+  position:relative;cursor:pointer;
+}
+.sheet-action{ margin-left:auto; color:#1E90FF; font-weight:700; }
+.grabber{
+  position:absolute;left:50%;top:6px;transform:translateX(-50%);
+  width:44px;height:4px;border-radius:4px;background:#d6d6d6;opacity:.9;
+}
+.hint{font-size:12px;opacity:.95}
+
+/* Body of sheet */
+.sheet-body{
+  background:#fff;
+  border-bottom-left-radius:24px;border-bottom-right-radius:24px;
+  padding:16px;
+  height:calc(50dvh - var(--sheet-header-h));
+  overflow-y:auto;
+}
+
+/* Title & hairline */
+.section-title{font-size:26px;font-weight:800;margin:6px 0 8px}
+.hairline{border:0;height:1px;background:#e6e6e6;margin:0 0 12px}
+
+/* Cards */
+.card{
+  background:#e8e8e8;border-radius:12px;padding:10px;
+  display:flex;gap:10px;position:relative;align-items:flex-start;
+}
+.card + .card{margin-top:12px}
+.meta{background:#d9d9d9;border-radius:8px;padding:10px;flex:1}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.label{font-size:12px;color:#555;min-width:64px}
+.label.right{text-align:right;min-width:66px}
+
+.field-input{
+  background:#cfcfcf;
+  border:0;border-radius:6px;
+  height:22px;padding:0 8px;flex:1;
+  font-family:inherit;font-size:13px;color:#222;
+}
+.field-input.wide{width:100%}
+.field-input[readonly]{user-select:none;pointer-events:none;caret-color:transparent}
+
+/* Status dot */
+.dot{
+  width:12px;height:12px;border-radius:50%;
+  position:absolute; right:12px; top:12px;
+}
+.dot.red{background:#EF4444}
+.dot.orange{background:#F59E0B}
+.dot.yellow{background:#FACC15}
+
+/* Blue circular checkmark — ซ่อนไว้ก่อน โชว์เมื่อเลือก */
+.check{
+  position:absolute; right:10px; bottom:12px;
+  width:22px; height:22px; border-radius:50%;
+  background:#1E90FF;
+  display:none; align-items:center; justify-content:center;
+}
+.check svg{
+  width:12px; height:12px;
+  stroke:#fff; stroke-width:3; fill:none;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.card.selected .check{ display:flex; }
+
+/* Next button */
+.next-wrap{display:flex; justify-content:center; margin-top:20px;}
+.next-btn{
+  background:#1E90FF; color:#fff; border:none;
+  padding:10px 28px; border-radius:8px; font-weight:700;
+  cursor:pointer; transition:.2s;
+}
+.next-btn:hover{filter:brightness(.95)}
+
+/* Scrollbar */
+.sheet-body::-webkit-scrollbar{width:6px}
+.sheet-body::-webkit-scrollbar-thumb{background:#ccc;border-radius:6px}

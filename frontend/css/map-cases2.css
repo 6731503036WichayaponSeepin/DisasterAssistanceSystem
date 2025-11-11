@@ -1,0 +1,139 @@
+:root{
+  --brand:#1976D2;
+  --sheet:#eeeeee;
+  --danger:#EF4444;
+  --shadow:0 6px 20px rgba(0,0,0,.15);
+
+  --sheet-header-h:44px;
+  --peek-amount:calc(var(--sheet-header-h) + 56px);
+}
+
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:"Prompt",sans-serif;
+  background:#fff;
+  height:100dvh;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+
+/* App bar */
+.appbar{
+  height:56px; flex:0 0 auto;
+  background:var(--brand); color:#fff;
+  display:flex; align-items:center; gap:8px; padding:0 12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+}
+.appbar h1{font-size:18px;font-weight:600}
+.back{
+  width:36px;height:36px;border:0;background:transparent;
+  display:grid;place-items:center;border-radius:50%;cursor:pointer
+}
+.back:hover{background:rgba(255,255,255,.15)}
+
+/* 🔁 แทนที่แผนที่ด้วยคอนเทนเนอร์ว่าง */
+.content{
+  position:relative;     /* ให้ .sheet อ้างอิง bottom:0 ได้ */
+  flex:1 1 auto;
+  background:#fff;
+}
+
+/* Bottom sheet */
+.sheet{
+  position:absolute; left:0; right:0; bottom:0;
+  height:50dvh;
+  background:var(--sheet);
+  border-top-left-radius:24px; border-top-right-radius:24px;
+  box-shadow:var(--shadow);
+  z-index:2;
+  display:flex; flex-direction:column;
+  transform:translateY(0);
+  transition:transform .25s ease-out;
+}
+.sheet.peek{transform:translateY(calc(100% - var(--peek-amount))); }
+.sheet.peek .sheet-body{pointer-events:none;user-select:none;opacity:.98}
+
+/* Header */
+.sheet-header{
+  height:var(--sheet-header-h);
+  display:flex;align-items:center;gap:10px;
+  padding:8px 16px;background:#9e9e9e;color:#fff;font-weight:600;
+  border-top-left-radius:24px;border-top-right-radius:24px;
+  position:relative;cursor:pointer;
+}
+.sheet-header:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sheet-action{margin-left:auto;color:#1E90FF;font-weight:700}
+.grabber{
+  position:absolute;left:50%;top:6px;transform:translateX(-50%);
+  width:44px;height:4px;border-radius:4px;background:#d6d6d6;opacity:.9;
+}
+.hint{font-size:12px;opacity:.95}
+
+/* Body */
+.sheet-body{
+  background:#fff;
+  border-bottom-left-radius:24px;border-bottom-right-radius:24px;
+  padding:16px;
+  height:calc(50dvh - var(--sheet-header-h));
+  overflow-y:auto;
+}
+
+/* Title + pills */
+.section-title{font-size:26px;font-weight:800;margin:4px 0 8px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pill{padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+.pill.red{background:#EF4444}
+.pill.amber{background:#F59E0B}
+.pill.yellow{background:#FDE047;color:#1a1a1a}
+.hairline{border:0;height:1px;background:#e6e6e6;margin:6px 0 12px}
+
+/* Cards */
+.card{
+  background:#e8e8e8;border-radius:12px;padding:10px;
+  display:flex;gap:10px;position:relative;align-items:flex-start;
+}
+.card + .card{margin-top:12px}
+.meta{background:#d9d9d9;border-radius:8px;padding:10px;flex:1}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.label{font-size:12px;color:#555;min-width:64px}
+.label.right{text-align:right;min-width:66px}
+
+/* Inputs (read-only) */
+.field-input{
+  background:#cfcfcf;
+  border:0;border-radius:6px;
+  height:22px;padding:0 8px;flex:1;
+  font-family:inherit;font-size:13px;color:#222;
+}
+.field-input.wide{width:100%}
+.field-input[readonly]{user-select:none;pointer-events:none;caret-color:transparent}
+
+/* Status dots */
+.dot{width:12px;height:12px;border-radius:50%;position:absolute;right:12px;top:12px}
+.dot.red{background:#EF4444}
+.dot.orange{background:#F97316}
+.dot.yellow{background:#FACC15}
+
+/* Blue check (ซ่อนก่อน โชว์เมื่อเลือก) */
+.card .check{
+  position:absolute; right:10px; bottom:10px;
+  width:22px;height:22px;border-radius:50%;
+  background:#1E90FF; display:none;align-items:center;justify-content:center;
+}
+.card .check svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.card.selected .check{display:flex}
+
+/* Next button */
+.next-wrap{display:flex;justify-content:center;margin:18px 0 4px}
+.next-btn{
+  background:#1976D2;color:#fff;border:0;border-radius:8px;
+  padding:10px 28px;font-weight:700;cursor:pointer;
+}
+.next-btn:hover{background:#145fb2}
+
+/* Scrollbar */
+.sheet-body::-webkit-scrollbar{width:6px}
+.sheet-body::-webkit-scrollbar-thumb{background:#ccc;border-radius:6px}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Selected cases</title>
+  <link rel="stylesheet" href="../css/selected-cases2.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="appbar">
+    <button class="back" onclick="history.back()" aria-label="ย้อนกลับ">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M15 6L9 12l6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <h1>Selected cases</h1>
+  </header>
+
+  <!-- Content (โครงเดิม) -->
+  <main class="sheet">
+    <!-- เราจะใส่การ์ดที่เรนเดอร์ด้วย JS ลงใน #cards -->
+    <section class="cards" id="cards"></section>
+
+    <div class="actions">
+      <button class="btn btn-confirm" id="btnConfirm">Confirm</button>
+    </div>
+  </main>
+
+  <script>
+    // ---- อ่านข้อมูลที่เลือกมาจาก follow-cases2 ----
+    // follow-cases2 จะบันทึกเป็น sessionStorage.setItem('selectedCases', JSON.stringify([...]));
+    const selected = JSON.parse(sessionStorage.getItem('selectedCases') || '[]');
+
+    const cardsEl = document.getElementById('cards');
+    const btnConfirm = document.getElementById('btnConfirm');
+
+    // ป้องกัน XSS ง่าย ๆ
+    const esc = (s) => String(s ?? '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+
+    function renderCards(items){
+      cardsEl.innerHTML = '';
+
+      if (!items.length) {
+        const p = document.createElement('p');
+        p.style.padding = '16px';
+        p.textContent = 'ยังไม่มีเคสที่เลือกจากหน้าแผนที่';
+        cardsEl.appendChild(p);
+        btnConfirm.disabled = true;
+        return;
+      }
+
+      btnConfirm.disabled = false;
+
+      items.forEach(item => {
+        const priorityClass =
+          item.priority === 'orange' ? 'orange' :
+          item.priority === 'yellow' ? 'yellow' : 'red';
+
+        // โครง “การ์ด” เหมือนเดิมทุกอย่าง
+        const article = document.createElement('article');
+        article.className = 'card';
+        article.innerHTML = `
+          <div class="meta">
+            <div class="row">
+              <div class="label">Name</div>
+              <div class="field" style="display:flex;align-items:center;padding:0 8px">${esc(item.name)}</div>
+              <div class="label right">Number</div>
+              <div class="field" style="display:flex;align-items:center;padding:0 8px">${esc(item.number)}</div>
+            </div>
+            <div class="row">
+              <div class="label">Address</div>
+              <div class="field full" style="display:flex;align-items:center;padding:0 8px">${esc(item.address)}</div>
+            </div>
+          </div>
+          <span class="dot ${priorityClass}"></span>
+        `;
+        cardsEl.appendChild(article);
+      });
+    }
+
+    // เรนเดอร์ครั้งแรก
+    renderCards(selected);
+
+    // กด Confirm (คงโครงร่างเดิม—ถ้าต้องไปหน้า success ให้เปลี่ยนบรรทัด window.location.href ได้)
+    btnConfirm.addEventListener('click', () => {
+      alert(`Confirmed ${selected.length} case(s)`);
+      // ตัวอย่างถ้าต้องไปหน้าสำเร็จ:
+      // window.location.href = './success.html';
+    });
+  </script>
+</body>
+</html>

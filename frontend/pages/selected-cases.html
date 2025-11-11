@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Selected cases</title>
+  <link rel="stylesheet" href="../css/selected-cases.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="appbar">
+    <button class="back" onclick="history.back()" aria-label="ย้อนกลับ">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M15 6L9 12l6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <h1>Selected cases</h1>
+  </header>
+
+  <!-- Content -->
+  <main class="sheet">
+    <!-- เราจะเติมการ์ดลงใน #cards ด้วย JS -->
+    <section class="cards" id="cards"></section>
+
+    <div class="actions">
+      <button class="btn btn-follow" id="btnFollow">Follow Case</button>
+      <button class="btn btn-confirm" id="btnConfirm">Confirm</button>
+    </div>
+  </main>
+
+  <script>
+    // อ่านข้อมูลที่เลือกมาจาก map-cases2
+    const selected = JSON.parse(sessionStorage.getItem('selectedCases') || '[]');
+
+    const cardsEl   = document.getElementById('cards');
+    const btnFollow = document.getElementById('btnFollow');
+    const btnConfirm= document.getElementById('btnConfirm');
+
+    function renderCards(items){
+      cardsEl.innerHTML = '';
+
+      if (!items.length) {
+        const empty = document.createElement('p');
+        empty.style.padding = '16px';
+        empty.textContent = 'ยังไม่มีเคสที่เลือกจากหน้าแผนที่';
+        cardsEl.appendChild(empty);
+        btnConfirm.disabled = true;
+        btnFollow.disabled = true;
+        return;
+      }
+
+      items.forEach(item => {
+        const art = document.createElement('article');
+        art.className = 'card';
+
+        const dotClass =
+          item.priority === 'orange' ? 'orange' :
+          item.priority === 'yellow' ? 'yellow' : 'red';
+
+        art.innerHTML = `
+          <div class="meta">
+            <div class="row">
+              <div class="label">Name</div>
+              <div class="field" style="display:flex;align-items:center;padding:0 8px">${escapeHtml(item.name || '')}</div>
+              <div class="label right">Number</div>
+              <div class="field" style="display:flex;align-items:center;padding:0 8px">${escapeHtml(item.number || '')}</div>
+            </div>
+            <div class="row">
+              <div class="label">Address</div>
+              <div class="field full" style="display:flex;align-items:center;padding:0 8px">${escapeHtml(item.address || '')}</div>
+            </div>
+          </div>
+          <span class="dot ${dotClass}"></span>
+        `;
+        cardsEl.appendChild(art);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+
+    // ปุ่ม Follow (เหมือนเดิม)
+    btnFollow.addEventListener('click', () => {
+      alert(`Follow ${selected.length} case(s)`);
+    });
+
+    // ปุ่ม Confirm → เก็บข้อมูล + ไปหน้า success.html
+    btnConfirm.addEventListener('click', () => {
+      // เก็บรายการที่ยืนยันไว้ (เผื่อหน้า success จะดึงไปแสดง)
+      sessionStorage.setItem('confirmedCases', JSON.stringify(selected));
+
+      // ไปหน้า success (ปรับพาธตามโฟลเดอร์จริงของคุณได้)
+      window.location.href = './success.html';
+    });
+
+    // เรนเดอร์การ์ด
+    renderCards(selected);
+  </script>
+</body>
+</html>
