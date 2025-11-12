@@ -1,88 +1,142 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up - LinkLife</title>
-  <link rel="stylesheet" href="../css/style.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in</title>
+<style>
+  :root{
+    --blue:#0A53E4;
+    --card:#FFFFFF;
+    --label:#111827;
+    --input-bg:#EDEFF2;
+    --input-text:#111827;
+    --green:#16A34A;
+    --green-press:#12833C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--blue);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .card{
+    width:100%;
+    max-width:360px;
+    background:var(--card);
+    border-radius:12px;
+    padding:26px 20px;
+    box-shadow:0 10px 24px rgba(0,0,0,.18);
+  }
+  .title{
+    text-align:center;font-weight:800;font-size:26px;margin-bottom:18px;color:#111827;
+  }
+  .field{margin-bottom:14px}
+  label{display:block;font-size:14px;color:var(--label);margin:0 0 6px 2px}
+  input{
+    width:100%;height:42px;border:none;outline:none;border-radius:8px;
+    padding:0 12px;background:var(--input-bg);color:var(--input-text);font-size:15px;
+  }
+  .btn{
+    width:100%;height:44px;border:none;outline:none;border-radius:8px;
+    background:var(--green);color:#fff;font-weight:700;cursor:pointer;margin-top:10px;
+    transition:background .2s,opacity .2s;
+  }
+  .btn:active{background:var(--green-press)}
+  .btn[disabled]{opacity:.7;cursor:not-allowed}
+  .msg{min-height:20px;font-size:13px;margin-top:8px}
+  .msg.error{color:#DC2626}
+  .msg.ok{color:#16A34A}
+</style>
 </head>
-
 <body>
-  <h1>Sign Up</h1>
 
-  <form onsubmit="saveData(event)">
-    <div>
-      <label>Firstname</label>
-      <input type="text" id="fname" required />
-    </div>
-    <div>
-      <label>Lastname</label>
-      <input type="text" id="lname" required />
-    </div>
-    <div>
-      <label>Phone</label>
-      <input type="tel" id="phone" pattern="[0-9]{10}" required placeholder="0812345678" />
-    </div>
-    <button type="submit">Confirm</button>
-  </form>
+<section class="card" role="form" aria-labelledby="title">
+  <h1 id="title" class="title">Sign in</h1>
 
-  <script>
-    async function saveData(event) {
-      event.preventDefault(); // ป้องกันการ reload หน้า
+  <div class="field">
+    <label for="name">Name</label>
+    <input id="name" type="text" autocomplete="name" placeholder="เช่น นายสมชาย ใจดี">
+  </div>
 
-      // ✅ ดึงค่าจากช่อง input
-      const fname = document.getElementById("fname").value.trim();
-      const lname = document.getElementById("lname").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+  <div class="field">
+    <label for="phone">Number</label>
+    <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="เช่น 0812345678">
+  </div>
 
-      // ✅ รวมชื่อเต็ม (name) ให้ตรงกับฝั่ง backend
-      const fullName = `${fname} ${lname}`.trim();
+  <button id="confirm" class="btn">Confirm</button>
+  <div id="msg" class="msg" aria-live="polite"></div>
+</section>
 
-      // ✅ ตรวจสอบเบอร์โทร
-      if (phone.length !== 10 || isNaN(phone)) {
-        alert("กรุณากรอกเบอร์โทร 10 หลักให้ถูกต้อง");
-        return;
-      }
+<script>
+const API_BASE  = "http://localhost:8080/api/users";
+const LOGIN_PATH = API_BASE + "/login";
 
-      // ✅ สร้าง JSON ตามโครงสร้าง backend (detail.name)
-      const userData = {
-        phoneNumber: phone,
-        role: "USER",
-        detail: {
-          name: fullName
-        }
-      };
+function setMsg(text, type="error"){
+  const el = document.getElementById("msg");
+  el.className = "msg " + (type === "ok" ? "ok" : "error");
+  el.textContent = text || "";
+}
+function persistAndGo(token){
+  try{ localStorage.setItem("authToken", token); }catch(e){}
+  window.location.href = "/pages/home.html?token=" + encodeURIComponent(token);
+}
+function validate(name, phone){
+  if(!name || name.trim().length < 2) return "กรุณากรอกชื่อให้ถูกต้อง";
+  if(!/^0\d{9}$/.test(phone)) return "กรุณากรอกเบอร์โทร 10 หลักที่ถูกต้อง (เช่น 0812345678)";
+  return null;
+}
+async function doLogin(){
+  const btn   = document.getElementById("confirm");
+  const name  = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-      try {
-        // ✅ ส่งข้อมูลไปยัง Backend (Spring Boot)
-        const response = await fetch("http://localhost:8080/api/users/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData)
-        });
+  const v = validate(name, phone);
+  if (v){ setMsg(v); return; }
 
-        const result = await response.json();
+  setMsg("กำลังเข้าสู่ระบบ...", "ok");
+  btn.disabled = true;
 
-        if (response.ok) {
-          alert("✅ สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ");
-          console.log("Response:", result);
+  try{
+    const res = await fetch(LOGIN_PATH, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ name: name, phone_number: phone })
+    });
+    const data = await res.json().catch(()=> ({}));
 
-          // ✅ เก็บข้อมูลไว้ใน localStorage (optional)
-          localStorage.setItem("user_name", fullName);
-          localStorage.setItem("user_phone", phone);
-
-          // ✅ ไปหน้า Sign In ต่อ
-          window.location.href = "signin.html";
-        } else {
-          alert("❌ " + (result.message || "สมัครสมาชิกไม่สำเร็จ"));
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
-      }
+    if(!res.ok){
+      const m = data?.message || data?.error || "เข้าสู่ระบบไม่สำเร็จ";
+      setMsg(m);
+      btn.disabled = false;
+      return;
     }
-  </script>
-</body>
 
+    const token = data?.token || data?.jwt || data?.accessToken;
+    if(!token){
+      setMsg("ไม่พบโทเค็นจากเซิร์ฟเวอร์");
+      btn.disabled = false;
+      return;
+    }
+
+    setMsg("เข้าสู่ระบบสำเร็จ กำลังนำทาง...", "ok");
+    persistAndGo(token);
+
+  }catch(err){
+    console.error(err);
+    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("confirm").addEventListener("click", (e)=>{
+  e.preventDefault(); doLogin();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") doLogin();
+});
+</script>
+</body>
 </html>

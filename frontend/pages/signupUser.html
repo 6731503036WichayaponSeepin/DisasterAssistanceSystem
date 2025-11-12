@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up</title>
+<style>
+  :root{
+    --blue:#0A53E4;
+    --card:#FFFFFF;
+    --label:#111827;
+    --input-bg:#EDEFF2;
+    --input-text:#111827;
+    --green:#16A34A;
+    --green-press:#12833C;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--blue);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+
+  .card{
+    width:100%;
+    max-width:400px;
+    background:var(--card);
+    border-radius:12px;
+    padding:28px 22px;
+    box-shadow:0 10px 24px rgba(0,0,0,.18);
+  }
+
+  .title{
+    text-align:center;
+    font-weight:800;
+    font-size:26px;
+    margin-bottom:20px;
+    color:#111827;
+  }
+
+  .field{margin-bottom:16px}
+  label{
+    display:block;
+    font-size:14px;
+    color:var(--label);
+    margin:0 0 6px 2px;
+  }
+  input{
+    width:100%;
+    height:42px;
+    border:none;
+    outline:none;
+    border-radius:8px;
+    padding:0 12px;
+    background:var(--input-bg);
+    color:var(--input-text);
+    font-size:15px;
+  }
+
+  .btn{
+    width:100%;
+    height:44px;
+    border:none;outline:none;
+    border-radius:8px;
+    background:var(--green);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:10px;
+    transition:background 0.2s;
+  }
+  .btn:active{ background:var(--green-press); }
+
+  .hint{font-size:12px;color:#6B7280;margin-top:4px}
+  .error{color:#DC2626;font-size:13px;margin-top:6px}
+  .ok{color:#16A34A;font-size:13px;margin-top:6px}
+
+  @media (max-width:480px){
+    .card{padding:20px 16px;}
+    .title{font-size:22px;margin-bottom:16px;}
+    input{height:38px;font-size:14px;}
+    .btn{height:40px;font-size:15px;}
+  }
+
+  @media (min-width:992px){
+    body{padding:40px;}
+    .card{
+      max-width:420px;
+      padding:34px 26px;
+      border-radius:14px;
+    }
+    .title{font-size:28px;}
+    input{height:46px;font-size:16px;}
+    .btn{height:46px;font-size:16px;}
+  }
+
+  @media (min-width:481px) and (max-width:991px){
+    .card{ max-width:380px; padding:28px 20px; }
+    .title{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+
+<section class="card" role="form" aria-labelledby="title">
+  <h1 id="title" class="title">Sign Up</h1>
+
+  <div class="field">
+    <label for="name">Name</label>
+    <input id="name" type="text" autocomplete="name" placeholder="เช่น นายสมชาย ใจดี">
+  </div>
+
+  <div class="field">
+    <label for="phone">Phone Number</label>
+    <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="เช่น 0812345678">
+    <div class="hint">ต้องเป็นหมายเลข 10 หลัก (ขึ้นต้นด้วย 0)</div>
+  </div>
+
+  <button id="confirm" class="btn">Register</button>
+  <div id="msg" aria-live="polite"></div>
+</section>
+
+<script>
+const API_BASE = "http://localhost:8080/api/users";
+const REGISTER_PATH = API_BASE + "/register";
+const LOGIN_PATH = API_BASE + "/login";
+
+function extractToken(respJson) {
+  return respJson?.token || respJson?.jwt || respJson?.accessToken || respJson?.data?.token || null;
+}
+function persistAndGo(token) {
+  try { localStorage.setItem("authToken", token); } catch(e) {}
+  window.location.href = "/pages/home.html?token=" + encodeURIComponent(token);
+}
+function showMsg(text, type="error") {
+  const el = document.getElementById("msg");
+  el.className = type === "ok" ? "ok" : "error";
+  el.textContent = text;
+}
+function validate(name, phone) {
+  if (!name || name.trim().length < 2) return "กรุณากรอกชื่อให้ถูกต้อง";
+  if (!/^0\d{9}$/.test(phone)) return "กรุณากรอกเบอร์โทร 10 หลักที่ถูกต้อง (เช่น 0812345678)";
+  return null;
+}
+
+document.getElementById('confirm').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const name  = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const err = validate(name, phone);
+  if (err) { showMsg(err); return; }
+
+  showMsg("กำลังสมัครสมาชิก...", "ok");
+
+  try {
+    // (1) REGISTER
+    const regRes = await fetch(REGISTER_PATH, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        phoneNumber: phone,
+        detail: { name: name },
+        role: "USER"
+      })
+    });
+    const regJson = await regRes.json().catch(() => ({}));
+    if (!regRes.ok) {
+      const msg = regJson?.message || regJson?.error || "สมัครไม่สำเร็จ";
+      showMsg("สมัครไม่สำเร็จ: " + msg);
+      return;
+    }
+
+    // (2) LOGIN เพื่อรับ token (ตาม controller ต้องส่ง name + phone_number)
+    const loginRes = await fetch(LOGIN_PATH, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ name: name, phone_number: phone })
+    });
+    const loginJson = await loginRes.json().catch(() => ({}));
+    if (!loginRes.ok) {
+      const msg = loginJson?.message || loginJson?.error || "เข้าสู่ระบบไม่สำเร็จ";
+      showMsg("เข้าสู่ระบบไม่สำเร็จ: " + msg);
+      return;
+    }
+
+    const token = extractToken(loginJson); // backend ของคุณคืน key "token"
+    if (!token) {
+      showMsg("ไม่พบโทเค็นจากเซิร์ฟเวอร์ (token is missing)");
+      return;
+    }
+
+    showMsg("สมัครและเข้าสู่ระบบสำเร็จ กำลังนำทาง...", "ok");
+    persistAndGo(token);
+
+  } catch (err) {
+    console.error(err);
+    showMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+  }
+});
+</script>
+
+</body>
+</html>
