@@ -1,0 +1,104 @@
+body {
+  font-family: "Prompt", sans-serif;
+  margin: 0;
+  background-color: #f4f4f4; /* 🩶 พื้นหลังเทาอ่อน */
+  
+}
+
+/* 🔹 Header สีฟ้า */
+.header {
+  background-color: hsl(212, 80%, 42%);
+  color: rgb(255, 255, 255);
+  padding: 70px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header svg {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.header h1 {
+  position: absolute;
+  z-index: 2;
+  top: 13%;                 /* ✅ กึ่งกลางแนวตั้ง */
+  left: 50%;                /* ✅ กึ่งกลางแนวนอน */
+  transform: translate(-50%, -50%); /* ✅ จัดกลางสมบูรณ์ทั้ง 2 แกน */
+  margin: 0;
+  font-weight: Mediem;
+  font-size: 2rem;
+}
+
+
+/* 🔹 กล่องพื้นขาวมุมโค้ง */
+ .content-container {
+  background: white;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  margin-top: -25px;
+  padding: 80px 40px;
+  min-height: 100vh;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+
+/* ฟอร์มด้านใน */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: -5px;
+}
+
+label {
+  display: block;
+  width: 50%;              /* ✅ ให้เท่ากับช่อง input */
+  font-weight: lighter;
+  margin-bottom: -5px;
+  text-align: left;         /* ชิดซ้ายในกรอบ input */
+}
+
+input {
+  width: 50%;
+  padding: 10px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  background-color: #f2f2f2;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1565c0;
+  background-color: #fff;
+  box-shadow: 0 0 3px rgba(21, 101, 192, 0.4);
+}
+
+/* ✅ ปุ่ม Confirm */
+button {
+  width: 50%;              /* ให้เท่ากับ input */
+  padding: 12px;
+  background-color: #079c34;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #06852c;
+  transition: 0.2s ease;
+}
+

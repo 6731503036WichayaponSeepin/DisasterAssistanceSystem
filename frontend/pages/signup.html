@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - LinkLife</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+
+<body>
+  <h1>Sign Up</h1>
+
+  <form onsubmit="saveData(event)">
+    <div>
+      <label>Firstname</label>
+      <input type="text" id="fname" required />
+    </div>
+    <div>
+      <label>Lastname</label>
+      <input type="text" id="lname" required />
+    </div>
+    <div>
+      <label>Phone</label>
+      <input type="tel" id="phone" pattern="[0-9]{10}" required placeholder="0812345678" />
+    </div>
+    <button type="submit">Confirm</button>
+  </form>
+
+  <script>
+    async function saveData(event) {
+      event.preventDefault(); // ป้องกันการ reload หน้า
+
+      // ✅ ดึงค่าจากช่อง input
+      const fname = document.getElementById("fname").value.trim();
+      const lname = document.getElementById("lname").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+
+      // ✅ รวมชื่อเต็ม (name) ให้ตรงกับฝั่ง backend
+      const fullName = `${fname} ${lname}`.trim();
+
+      // ✅ ตรวจสอบเบอร์โทร
+      if (phone.length !== 10 || isNaN(phone)) {
+        alert("กรุณากรอกเบอร์โทร 10 หลักให้ถูกต้อง");
+        return;
+      }
+
+      // ✅ สร้าง JSON ตามโครงสร้าง backend (detail.name)
+      const userData = {
+        phoneNumber: phone,
+        role: "USER",
+        detail: {
+          name: fullName
+        }
+      };
+
+      try {
+        // ✅ ส่งข้อมูลไปยัง Backend (Spring Boot)
+        const response = await fetch("http://localhost:8080/api/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("✅ สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ");
+          console.log("Response:", result);
+
+          // ✅ เก็บข้อมูลไว้ใน localStorage (optional)
+          localStorage.setItem("user_name", fullName);
+          localStorage.setItem("user_phone", phone);
+
+          // ✅ ไปหน้า Sign In ต่อ
+          window.location.href = "signin.html";
+        } else {
+          alert("❌ " + (result.message || "สมัครสมาชิกไม่สำเร็จ"));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บัญชีผู้ใช้</title>
+  <link rel="stylesheet" href="../css/account.css" />
+</head>
+
+<body>
+  <header class="header">
+    <svg onclick="window.history.back()" width="36" height="36" viewBox="0 0 36 36" fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.7375 19.5L20.1375 27.9L18 30L6 18L18 6L20.1375 8.1L11.7375 16.5H30V19.5H11.7375Z" fill="white" />
+    </svg>
+    <h1>Account</h1>
+  </header>
+
+  <div class="content-container">
+    <form id="accountForm">
+
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" placeholder="Enter your name" readonly>
+
+      <label for="number">Phone Number</label>
+      <input type="tel" id="number" name="phonenumber" readonly>
+
+      <label for="address">บ้านเลขที่ / หมู่</label>
+      <input type="text" id="address" name="address" readonly>
+
+      <label for="tambon">ตำบล</label>
+      <input type="text" id="tambon" name="tambon" readonly>
+
+      <label for="amphoe">อำเภอ</label>
+      <input type="text" id="amphoe" name="amphoe" readonly>
+
+      <label for="zipcode">รหัสไปรษณีย์</label>
+      <input type="text" id="zipcode" name="zipcode" readonly>
+
+      <label for="province">จังหวัด</label>
+      <input type="text" id="province" name="province" readonly>
+
+      <!-- <button type="submit" class="submit-btn">💾 Confirm</button> -->
+      <button type="button" class="signout-btn" onclick="logout()">Sign out</button>
+    </form>
+  </div>
+
+  <script>
+    // ✅ ดึง JWT จาก localStorage
+    const token = localStorage.getItem("jwt_token");
+    if (!token) {
+      alert("⚠️ กรุณาเข้าสู่ระบบก่อน");
+      window.location.href = "signin.html";
+    }
+
+    // ✅ Decode JWT เพื่อดู phoneNumber
+    function parseJwt(token) {
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        console.error("Token decode failed:", e);
+        return null;
+      }
+    }
+
+    const decoded = parseJwt(token);
+    const phoneNumber = decoded ? decoded.sub : null;
+
+    if (!phoneNumber) {
+      alert("❌ Token ไม่ถูกต้อง");
+      window.location.href = "signin.html";
+    }
+
+    // ✅ โหลดข้อมูลผู้ใช้
+    async function loadUserDetail() {
+      try {
+        const res = await fetch(`http://localhost:8080/api/users/${phoneNumber}/detail`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          alert("⛔ Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+          localStorage.clear();
+          window.location.href = "signin.html";
+          return;
+        }
+
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        console.log("✅ User detail:", data);
+
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("number").value = phoneNumber;
+
+      } catch (err) {
+        console.error("❌ โหลดข้อมูลผู้ใช้ล้มเหลว:", err);
+        alert("❌ ไม่สามารถโหลดข้อมูลผู้ใช้ได้");
+      }
+    }
+
+    // ✅ โหลดข้อมูลที่อยู่
+    async function loadUserAddress() {
+      try {
+        const res = await fetch("http://localhost:8080/api/address/my", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log("🏠 Address:", data);
+          console.log("📮 Postal Codes:", data.subdistrict?.postalCodes);
+
+          document.getElementById("address").value = data.houseNumber || "";
+          document.getElementById("tambon").value = data.subdistrict?.name || "";
+          document.getElementById("amphoe").value = data.subdistrict?.district?.name || "";
+          document.getElementById("province").value = data.subdistrict?.district?.province?.name || "";
+
+          // ✅ ดึงรหัสไปรษณีย์จาก array ตัวแรก
+          const postalCode = data.subdistrict?.postalCodes?.[0]?.code;
+          document.getElementById("zipcode").value = postalCode || "";
+
+          console.log("✅ แสดงผลรหัสไปรษณีย์:", postalCode);
+        } else {
+          console.warn("⚠️ โหลดที่อยู่ล้มเหลว:", res.status);
+        }
+      } catch (err) {
+        console.error("❌ โหลดที่อยู่ไม่สำเร็จ:", err);
+      }
+    }
+
+    // ✅ อัปเดตข้อมูลชื่อ (PUT /api/users/detail)
+    document.getElementById("accountForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const newName = document.getElementById("name").value.trim();
+
+      if (!newName) {
+        alert("⚠️ กรุณากรอกชื่อ");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:8080/api/users/detail", {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name: newName })
+        });
+
+        if (res.ok) {
+          alert("✅ บันทึกชื่อเรียบร้อยแล้ว");
+          await loadUserDetail();
+        } else if (res.status === 401 || res.status === 403) {
+          alert("⛔ Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+          localStorage.clear();
+          window.location.href = "signin.html";
+        } else {
+          alert("❌ อัปเดตไม่สำเร็จ");
+        }
+      } catch (err) {
+        console.error("❌ บันทึกข้อมูลล้มเหลว:", err);
+      }
+    });
+
+    // ✅ ออกจากระบบ
+    function logout() {
+      localStorage.clear();
+      alert("👋 ออกจากระบบเรียบร้อยแล้ว");
+      window.location.href = "signin.html";
+    }
+
+    // ✅ โหลดข้อมูลเมื่อเปิดหน้า
+    (async () => {
+      await loadUserDetail();
+      setTimeout(loadUserAddress, 300); // เพิ่ม delay 0.3 วิ
+      await loadUserAddress();
+    })();
+  </script>
+</body>
+
+</html>
