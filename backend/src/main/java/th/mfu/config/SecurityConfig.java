@@ -39,8 +39,8 @@ public class SecurityConfig {
                     .requestMatchers(
                             "/api/cases/*/follow",
                             "/api/cases/*/confirm",
-                            "/api/cases/available",
-                            "/api/cases/assigned-to/me"
+                            "/api/cases/*/coming",
+                            "/api/cases/available"
                     ).hasRole("RESCUE")
 
                     // 4) ที่เป็น /api/cases อื่นๆ แค่ต้องล็อกอิน (report ก็อยู่ในนี้)

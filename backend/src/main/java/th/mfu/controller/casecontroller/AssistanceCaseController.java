@@ -11,6 +11,7 @@ import th.mfu.model.caseentity.CaseSeverity;
 import th.mfu.model.caseentity.CaseStatus;
 import th.mfu.model.user.User;
 import th.mfu.model.rescue.Rescue;
+import th.mfu.model.rescue.RescueTeam;
 import th.mfu.repository.caserepo.AssistanceCaseRepository;
 import th.mfu.repository.userrepository.UserRepository;
 import th.mfu.repository.rescuerepository.RescueRepository;
@@ -163,24 +164,33 @@ public ResponseEntity<?> followCase(@PathVariable Long id) {
     String rescueCode = auth.getName();
 
     Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
-    if (rescue == null)
-        return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
-    if (rescue.getRescueTeam() == null)
-        return ResponseEntity.badRequest().body("Please create or join a team before accepting a case.");
-    if (!isTeamLeader(rescue))
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can accept the case.");
+    if (rescue == null) {
+        return ResponseEntity.badRequest().body("Rescue not found");
+    }
 
-    Long teamId = rescue.getRescueTeam().getId();
+    // ✅ ต้องอยู่ในทีมก่อน
+    if (rescue.getRescueTeam() == null) {
+        return ResponseEntity.badRequest().body("Please join a team before accepting a case.");
+    }
+
+    // ✅ อนุญาตเฉพาะหัวหน้าทีม
+    RescueTeam team = rescue.getRescueTeam();
+    if (!team.getLeader().getId().equals(rescue.getId())) {
+        return ResponseEntity.status(403).body("Only the team leader can accept a case.");
+    }
 
     AssistanceCase c = caseRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Case not found: " + id));
 
-    if (c.getAssignedRescueTeamId() != null)
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("This case is already assigned to a team.");
+    if (c.getAssignedRescueTeamId() != null) {
+        return ResponseEntity.badRequest().body("This case is already assigned to a team.");
+    }
 
-    c.setAssignedRescueTeamId(teamId);
+    c.setAssignedRescueTeamId(team.getId());
     c.setStatus(CaseStatus.ASSIGNED);
-    return ResponseEntity.ok(caseRepo.save(c));
+
+    caseRepo.save(c);
+    return ResponseEntity.ok(c);
 }
 
 @Transactional
@@ -196,15 +206,14 @@ public ResponseEntity<?> comingToHelp(@PathVariable Long id) {
     if (!isTeamLeader(rescue))
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can set COMING.");
 
-    Long myTeamId = rescue.getRescueTeam().getId();
-    AssistanceCase c = caseRepo.findById(id).orElseThrow(() -> new RuntimeException("Case not found: " + id));
+    AssistanceCase c = caseRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found: " + id));
 
+    Long teamId = rescue.getRescueTeam().getId();
     if (c.getAssignedRescueTeamId() == null)
         return ResponseEntity.badRequest().body("This case is not assigned to any team.");
-    if (!myTeamId.equals(c.getAssignedRescueTeamId()))
+    if (!teamId.equals(c.getAssignedRescueTeamId()))
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only the assigned team can set COMING.");
-
-    // กัน transition ผิดลำดับ
     if (c.getStatus() != CaseStatus.ASSIGNED)
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Invalid state transition to COMING.");
 
@@ -225,21 +234,21 @@ public ResponseEntity<?> confirmCase(@PathVariable Long id) {
     if (!isTeamLeader(rescue))
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can confirm DONE.");
 
-    Long myTeamId = rescue.getRescueTeam().getId();
-    AssistanceCase c = caseRepo.findById(id).orElseThrow(() -> new RuntimeException("Case not found: " + id));
+    AssistanceCase c = caseRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found: " + id));
 
+    Long teamId = rescue.getRescueTeam().getId();
     if (c.getAssignedRescueTeamId() == null)
         return ResponseEntity.badRequest().body("This case is not assigned to any team.");
-    if (!myTeamId.equals(c.getAssignedRescueTeamId()))
+    if (!teamId.equals(c.getAssignedRescueTeamId()))
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only the assigned team can confirm DONE.");
-
-    // กัน transition ผิดลำดับ (ต้องมาจาก COMING เท่านั้น)
     if (c.getStatus() != CaseStatus.COMING)
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Invalid state transition to DONE.");
 
     c.setStatus(CaseStatus.DONE);
     return ResponseEntity.ok(caseRepo.save(c));
 }
+
 /** ดึงเคสของ “ทีมฉัน” (ใช้กับ Selected/Coming/Completed) */
 @GetMapping("/my")
 public ResponseEntity<?> getMyTeamCases(@RequestParam(required = false) CaseStatus status) {
@@ -259,4 +268,11 @@ public ResponseEntity<?> getMyTeamCases(@RequestParam(required = false) CaseStat
         return ResponseEntity.ok(caseRepo.findByAssignedRescueTeamId(myTeamId));
     }
 }
+    @GetMapping("/available")
+    public ResponseEntity<?> getAvailableCases(@RequestParam(required = false) CaseStatus status) {
+    if (status != null) {
+        return ResponseEntity.ok(caseRepo.findByAssignedRescueTeamIdIsNullAndStatus(status));
+    }
+    return ResponseEntity.ok(caseRepo.findByAssignedRescueTeamIdIsNull());
+    }
 }
