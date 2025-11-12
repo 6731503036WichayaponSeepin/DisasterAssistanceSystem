@@ -10,6 +10,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import th.mfu.security.JwtAuthFilter;
 
+// ⬇️ เพิ่มแค่บรรทัดนี้เพื่อใช้กำหนดสิทธิ์ตาม HTTP method
+import org.springframework.http.HttpMethod;
+
 @Configuration
 public class SecurityConfig {
 
@@ -30,7 +33,9 @@ public class SecurityConfig {
                     "/api/users/login",
                     "/api/users/register",
                     "/api/rescues/login",
-                    "/api/rescues/register"
+                    "/api/rescues/register",
+                    // ⬇️ เคส: ping เปิดสาธารณะ
+                    "/api/cases/ping"
                 ).permitAll()
 
                 // 🔓 Static resources (HTML, CSS, JS)
@@ -51,11 +56,25 @@ public class SecurityConfig {
                     "/api/location/**"
                 ).hasAuthority("ROLE_USER")
 
+                // ⬇️ เคส: ผู้ใช้แจ้งเคส
+                .requestMatchers(HttpMethod.POST, "/api/cases/report").hasAuthority("ROLE_USER")
+
                 // 🚒 RESCUE role
                 .requestMatchers(
                     "/api/rescue/**",
                     "/api/rescue-teams/**"
                 ).hasAuthority("ROLE_RESCUE")
+
+                // ⬇️ เคส: ทีมกู้ภัยจัดการ/ดูเคสของตัวเอง/เคสว่าง
+                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/follow").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/coming").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/confirm").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.GET,  "/api/cases/my").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.GET,  "/api/cases/available").hasAuthority("ROLE_RESCUE")
+
+                // ⬇️ (แนะนำ) ให้ RESCUE ดูรายการเคสทั้งหมดและตามสถานะได้
+                .requestMatchers(HttpMethod.GET, "/api/cases").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.GET, "/api/cases/status/**").hasAuthority("ROLE_RESCUE")
 
                 // ❌ ปฏิเสธทุก request อื่น
                 .anyRequest().denyAll()
