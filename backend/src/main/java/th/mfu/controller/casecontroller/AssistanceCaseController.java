@@ -1,6 +1,7 @@
 package th.mfu.controller.casecontroller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,8 @@ import th.mfu.repository.rescuerepository.RescueRepository;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @RestController
@@ -145,58 +147,116 @@ public class AssistanceCaseController {
             caseRepo.saveAll(all);
         }
     }
+    
+    private boolean isTeamLeader(Rescue rescue) {
+    return rescue.getRescueTeam() != null
+        && rescue.getRescueTeam().getLeader() != null
+        && rescue.getId().equals(rescue.getRescueTeam().getLeader().getId());
+}
 
-    // ================== กู้ภัยกด "Follow Case" ==================
-    @PostMapping("/{id}/follow")
-    public ResponseEntity<?> followCase(@PathVariable Long id) {
+   // th.mfu.controller.casecontroller.AssistanceCaseController (เฉพาะเมธอดที่เปลี่ยน)
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String rescueCode = auth.getName();  // เช่น RS-001
+@Transactional
+@PostMapping("/{id}/follow")
+public ResponseEntity<?> followCase(@PathVariable Long id) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String rescueCode = auth.getName();
 
-        // หาจากตาราง rescue เท่านั้น
-        Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
-        if (rescue == null) {
-            return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
-        }
+    Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+    if (rescue == null)
+        return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
+    if (rescue.getRescueTeam() == null)
+        return ResponseEntity.badRequest().body("Please create or join a team before accepting a case.");
+    if (!isTeamLeader(rescue))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can accept the case.");
 
-        AssistanceCase c = caseRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found: " + id));
+    Long teamId = rescue.getRescueTeam().getId();
 
-        // ถ้ามีคนรับแล้ว ไม่ให้รับซ้ำ
-        if (c.getAssignedRescueId() != null) {
-            return ResponseEntity.badRequest().body("This case is already assigned.");
-        }
+    AssistanceCase c = caseRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found: " + id));
 
-        c.setAssignedRescueId(rescue.getId());
-        c.setStatus(CaseStatus.ASSIGNED);
+    if (c.getAssignedRescueTeamId() != null)
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("This case is already assigned to a team.");
 
-        caseRepo.save(c);
-        return ResponseEntity.ok(c);
+    c.setAssignedRescueTeamId(teamId);
+    c.setStatus(CaseStatus.ASSIGNED);
+    return ResponseEntity.ok(caseRepo.save(c));
+}
+
+@Transactional
+@PostMapping("/{id}/coming")
+public ResponseEntity<?> comingToHelp(@PathVariable Long id) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String rescueCode = auth.getName();
+
+    Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+    if (rescue == null) return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
+    if (rescue.getRescueTeam() == null)
+        return ResponseEntity.badRequest().body("Please join a team first.");
+    if (!isTeamLeader(rescue))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can set COMING.");
+
+    Long myTeamId = rescue.getRescueTeam().getId();
+    AssistanceCase c = caseRepo.findById(id).orElseThrow(() -> new RuntimeException("Case not found: " + id));
+
+    if (c.getAssignedRescueTeamId() == null)
+        return ResponseEntity.badRequest().body("This case is not assigned to any team.");
+    if (!myTeamId.equals(c.getAssignedRescueTeamId()))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only the assigned team can set COMING.");
+
+    // กัน transition ผิดลำดับ
+    if (c.getStatus() != CaseStatus.ASSIGNED)
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Invalid state transition to COMING.");
+
+    c.setStatus(CaseStatus.COMING);
+    return ResponseEntity.ok(caseRepo.save(c));
+}
+
+@Transactional
+@PostMapping("/{id}/confirm")
+public ResponseEntity<?> confirmCase(@PathVariable Long id) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String rescueCode = auth.getName();
+
+    Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+    if (rescue == null) return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
+    if (rescue.getRescueTeam() == null)
+        return ResponseEntity.badRequest().body("Please join a team first.");
+    if (!isTeamLeader(rescue))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only team leader can confirm DONE.");
+
+    Long myTeamId = rescue.getRescueTeam().getId();
+    AssistanceCase c = caseRepo.findById(id).orElseThrow(() -> new RuntimeException("Case not found: " + id));
+
+    if (c.getAssignedRescueTeamId() == null)
+        return ResponseEntity.badRequest().body("This case is not assigned to any team.");
+    if (!myTeamId.equals(c.getAssignedRescueTeamId()))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only the assigned team can confirm DONE.");
+
+    // กัน transition ผิดลำดับ (ต้องมาจาก COMING เท่านั้น)
+    if (c.getStatus() != CaseStatus.COMING)
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Invalid state transition to DONE.");
+
+    c.setStatus(CaseStatus.DONE);
+    return ResponseEntity.ok(caseRepo.save(c));
+}
+/** ดึงเคสของ “ทีมฉัน” (ใช้กับ Selected/Coming/Completed) */
+@GetMapping("/my")
+public ResponseEntity<?> getMyTeamCases(@RequestParam(required = false) CaseStatus status) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String rescueCode = auth.getName();
+
+    Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+    if (rescue == null) return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
+    if (rescue.getRescueTeam() == null)
+        return ResponseEntity.badRequest().body("Please join a team first.");
+
+    Long myTeamId = rescue.getRescueTeam().getId();
+
+    if (status != null) {
+        return ResponseEntity.ok(caseRepo.findByAssignedRescueTeamIdAndStatus(myTeamId, status));
+    } else {
+        return ResponseEntity.ok(caseRepo.findByAssignedRescueTeamId(myTeamId));
     }
-
-    // ================== กู้ภัยกด "Confirm" ==================
-    @PostMapping("/{id}/confirm")
-    public ResponseEntity<?> confirmCase(@PathVariable Long id) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String rescueCode = auth.getName();
-
-        Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
-        if (rescue == null) {
-            return ResponseEntity.badRequest().body("Rescue not found: " + rescueCode);
-        }
-
-        AssistanceCase c = caseRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found: " + id));
-
-        // ถ้ายังไม่ได้ assign ใครเลย ให้คนที่กด confirm เป็นคนปิด
-        if (c.getAssignedRescueId() == null) {
-            c.setAssignedRescueId(rescue.getId());
-        }
-
-        c.setStatus(CaseStatus.DONE);
-
-        caseRepo.save(c);
-        return ResponseEntity.ok(c);
-    }
+}
 }

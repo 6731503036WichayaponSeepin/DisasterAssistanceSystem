@@ -2,5 +2,5 @@
 package th.mfu.model.caseentity;
 
 public enum CaseStatus {
-    NEW, ASSIGNED, DONE
+    NEW, ASSIGNED,COMING, DONE
 }

@@ -44,6 +44,13 @@ public class AssistanceCase {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+        // ผูกทีมกู้ภัยที่รับเคส
+@Column(name = "assigned_rescue_team_id")
+private Long assignedRescueTeamId;
+
+public Long getAssignedRescueTeamId() { return assignedRescueTeamId; }
+public void setAssignedRescueTeamId(Long assignedRescueTeamId) { this.assignedRescueTeamId = assignedRescueTeamId; }
+
     // ===== getters / setters =====
 
     public Long getId() {
@@ -119,4 +126,5 @@ public class AssistanceCase {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+    
 }

@@ -9,4 +9,8 @@ import java.util.List;
 public interface AssistanceCaseRepository extends JpaRepository<AssistanceCase, Long> {
     List<AssistanceCase> findByStatus(CaseStatus status);
     List<AssistanceCase> findByReporterUserId(Long userId);
+
+    List<AssistanceCase> findByAssignedRescueTeamId(Long teamId);
+    List<AssistanceCase> findByAssignedRescueTeamIdAndStatus(Long teamId, CaseStatus status);
 }
+
