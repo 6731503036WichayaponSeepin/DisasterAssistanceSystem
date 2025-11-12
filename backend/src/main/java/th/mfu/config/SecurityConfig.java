@@ -29,8 +29,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/users/login",
                     "/api/users/register",
-                    "/api/rescue/login",
-                    "/api/rescue/register"
+                    "/api/rescues/login",
+                    "/api/rescues/register"
                 ).permitAll()
 
                 // 🔓 Static resources (HTML, CSS, JS)
