@@ -19,33 +19,54 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // ✅ ปิด CSRF (เพราะเราจะใช้ JWT ไม่ได้ใช้ session form)
+            // ✅ ปิด CSRF เพราะใช้ JWT
             .csrf(csrf -> csrf.disable())
 
-            // ✅ กำหนดสิทธิ์การเข้าถึงของแต่ละ path
+            // ✅ ตั้งค่าการอนุญาตการเข้าถึง
             .authorizeHttpRequests(auth -> auth
-                    // 🔹 เปิดให้เข้าถึงได้โดยไม่ต้องมี token (เช่น login/register)
-                    .requestMatchers(
-                            "/api/users/login",
-                            "/api/users/register",
-                            "/api/rescue/login",
-                            "/api/rescue/register"
-                    ).permitAll()
 
-                    // 🔹 เส้นทางของผู้ใช้ทั่วไป ต้อง role = USER
-                    .requestMatchers("/api/users/**", "/api/location/**").hasRole("USER")
+                // 🔓 Public endpoints (ไม่ต้อง login)
+                .requestMatchers(
+                    "/api/users/login",
+                    "/api/users/register",
+                    "/api/rescue/login",
+                    "/api/rescue/register"
+                ).permitAll()
 
-                    // 🔹 เส้นทางของกู้ภัย ต้อง role = RESCUE
-                    .requestMatchers("/api/rescue-teams/**", "/api/rescue/**").hasRole("RESCUE")
+                // 🔓 Static resources (HTML, CSS, JS)
+                .requestMatchers(
+                    "/", 
+                    "/index.html",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/assets/**",
+                    "/static/**"
+                ).permitAll()
 
-                    // 🔹 อื่น ๆ เปิดให้เข้าได้ (หรือจะเปลี่ยนเป็น authenticated() ก็ได้)
-                    .anyRequest().permitAll()
+                // 👤 USER role
+                .requestMatchers(
+                    "/api/users/**",
+                    "/api/address/**",
+                    "/api/location/**"
+                ).hasAuthority("ROLE_USER")
+
+                // 🚒 RESCUE role
+                .requestMatchers(
+                    "/api/rescue/**",
+                    "/api/rescue-teams/**"
+                ).hasAuthority("ROLE_RESCUE")
+
+                // ❌ ปฏิเสธทุก request อื่น
+                .anyRequest().denyAll()
             )
 
-            // ✅ ใช้ Stateless Session (เพราะ JWT ไม่มี session)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // ✅ Stateless session (JWT)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
 
-            // ✅ เพิ่ม filter JWT ก่อน AuthenticationFilter ปกติ
+            // ✅ ใช้ JWT Filter ก่อน UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

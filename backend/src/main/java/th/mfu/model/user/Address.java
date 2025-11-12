@@ -15,6 +15,9 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100, nullable = false)
+private String houseNumber;
+
     @Column(length = 255)
     private String moreDetails;
 
@@ -31,6 +34,9 @@ public class Address {
 
     // Getters & Setters
     public Long getId() { return id; }
+
+    public String getHouseNumber() { return houseNumber; }
+public void setHouseNumber(String houseNumber) { this.houseNumber = houseNumber; }
 
     public String getMoreDetails() { return moreDetails; }
     public void setMoreDetails(String moreDetails) { this.moreDetails = moreDetails; }

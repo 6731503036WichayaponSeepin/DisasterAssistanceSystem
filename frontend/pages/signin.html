@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - LinkLife</title>
+    <link rel="stylesheet" href="../css/style.css" />
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>Sign In</h1>
+
+        <form onsubmit="loginUser(event)">
+            <div>
+                <label for="name">ชื่อ - นามสกุล</label>
+                <input type="text" id="name" placeholder="เช่น ริน จันทร์" required />
+            </div>
+
+            <div>
+                <label for="phone">เบอร์โทรศัพท์</label>
+                <input type="tel" id="phone" placeholder="0812345678" required pattern="[0-9]{10}" />
+            </div>
+
+            <button type="submit">เข้าสู่ระบบ</button>
+        </form>
+
+        <p class="note">ยังไม่มีบัญชี? <a href="signup.html">สมัครสมาชิก</a></p>
+    </div>
+
+    <script>
+        async function loginUser(event) {
+            event.preventDefault();
+
+            // ✅ รับค่าจาก input
+            const name = document.getElementById("name").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+
+            // ✅ ตรวจสอบความถูกต้องเบื้องต้น
+            if (name.length < 2 || phone.length !== 10 || isNaN(phone)) {
+                alert("⚠️ กรุณากรอกข้อมูลให้ถูกต้อง");
+                return;
+            }
+
+            // ✅ เตรียม JSON ตาม backend
+            const loginData = {
+                name: name,
+                phone_number: phone
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/api/users/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // ✅ เก็บ token และข้อมูลก่อนแสดง alert
+                    localStorage.setItem("jwt_token", result.token);
+                    localStorage.setItem("user_name", result.name);
+                    localStorage.setItem("user_phone", result.phoneNumber);
+                    localStorage.setItem("user_role", result.role);
+                    localStorage.setItem("user_id", result.userId);
+
+                    // ✅ แสดง alert เสร็จ → redirect หลัง delay เล็กน้อย
+                    alert("✅ เข้าสู่ระบบสำเร็จ!");
+                    setTimeout(() => {
+                        const token = encodeURIComponent(result.token);
+                        window.location.href = `../pages/home.html?token=${token}`;
+                    }, 100);
+                } else {
+                    alert("❌ " + (result.message || "เข้าสู่ระบบไม่สำเร็จ"));
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+            }
+        }
+    </script>
+</body>
+
+</html>

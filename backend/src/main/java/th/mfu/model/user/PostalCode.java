@@ -1,5 +1,7 @@
 package th.mfu.model.user;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +21,8 @@ public class PostalCode {
     private String code;
 
     @ManyToOne
-    @JoinColumn(name = "subdistrict_id", nullable = false)
+    @JoinColumn(name = "subdistrict_id")
+    @JsonBackReference
     private Subdistrict subdistrict;
 
     public PostalCode() {}
