@@ -2,396 +2,275 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>User Home</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Request Type</title>
 <style>
   :root{
     --blue:#0A53E4;
-    --card:#FFFFFF;
-    --label:#111827;
-    --muted:#6B7280;
-    --btn-green:#16A34A;
-    --btn-green-press:#12833C;
-    --sos-red:#EF1616;
-    --sos-red-dark:#B70F0F;
-    --sus-yellow:#FACC15;
-    --sus-yellow-dark:#D4A90F;
+    --white:#FFFFFF;
+    --red:#F23535;
+    --yellow:#FFC928;
+    --subtext:#D1D5DB;
+    --card-radius:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     background:var(--blue);
-    display:flex;justify-content:center;
-    color:#111827;
-  }
-  .phone{
-    width:min(420px,100%);
-    min-height:100dvh;
-    background:var(--blue);
-    position:relative;
-    overflow:hidden;
-  }
-  /* Top appbar */
-  .appbar{
-    padding:18px 18px 70px;
     display:flex;
-    align-items:center;
-    justify-content:space-between;
-    color:#fff;
-  }
-  .appbar-title{
-    font-weight:700;
-    font-size:18px;
-  }
-  .menu-icon{
-    width:26px;height:18px;cursor:pointer;
-    display:flex;flex-direction:column;justify-content:space-between;
-  }
-  .menu-icon span{
-    display:block;height:3px;border-radius:999px;background:#fff;
-  }
-
-  /* White sheet */
-  .sheet{
-    position:absolute;
-    top:72px;
-    left:0;right:0;
-    background:#fff;
-    border-radius:22px 22px 0 0;
-    padding:18px 18px 40px;
-    min-height:calc(100dvh - 72px);
-  }
-
-  /* user card */
-  .user-card{
-    background:#ffffff;
-    border-radius:14px;
-    padding:14px 14px 16px;
-    box-shadow:0 8px 20px rgba(0,0,0,.18);
-    display:flex;
-    gap:12px;
+    justify-content:center;
     align-items:flex-start;
   }
-  .avatar-circle{
-    width:40px;height:40px;border-radius:999px;
-    border:2px solid #fff;
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.08);
+
+  /* กรอบจอมือถือ */
+  .phone{
+    width:320px;
+    min-height:100vh;
+    background:var(--blue);
     color:#fff;
-    flex-shrink:0;
   }
-  .avatar-circle span{
-    font-size:20px;
+
+  /* แถบหัว */
+  .appbar{
+    padding:24px 18px 20px;
   }
-  .user-info-top{
-    font-size:14px;
-    font-weight:600;
-    color:#111827;
-  }
-  .user-phone{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:2px;
-  }
-  .user-role{
-    font-size:12px;
-    color:#fff;
-    background:rgba(15,23,42,.9);
-    display:inline-block;
-    padding:1px 8px;
-    border-radius:999px;
-    margin-top:5px;
-  }
-  .address-row{
-    margin-top:10px;
+  .appbar-row{
     display:flex;
-    gap:8px;
+    align-items:center;
   }
-  .addr-btn{
-    flex:1;
-    border-radius:9px;
-    border:1px solid #cbd5f5;
-    background:#E5EDFF;
-    color:#111827;
-    height:32px;
+  .avatar{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    border:2px solid #fff;
     display:flex;
     align-items:center;
     justify-content:center;
+    margin-right:10px;
+  }
+  .avatar::before{
+    content:"";
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    border:2px solid #fff;
+    border-bottom:none;
+    box-shadow:0 10px 0 -6px #fff;
+  }
+
+  .user-text{
     font-size:13px;
-    gap:6px;
-    cursor:pointer;
+    line-height:1.4;
+    margin-right:auto;
   }
-  .addr-btn span.plus{
-    font-size:16px;font-weight:700;
+  .user-name{
+    font-size:13px;
+    font-weight:700;
   }
-  .addr-text{
+  .user-phone{
     font-size:11px;
-    color:var(--muted);
-    margin-top:4px;
+    color:var(--subtext);
   }
 
-  /* content section */
-  .content{
-    margin-top:26px;
-  }
-
-  .card-large{
-    border-radius:20px;
-    padding:18px 18px;
+  .menu-btn{
+    width:22px;
+    height:18px;
+    border:none;
+    background:none;
+    padding:0;
     display:flex;
+    flex-direction:column;
     justify-content:space-between;
-    align-items:center;
-    color:#fff;
-    box-shadow:0 10px 20px rgba(0,0,0,.25);
     cursor:pointer;
-    transition:transform .1s, box-shadow .1s, filter .1s;
   }
-  .card-large + .card-large{margin-top:18px;}
-  .card-large:active{
-    transform:scale(0.98);
-    box-shadow:0 6px 14px rgba(0,0,0,.25);
-    filter:brightness(0.95);
+  .menu-btn span{
+    height:2px;
+    border-radius:999px;
+    background:#fff;
   }
-  .card-title{
-    font-size:24px;
+
+  .appbar-bottom{
+    display:flex;
+    align-items:center;
+    margin-top:18px;
+  }
+  .role-label{
+    font-size:12px;
+    padding-left:5px;
+  }
+  .address-btn{
+    margin-left:auto;
+    display:inline-flex;
+    align-items:center;
+    font-size:11px;
+    background:#2466F0;
+    border-radius:4px;
+    border:1px solid #5C8CF5;
+    padding:6px 12px;
+    color:#E5E7EB;
+  }
+  .address-icon{
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    border:1px solid #E5E7EB;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    margin-right:6px;
+  }
+
+  /* ส่วนเนื้อหา */
+  .content{
+    background:var(--white);
+    border-radius:26px 26px 0 0;
+    padding:30px 18px 40px;
+    box-shadow:0 -8px 16px rgba(0,0,0,.15);
+    min-height:calc(100vh - 112px);
+  }
+
+  .card{
+    border-radius:var(--card-radius);
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 10px 18px rgba(0,0,0,.22);
+    color:#fff;
+  }
+  .card + .card{
+    margin-top:28px;
+  }
+  .card-red{background:var(--red);}
+  .card-yellow{
+    background:var(--yellow);
+    color:#111827;
+  }
+
+  .card-text-main{
+    font-size:26px;
     font-weight:800;
-    margin-bottom:4px;
+    letter-spacing:.04em;
   }
   .card-sub{
-    font-size:12px;
+    font-size:11px;
+    margin-top:6px;
+    opacity:.9;
   }
+
   .card-icon{
-    font-size:42px;
+    flex-shrink:0;
+    margin-left:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .card-icon svg{
+    display:block;
+    height:50px;   /* ปรับขนาดไอคอนได้จากตรงนี้ */
+    width:auto;
   }
 
-  .card-sos{background:var(--sos-red);}
-  .card-sustenance{background:var(--sus-yellow);color:#111827;}
-  .card-sustenance .card-sub{color:#1f2937;}
-
-  /* message area */
-  .msg{
-    margin-top:20px;
-    font-size:13px;
-    min-height:18px;
-  }
-  .msg.error{color:#DC2626;}
-  .msg.ok{color:#16A34A;}
-
-  @media (max-width:480px){
-    .appbar{padding-inline:14px;}
-    .sheet{padding-inline:14px;}
+  .card-yellow .card-sub{
+    color:#111827;
   }
 </style>
 </head>
 <body>
-<div class="phone">
-
-  <header class="appbar">
-    <div class="appbar-title">Disaster Assist</div>
-    <div class="menu-icon" aria-label="menu">
-      <span></span><span></span><span></span>
-    </div>
-  </header>
-
-  <main class="sheet">
-    <!-- user card -->
-    <section class="user-card">
-      <div class="avatar-circle">
-        <span>👤</span>
-      </div>
-      <div style="flex:1">
-        <div class="user-info-top" id="user-name">ชื่อผู้ใช้</div>
-        <div class="user-phone" id="user-phone">เบอร์โทร</div>
-        <div class="user-role" id="user-role">User</div>
-
-        <div class="address-row">
-          <button class="addr-btn" id="address-btn">
-            <span class="plus">＋</span>
-            <span>Address</span>
-          </button>
+  <div class="phone">
+    <header class="appbar">
+      <div class="appbar-row">
+        <div class="avatar"></div>
+        <div class="user-text">
+          <div class="user-name">นางสาว เจนจิรา อนุศรณ์</div>
+          <div class="user-phone">081-123-4567</div>
         </div>
-        <div class="addr-text" id="address-text">
-          ยังไม่มีที่อยู่ กรุณาเพิ่มที่อยู่สำหรับระบุตำแหน่งช่วยเหลือ
-        </div>
+        <button class="menu-btn" aria-label="menu">
+          <span></span><span></span><span></span>
+        </button>
       </div>
-    </section>
+      <div class="appbar-bottom">
+        <span class="role-label">User</span>
+        <button class="address-btn" type="button">
+          <span class="address-icon">+</span>
+          <span>Address</span>
+        </button>
+      </div>
+    </header>
 
-    <!-- main content -->
-    <section class="content">
-      <div class="card-large card-sos" id="btn-sos">
+    <main class="content">
+      <!-- SOS card -->
+      <div class="card card-red">
         <div>
-          <div class="card-title">SOS</div>
+          <div class="card-text-main">SOS</div>
           <div class="card-sub">Evacuate from the area</div>
         </div>
-        <div class="card-icon">🚤</div>
-      </div>
-
-      <div class="card-large card-sustenance" id="btn-sus">
-        <div>
-          <div class="card-title">Sustenance</div>
-          <div class="card-sub">Water / food / medicine</div>
+        <div class="card-icon">
+          <!-- SVG เรือ -->
+          <svg viewBox="0 0 152 72" xmlns="http://www.w3.org/2000/svg">
+            <mask id="mask0_113_1117" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="156" height="72">
+              <path d="M0 0H155.462V71.1053H0V0Z" fill="white"/>
+            </mask>
+            <g mask="url(#mask0_113_1117)">
+              <path d="M155.871 21.2074C148.073 20.299 140.326 18.4952 132.433 18.8612C132.528 20.6061 132.631 22.3315 132.745 24.0765C135.432 24.5405 138.138 24.9457 140.85 25.3182C141.009 27.9127 141.118 30.4942 141.188 33.0888C136.204 32.6574 131.239 32.0954 126.256 31.651C126.141 26.8736 125.841 22.1028 126.326 17.345C127.168 12.6591 132.222 9.73776 132.375 4.88849C130.997 2.28086 127.883 3.10432 125.522 2.79716C107.431 1.93448 89.3141 1.38551 71.2485 0H64.2227C59.3409 7.81635 53.7254 15.0968 48.7288 22.8217C33.4391 21.8544 18.2898 19.2337 3.00012 18.3384V26.5272C4.95919 34.7618 8.73056 42.6043 14.6588 48.5842C27.6831 62.3282 46.323 68.38 64.4524 70.6413H170.459C174.722 56.8777 178.283 42.8592 183.196 29.3244V25.2855C174.186 23.2987 164.965 22.6191 155.871 21.2074ZM96.0272 7.56801C105.153 8.04509 114.271 8.5091 123.41 8.88162C122.299 10.8161 120.959 12.6329 120.047 14.6655C119.932 20.0376 120.213 25.4227 120.091 30.7949C111.132 30.0041 102.224 28.8212 93.2577 28.0565C93.9342 21.1943 94.9424 14.3714 96.0272 7.56801ZM67.3623 6.79029C74.6434 5.6662 82.301 7.4373 89.7225 7.2347C89.129 13.927 87.9995 20.5604 87.087 27.22C76.4621 26.2527 65.8882 24.7235 55.2569 23.9327C59.2835 18.2077 63.0038 12.2408 67.3623 6.79029Z" fill="white"/>
+            </g>
+          </svg>
         </div>
-        <div class="card-icon">🧃</div>
       </div>
 
-      <div id="msg" class="msg"></div>
-    </section>
-  </main>
+      <!-- Sustenance card -->
+<div class="card card-yellow">
+  <div>
+    <div class="card-text-main">Sustenance</div>
+    <div class="card-sub">Water/food/medicine</div>
+  </div>
+
+  <div class="card-icon">
+    <!-- SVG sustenance แบบเต็ม -->
+    <svg width="100" height="101" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M87.9229 45.3208C87.4041 45.3208 87.0027 44.9199 87.0027 44.4018V36.3467H78.0103C77.4915 36.3467 77.0839 35.9396 77.0839 35.4215C77.0839 34.9034 77.4915 34.5025 78.0103 34.5025H87.9229C88.4417 34.5025 88.8493 34.9034 88.8493 35.4215V44.4018C88.8493 44.9199 88.4417 45.3208 87.9229 45.3208Z" fill="white"/>
+      <path d="M45.6414 20.0206C45.4562 20.0206 45.277 19.965 45.1103 19.854C44.7027 19.558 44.5915 18.9844 44.8879 18.5588C46.7902 15.9005 49.3594 14.4202 52.1202 14.4202C54.6709 14.4202 57.129 15.734 59.0003 18.1147C59.3153 18.5218 59.2412 19.0954 58.8521 19.4099C58.4445 19.7245 57.8701 19.6505 57.5551 19.2619C56.0358 17.3437 54.0965 16.2706 52.1202 16.2706C49.9709 16.2706 47.9575 17.4733 46.4011 19.632C46.2158 19.891 45.9379 20.0206 45.6414 20.0206Z" fill="white"/>
+      <path d="M45.6784 36.3466C45.1658 36.3466 44.7582 35.9395 44.7582 35.4214V33.4848C44.7582 31.949 43.5168 30.7154 41.9789 30.7154H35.3952C34.8826 30.7154 34.475 30.3084 34.475 29.7903C34.475 29.2722 34.8826 28.8651 35.3952 28.8651H41.9789C44.5358 28.8651 46.6048 30.9375 46.6048 33.4848V35.4214C46.6048 35.9395 46.1972 36.3466 45.6784 36.3466Z" fill="white"/>
+      <path d="M22.7281 24.0851C22.2093 24.0851 21.8016 23.6781 21.8016 23.16V19.5395C21.8016 18.6698 22.061 17.8372 22.5613 17.1587L28.2742 9.10364C28.4224 8.9001 28.4965 8.65956 28.4965 8.40051V7.32732C28.4965 6.8154 28.9041 6.40833 29.4229 6.40833C29.9417 6.40833 30.3494 6.8154 30.3494 7.32732V8.40051C30.3494 9.04813 30.1455 9.69574 29.775 10.1953L24.0621 18.2258C23.7842 18.6143 23.6359 19.0584 23.6359 19.5395V23.16C23.6359 23.6781 23.2283 24.0851 22.7095 24.0851H22.7281Z" fill="white"/>
+      <path d="M78.3438 36.3466C77.825 36.3466 77.4174 35.9395 77.4174 35.4214V24.7265H57.7774V35.4214C57.7774 35.9395 57.3698 36.3466 56.851 36.3466C56.3322 36.3466 55.9246 35.9395 55.9246 35.4214V23.8075C55.9246 23.2895 56.3322 22.8824 56.851 22.8824H78.3438C78.8626 22.8824 79.2702 23.2895 79.2702 23.8075V35.4214C79.2702 35.9395 78.8626 36.3466 78.3438 36.3466Z" fill="white"/>
+      <path d="M81.5802 13.0941H60.0874C59.5686 13.0941 59.1671 12.6871 59.1671 12.169V6.83386C59.1671 6.31576 59.5686 5.90869 60.0874 5.90869H81.5802C82.099 5.90869 82.5066 6.31576 82.5066 6.83386V12.169C82.5066 12.6871 82.099 13.0941 81.5802 13.0941ZM61.0138 11.2438H80.6538V7.75285H61.0138V11.2438Z" fill="white"/>
+      <path d="M78.3438 24.7266C78.3438 24.7266 78.1771 24.7266 78.103 24.6896C77.6027 24.56 77.3248 24.0481 77.4545 23.5485L80.6907 11.9285C80.8204 11.4289 81.3207 11.1513 81.8395 11.2808C82.3398 11.4104 82.6177 11.9285 82.488 12.428L79.2517 24.0481C79.1405 24.449 78.77 24.7266 78.3624 24.7266H78.3438Z" fill="white"/>
+      <path d="M56.851 24.7266C56.851 24.7266 56.6842 24.7266 56.6101 24.6896C56.1099 24.56 55.8381 24.0481 55.9616 23.5485L59.2041 11.9285C59.3276 11.4289 59.8464 11.1513 60.3467 11.2808C60.8469 11.4104 61.1248 11.9285 60.9951 12.428L57.7589 24.0481C57.6477 24.449 57.2771 24.7266 56.8695 24.7266H56.851Z" fill="white"/>
+      <path d="M84.8164 36.3466C84.2976 36.3466 83.89 35.9395 83.89 35.4214V23.9371L80.6908 12.428C80.5611 11.9284 80.839 11.4288 81.3393 11.2808C81.8396 11.1328 82.3398 11.4288 82.488 11.9284L85.7243 23.567C85.7243 23.567 85.7614 23.7335 85.7614 23.8075V35.4214C85.7614 35.9395 85.3538 36.3466 84.835 36.3466H84.8164Z" fill="white"/>
+      <path d="M69.2094 21.5502C67.2454 21.5502 65.6396 19.9465 65.6396 17.9852C65.6396 16.03 67.2454 14.4202 69.2094 14.4202C71.1673 14.4202 72.7792 16.03 72.7792 17.9852C72.7792 19.9465 71.1673 21.5502 69.2094 21.5502ZM69.2094 16.2706C68.2645 16.2706 67.4863 17.0477 67.4863 17.9852C67.4863 18.9289 68.2645 19.706 69.2094 19.706C70.1482 19.706 70.9264 18.9289 70.9264 17.9852C70.9264 17.0477 70.1482 16.2706 69.2094 16.2706Z" fill="white"/>
+      <mask id="mask0_761_515" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="26" y="0" width="17" height="10">
+        <path d="M26.7054 0H42.5163V9.13446H26.7054V0Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask0_761_515)">
+        <path d="M40.2805 8.25247H28.1074C27.5948 8.25247 27.1871 7.8454 27.1871 7.3273V4.61349C27.1871 2.0662 29.2561 0 31.8069 0H36.581C39.1317 0 41.2069 2.0662 41.2069 4.61349V7.3273C41.2069 7.8454 40.7993 8.25247 40.2805 8.25247ZM29.0523 6.40831H39.3726V4.61349C39.3726 3.08388 38.1374 1.84416 36.5995 1.84416H31.8254C30.2937 1.84416 29.0523 3.08388 29.0523 4.61349V6.40831Z" fill="white"/>
+      </g>
+      <path d="M14.4212 36.3467C14.0877 36.3467 13.7789 36.1801 13.6121 35.8656C12.5189 33.8734 12.241 31.986 12.7598 30.2529C13.223 28.7171 14.3656 27.3726 15.8849 26.5769C16.7557 26.0958 17.713 25.8553 18.4912 25.8923C18.658 25.8923 18.8247 25.9293 19.01 25.9478C19.3065 25.9848 19.6029 26.0218 19.8253 25.9848C20.1402 25.9478 20.4367 25.8923 20.7332 25.7998C21.2643 25.6333 21.7275 25.3742 22.1537 25.0411L22.3945 24.8746C22.5798 24.7266 22.7651 24.5231 22.9504 24.3072C23.006 24.2332 23.0615 24.1592 23.1171 24.0481L23.3024 23.6966C23.4136 23.493 23.5247 23.271 23.6544 23.0675C24.5932 21.6797 26.9463 20.3536 29.2747 20.5202C30.9237 20.6312 33.215 21.4762 34.9011 24.9301C36.8034 28.8652 36.6551 32.8927 36.1734 35.5695C36.0808 36.0691 35.599 36.4022 35.0988 36.3282C34.6047 36.2356 34.2712 35.7546 34.3453 35.255C34.7714 32.8372 34.9196 29.2352 33.215 25.7258C32.1775 23.6041 30.8125 22.4754 29.1265 22.3643C27.2428 22.2348 25.6308 23.419 25.1861 24.0851C25.0935 24.2332 25.0194 24.3997 24.9267 24.5601L24.7414 24.9301C24.6673 25.0782 24.5562 25.2262 24.4512 25.3927C24.1362 25.7998 23.8397 26.0958 23.5433 26.3364C23.4136 26.4289 23.3209 26.5029 23.1912 26.5769C22.691 26.984 22.0425 27.317 21.2828 27.5761C20.8629 27.7056 20.4552 27.7981 20.0291 27.8351C19.6029 27.8907 19.1768 27.8351 18.7877 27.7981C18.6395 27.7981 18.5098 27.7611 18.3615 27.7611C18.0465 27.7426 17.4598 27.8536 16.7743 28.2175C15.6811 28.7911 14.8659 29.7348 14.5323 30.808C14.1618 32.0416 14.3841 33.4478 15.2364 34.9959C15.4773 35.44 15.3105 36.0136 14.8659 36.2541C14.7176 36.3282 14.5694 36.3652 14.4212 36.3652V36.3467Z" fill="white"/>
+      <path d="M16.3297 28.31C16.1629 28.31 15.9962 28.273 15.8479 28.1805C14.0013 27.058 12.8711 25.0781 12.482 22.3643C12.4264 21.9572 12.6487 21.5502 13.0378 21.3836C18.0281 19.2249 22.7837 21.1061 24.7415 23.9741C24.9268 24.2516 24.9639 24.597 24.8156 24.9116C24.723 25.0966 24.5933 25.2817 24.4883 25.4482C24.1918 25.7997 23.8954 26.1143 23.5804 26.3733C23.4692 26.4659 23.3581 26.5399 23.2469 26.6139C22.7466 27.021 22.0796 27.3725 21.32 27.6131C20.9 27.7426 20.4924 27.8351 20.0662 27.8721C19.6401 27.9215 19.2139 27.8721 18.8248 27.8351C18.6766 27.8351 18.5469 27.7981 18.3987 27.7981C18.0837 27.7981 17.497 27.8906 16.8114 28.2545C16.6632 28.3285 16.515 28.3655 16.3667 28.3655L16.3297 28.31ZM14.4213 22.8084C14.7548 24.3997 15.4033 25.5592 16.4038 26.3363C17.1264 26.0218 17.8799 25.8738 18.4913 25.9108C18.6581 25.9108 18.8433 25.9478 19.0101 25.9663C19.3251 26.0033 19.603 26.0403 19.8253 26.0033C20.1403 25.9663 20.4368 25.9108 20.7332 25.8182C21.2644 25.6517 21.7276 25.3927 22.1537 25.0596C22.302 24.9671 22.3575 24.9116 22.4131 24.8746C22.5428 24.7636 22.6911 24.634 22.8208 24.486C21.3941 22.9379 18.269 21.4206 14.4398 22.7899L14.4213 22.8084Z" fill="white"/>
+      <path d="M87.9601 89.4511H65.9546C65.4358 89.4511 65.0282 89.044 65.0282 88.5259C65.0282 88.0078 65.4358 87.6008 65.9546 87.6008H87.0398V71.0527C87.0398 70.5346 87.4227 70.1275 87.9415 70.1275C88.4603 70.1275 88.8679 70.5346 88.8679 71.0527V88.5259C88.8679 88.7665 88.7938 89.007 88.6085 89.1736C88.4418 89.3401 88.2009 89.4511 87.9601 89.4511Z" fill="white"/>
+      <path d="M10.3018 70.7566C9.78299 70.7566 9.37537 70.3495 9.37537 69.8315V35.4215C9.37537 35.181 9.44948 34.9404 9.63476 34.7801C9.80152 34.6135 10.0424 34.5025 10.2833 34.5025H69.58C70.0926 34.5025 70.5002 34.9034 70.5002 35.4215C70.5002 35.9396 70.0926 36.3467 69.58 36.3467H11.2035V69.8315C11.2035 70.3495 10.8144 70.7566 10.3018 70.7566Z" fill="white"/>
+      <mask id="mask1_761_515" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="50" y="62" width="47" height="11">
+        <path d="M50.4218 62.8187H96.8351V72.2923H50.4218V62.8187Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask1_761_515)">
+        <path d="M99.0214 71.9778H55.9246C53.5962 71.9778 51.7125 70.0904 51.7125 67.7652C51.7125 65.4399 53.5962 63.5526 55.9246 63.5526C56.4434 63.5526 56.851 63.9597 56.851 64.4778C56.851 64.9959 56.4434 65.4029 55.9246 65.4029C54.6153 65.4029 53.5592 66.4515 53.5592 67.7652C53.5592 69.0789 54.6153 70.1274 55.9246 70.1274H98.095V64.1447C98.095 63.6266 98.5026 63.2195 99.0214 63.2195C99.5402 63.2195 99.9479 63.6266 99.9479 64.1447V71.0526C99.9479 71.5707 99.5402 71.9778 99.0214 71.9778Z" fill="white"/>
+      </g>
+      <path d="M51.5272 52.2841C49.1927 52.2841 47.309 50.4029 47.309 48.0777C47.309 45.7463 49.1927 43.8836 51.5272 43.8836H73.4956C73.3289 42.5699 72.5939 41.5029 70.1111 39.1529C67.3936 35.921 69.0056 33.3367 70.4632 31.6714C71.3155 30.6969 72.8533 30.5674 73.8662 31.3816C76.4972 33.4478 78.6959 34.8848 80.3943 35.6805C82.1174 36.4761 83.6862 37.7344 85.0202 39.4305C85.7984 40.4112 86.5395 41.4844 87.2374 42.6254C87.7377 43.4025 88.6456 43.8836 89.6276 43.8836H99.0029C99.5217 43.8836 99.9293 44.2907 99.9293 44.8088V48.6698C99.9293 49.1817 99.5217 49.5888 99.0029 49.5888C98.4841 49.5888 98.0765 49.1817 98.0765 48.6698V45.7278H89.6276C88.0156 45.7278 86.5025 44.9198 85.6687 43.6061C85.0017 42.5144 84.2791 41.5029 83.5627 40.5777C82.3954 39.0974 81.0613 38.0304 79.6038 37.3643C77.7695 36.5131 75.4411 34.9774 72.7051 32.8372C72.4457 32.6336 72.0566 32.6706 71.8342 32.9112C70.1111 34.8848 69.9999 36.1986 71.4452 37.9194C74.6073 40.8922 75.4226 42.3293 75.367 44.8458C75.367 45.3392 74.9408 45.7463 74.4406 45.7463H51.5087C50.1932 45.7463 49.1371 46.801 49.1371 48.0962C49.1371 49.3853 50.1932 50.4585 51.5087 50.4585C52.0275 50.4585 52.4289 50.8655 52.4289 51.3836C52.4289 51.9017 52.0275 52.3026 51.5087 52.3026L51.5272 52.2841Z" fill="white"/>
+      <path d="M65.4914 65.4029H48.5133C46.1973 65.4029 44.295 63.5156 44.295 61.1904C44.295 58.8651 46.1788 56.9778 48.5133 56.9778C49.0259 56.9778 49.4336 57.3849 49.4336 57.9029C49.4336 58.421 49.0259 58.8281 48.5133 58.8281C47.2163 58.8281 46.1417 59.8766 46.1417 61.1904C46.1417 62.5041 47.1978 63.5526 48.5133 63.5526H65.4914C66.0102 63.5526 66.4117 63.9597 66.4117 64.4778C66.4117 64.9959 66.0102 65.4029 65.4914 65.4029Z" fill="white"/>
+      <path d="M65.4914 58.8466H44.8694C42.5534 58.8466 40.6511 56.9593 40.6511 54.634C40.6511 52.3026 42.5348 50.4214 44.8694 50.4214H65.4914C66.0102 50.4214 66.4116 50.8285 66.4116 51.3466C66.4116 51.8647 66.0102 52.2656 65.4914 52.2656H44.8694C43.5724 52.2656 42.4978 53.3203 42.4978 54.634C42.4978 55.9416 43.5539 56.9963 44.8694 56.9963H65.4914C66.0102 56.9963 66.4116 57.4034 66.4116 57.9214C66.4116 58.4395 66.0102 58.8466 65.4914 58.8466Z" fill="white"/>
+      <mask id="mask2_761_515" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="73" width="62" height="28">
+        <path d="M0 73.8713H61.4892V100.072H0V73.8713Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask2_761_515)">
+        <path d="M0.111206 78.5711L11.1108 74.4141C12.4819 73.896 14.0013 73.9145 15.3476 74.4881L25.2417 78.5341L37.5816 82.2286C38.2857 82.4322 38.8539 82.9132 39.1874 83.5732C39.5209 84.2208 39.5765 84.9794 39.3356 85.6641C39.2615 85.8861 39.1503 86.1081 39.0206 86.2932C38.9465 86.3672 38.8909 86.4412 38.8539 86.5152C38.193 87.2862 37.0999 87.6378 36.0623 87.3232L20.1032 82.5802C19.603 82.4322 19.1027 82.7097 18.9545 83.2093C18.8063 83.7027 19.0842 84.2023 19.5844 84.3503L35.5435 89.0995C37.2481 89.6176 39.0392 89.0625 40.1694 87.8228L58.1109 85.405C59.6241 85.183 61.0322 86.2007 61.3102 87.6933C61.6066 89.229 60.5876 90.7216 59.0559 91.0177L32.474 95.8594C29.9788 96.322 27.4281 96.0259 25.0935 95.0452L12.9451 89.9507C12.0187 89.5621 11.0182 89.3586 10.0053 89.3586C9.28271 89.3586 8.54158 89.4696 7.80045 89.6731L0.129734 92.72V78.5896L0.111206 78.5711ZM59.0559 94.6752L32.4554 99.5169C29.9973 99.9794 27.4466 99.7019 25.0935 98.7212L12.9451 93.6266C11.3146 92.9605 9.57916 92.8495 7.78192 93.3491L0.111206 96.396V94.6937L8.37482 91.4063C9.63475 91.0547 10.9997 91.1287 12.2225 91.6468L24.3771 96.7475C26.2052 97.5185 28.163 97.9071 30.127 97.9071C31.0164 97.9071 31.9181 97.8331 32.8075 97.6665L59.3832 92.831C60.1243 92.683 60.7914 92.3499 61.3657 91.9243C61.3657 93.2751 60.3837 94.4346 59.0559 94.7122V94.6752Z" fill="white"/>
+      </g>
+      <path d="M43.5354 30.7155H41.979C41.4664 30.7155 41.0587 30.2899 41.0587 29.7718C41.0587 29.2537 41.4664 28.8466 41.979 28.8466H43.5354C44.2024 28.8466 44.7582 28.3101 44.7582 27.6501V19.5395C44.7582 19.0584 44.61 18.6143 44.3321 18.2073L38.613 10.1768C38.2486 9.65874 38.0448 9.02963 38.0448 8.40051V7.32732C38.0448 6.8154 38.4462 6.40833 38.965 6.40833C39.4838 6.40833 39.8915 6.8154 39.8915 7.32732V8.40051C39.8915 8.65956 39.9656 8.9001 40.1138 9.12214L45.8082 17.1587C46.3084 17.8557 46.5678 18.6883 46.5678 19.5395V27.6501C46.5678 29.3277 45.2029 30.7155 43.4983 30.7155H43.5354Z" fill="white"/>
+    </svg>
+  </div>
 </div>
 
-<script>
-/* ====== CONFIG ====== */
-const API_BASE  = "http://localhost:8080";
-const API_USERS = API_BASE + "/api/users";
-const API_CASES = API_BASE + "/api/cases";
-
-/* ====== STATE ====== */
-let authToken = null;
-let currentLat = null;
-let currentLon = null;
-let userAddressId = null;
-
-/* ====== UTIL ====== */
-function setMsg(text, type = "error") {
-  const el = document.getElementById("msg");
-  el.className = "msg " + (type === "ok" ? "ok" : "error");
-  el.textContent = text || "";
-}
-
-function getTokenFromAnywhere() {
-  const fromLS = localStorage.getItem("authToken");
-  if (fromLS) return fromLS;
-  const qsToken = new URLSearchParams(location.search).get("token");
-  if (qsToken) {
-    try { localStorage.setItem("authToken", qsToken); } catch(e){}
-    return qsToken;
-  }
-  return null;
-}
-
-/* ====== LOAD PROFILE ====== */
-async function loadProfile() {
-  authToken = getTokenFromAnywhere();
-  if (!authToken) {
-    setMsg("ไม่พบโทเค็น กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
-    return;
-  }
-
-  try {
-    const res = await fetch(API_USERS + "/me", {
-      headers: { "Authorization": "Bearer " + authToken }
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMsg(data.message || data.error || "โหลดข้อมูลผู้ใช้ไม่สำเร็จ");
-      return;
-    }
-
-    document.getElementById("user-name").textContent  = data.name || "-";
-    document.getElementById("user-phone").textContent = data.phoneNumber || "-";
-    document.getElementById("user-role").textContent  = data.role || "User";
-
-    if (data.address) {
-      userAddressId = data.address.id || null;
-      const parts = [
-        data.address.houseNumber,
-        data.address.subdistrict,
-        data.address.moreDetails
-      ].filter(Boolean);
-      document.getElementById("address-text").textContent =
-        parts.length ? parts.join(" | ") : "ที่อยู่ยังไม่สมบูรณ์";
-    } else {
-      userAddressId = null;
-      document.getElementById("address-text").textContent =
-        "ยังไม่มีที่อยู่ กรุณาเพิ่มที่อยู่สำหรับระบุตำแหน่งช่วยเหลือ";
-    }
-
-  } catch (err) {
-    console.error(err);
-    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-  }
-}
-
-/* ====== GEOLOCATION ====== */
-function initGeolocation() {
-  if (!("geolocation" in navigator)) {
-    setMsg("เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง", "error");
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      currentLat = pos.coords.latitude;
-      currentLon = pos.coords.longitude;
-      console.log("Location:", currentLat, currentLon);
-    },
-    err => {
-      console.warn(err);
-      setMsg("ไม่สามารถดึงตำแหน่งอัตโนมัติได้ กรุณาอนุญาต location", "error");
-    },
-    { enableHighAccuracy:true, timeout:10000 }
-  );
-}
-
-/* ====== REPORT CASE ====== */
-async function sendCase(caseType) {
-  if (!authToken) {
-    setMsg("ไม่พบโทเค็น กรุณาเข้าสู่ระบบใหม่", "error");
-    return;
-  }
-  if (currentLat == null || currentLon == null) {
-    setMsg("ยังไม่มีพิกัดตำแหน่ง กรุณาเปิด location หรือรอสักครู่", "error");
-    return;
-  }
-
-  setMsg("กำลังส่งคำขอช่วยเหลือ...", "ok");
-
-  try {
-    const res = await fetch(API_CASES + "/report", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":"Bearer " + authToken
-      },
-      body: JSON.stringify({
-        latitude: currentLat,
-        longitude: currentLon,
-        reporterAddressId: userAddressId,
-        caseType: caseType   // "SOS" หรือ "SUSTENANCE"
-      })
-    });
-
-    const data = await res.json().catch(()=> ({}));
-    if (!res.ok) {
-      setMsg(data.message || data.error || "แจ้งเคสไม่สำเร็จ", "error");
-      return;
-    }
-
-    console.log("Case saved:", data);
-    setMsg("ส่งคำขอ " + caseType + " สำเร็จแล้ว", "ok");
-
-  } catch (err) {
-    console.error(err);
-    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", "error");
-  }
-}
-
-/* ====== EVENTS ====== */
-document.getElementById("btn-sos").addEventListener("click", () => {
-  sendCase("SOS");
-});
-document.getElementById("btn-sus").addEventListener("click", () => {
-  sendCase("SUSTENANCE");
-});
-document.getElementById("address-btn").addEventListener("click", () => {
-  // แก้ตรงนี้ให้ลิงก์ไปหน้าแก้ที่อยู่ของโปรเจ็กต์จริง ๆ
-  window.location.href = "/pages/address.html";
-});
-
-/* ====== INIT ====== */
-loadProfile();
-initGeolocation();
-</script>
+    </main>
+  </div>
 </body>
 </html>
