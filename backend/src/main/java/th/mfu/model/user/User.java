@@ -16,9 +16,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔹 ใช้เบอร์โทรแทนการระบุตัวตน (unique)
-    @Column(nullable = false, unique = true, length = 10)
-    private String phoneNumber;
+   
 
     // 🔹 ผู้ใช้เชื่อมกับข้อมูลส่วนกลาง (Detail)
     @ManyToOne
@@ -36,8 +34,8 @@ public class User {
 
     public User() {}
 
-    public User(String phoneNumber, Address address, Detail detail, String role) {
-        this.phoneNumber = phoneNumber;
+    public User( Address address, Detail detail, String role) {
+        
         this.address = address;
         this.detail = detail;
         this.role = role;
@@ -46,9 +44,7 @@ public class User {
     // ✅ Getters & Setters
     public Long getId() { return id; }
 
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
+    
     public Address getAddress() { return address; }
     public void setAddress(Address address) { this.address = address; }
 

@@ -16,6 +16,9 @@ public class Detail {
     @Column(nullable = false, length = 255)
     private String name;
 
+    @Column(nullable = false, unique = true, length = 10)
+    private String phoneNumber;
+
     public Long getId() {
         return id;
     }
@@ -31,4 +34,8 @@ public class Detail {
     public void setName(String name) {
         this.name = name;
     }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+ 
 }

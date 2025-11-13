@@ -131,53 +131,59 @@ public class RescueController {
         return response;
     }
 
-    // ✅ 5️⃣ Login (ชื่อ + รหัสกู้ภัย)
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> loginRescue(@RequestBody Map<String, String> loginData) {
-        String name = loginData.get("name");
-        String rescueId = loginData.get("rescueId");
+   // ต้องมี @Autowired DetailRepository detailRepo; อยู่บนคลาสนี้ด้วยนะ
 
-        Map<String, Object> response = new HashMap<>();
+@PostMapping("/login")
+public ResponseEntity<Map<String, Object>> loginRescue(@RequestBody Map<String, String> loginData) {
+    String name        = loginData.get("name");
+    String phoneNumber = loginData.get("phone_number"); // ให้ frontend ส่ง key ชื่อนี้มา
 
-        if (name == null || rescueId == null) {
-            response.put("status", "error");
-            response.put("message", "Missing name or rescueId");
-            return ResponseEntity.badRequest().body(response);
-        }
+    Map<String, Object> response = new HashMap<>();
 
-        Optional<Rescue> optRescue = rescueRepo.findByRescueId(rescueId);
-        if (optRescue.isEmpty()) {
-            response.put("status", "error");
-            response.put("message", "Rescue ID not found");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        Rescue rescue = optRescue.get();
-
-        // ✅ ตรวจชื่อให้ตรงกับ Detail ที่เชื่อมอยู่
-        String realName = (rescue.getDetail() != null) ? rescue.getDetail().getName() : rescue.getName();
-
-        if (realName != null && realName.equalsIgnoreCase(name)) {
-            // ✅ สร้าง JWT Token
-            String token = jwtUtil.generateToken(rescueId, "RESCUE");
-
-            response.put("status", "success");
-            response.put("message", "Login successful");
-            response.put("token", token); // ✅ เพิ่ม token กลับไปให้ frontend ใช้
-            response.put("role", "RESCUE");
-            response.put("rescueDbId", rescue.getId());
-            response.put("rescueId", rescue.getRescueId());
-            response.put("name", realName);
-            response.put("unit", rescue.getAffiliatedUnit() != null ? rescue.getAffiliatedUnit().getUnitName() : "-");
-            response.put("navigateTo", "/mainPageRescue"); // ✅ หลัง login ไปหน้าหลักของ Rescue
-
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("status", "error");
-            response.put("message", "Invalid name or rescueId");
-            return ResponseEntity.status(401).body(response);
-        }
+    if (name == null || phoneNumber == null) {
+        response.put("status", "error");
+        response.put("message", "Missing name or phone number");
+        return ResponseEntity.badRequest().body(response);
     }
+
+    // 1) หา Detail จาก name + phoneNumber
+    Optional<Detail> optDetail = detailRepo.findByNameAndPhoneNumber(name, phoneNumber);
+    if (optDetail.isEmpty()) {
+        response.put("status", "error");
+        response.put("message", "Invalid name or phone number");
+        return ResponseEntity.status(401).body(response);
+    }
+    Detail detail = optDetail.get();
+
+    // 2) หา Rescue ที่ใช้ Detail นี้
+    Optional<Rescue> optRescue = rescueRepo.findByDetail(detail);
+    if (optRescue.isEmpty()) {
+        response.put("status", "error");
+        response.put("message", "Rescue account not found for this detail");
+        return ResponseEntity.status(404).body(response);
+    }
+
+    Rescue rescue = optRescue.get();
+
+    // 3) สร้าง JWT Token
+    //    👉 ยังใช้ rescueId เป็น subject ได้เหมือนเดิม
+    String token = jwtUtil.generateToken(rescue.getRescueId(), "RESCUE");
+
+    response.put("status", "success");
+    response.put("message", "Login successful");
+    response.put("token", token);
+    response.put("role", "RESCUE");
+    response.put("rescueDbId", rescue.getId());
+    response.put("rescueId", rescue.getRescueId());
+    response.put("name", detail.getName());
+    response.put("unit", rescue.getAffiliatedUnit() != null
+            ? rescue.getAffiliatedUnit().getUnitName()
+            : "-");
+    response.put("navigateTo", "/mainPageRescue");
+
+    return ResponseEntity.ok(response);
+}
+
 
     // ✅ 6️⃣ หน้า Main ของ Rescue (แสดงข้อมูลตนเอง)
     @GetMapping("/main/{id}")
