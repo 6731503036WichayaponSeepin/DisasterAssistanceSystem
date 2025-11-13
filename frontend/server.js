@@ -30,7 +30,9 @@ app.use("/js", express.static(jsPath));
 app.get("/", (req, res) => {
     res.sendFile(path.join(pagesPath, "signupUser.html"));
 });
-
+app.get("/signupRescue", (req, res) => {
+    res.sendFile(path.join(pagesPath, "signupRescue.html"));
+});
 app.get("/signup.html", (req, res) => {
     res.sendFile(path.join(pagesPath, "signup.html"));
 });

@@ -7,6 +7,7 @@
 <style>
   :root{
     --blue:#0A53E4;
+    --red:#B80000;
     --card:#FFFFFF;
     --label:#111827;
     --input-bg:#EDEFF2;
@@ -14,47 +15,118 @@
     --green:#16A34A;
     --green-press:#12833C;
   }
+
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
+
   body{
     font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    background:var(--blue);
-    display:flex;align-items:center;justify-content:center;
+    background:var(--blue); /* เริ่มต้นเป็น user = ฟ้า */
+    display:flex;
+    align-items:center;
+    justify-content:center;
     padding:20px;
+    transition:background 0.3s ease;
   }
+
   .card{
     width:100%;
-    max-width:360px;
+    max-width:400px;
     background:var(--card);
-    border-radius:12px;
-    padding:26px 20px;
-    box-shadow:0 10px 24px rgba(0,0,0,.18);
+    border-radius:20px;
+    padding:32px 26px 20px;
+    box-shadow:0 12px 28px rgba(0,0,0,.18);
   }
+
   .title{
-    text-align:center;font-weight:800;font-size:26px;margin-bottom:18px;color:#111827;
+    text-align:center;
+    font-weight:800;
+    font-size:28px;
+    margin-bottom:20px;
+    color:#111827;
   }
-  .field{margin-bottom:14px}
-  label{display:block;font-size:14px;color:var(--label);margin:0 0 6px 2px}
+
+  .field{margin-bottom:16px}
+  label{
+    display:block;
+    font-size:14px;
+    color:var(--label);
+    margin:0 0 6px 2px;
+  }
   input{
-    width:100%;height:42px;border:none;outline:none;border-radius:8px;
-    padding:0 12px;background:var(--input-bg);color:var(--input-text);font-size:15px;
+    width:100%;
+    height:42px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    padding:0 12px;
+    background:var(--input-bg);
+    color:var(--input-text);
+    font-size:15px;
   }
+
+  .role-toggle{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    margin-bottom:14px;
+    font-size:14px;
+  }
+  .role-toggle label{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    cursor:pointer;
+  }
+
   .btn{
-    width:100%;height:44px;border:none;outline:none;border-radius:8px;
-    background:var(--green);color:#fff;font-weight:700;cursor:pointer;margin-top:10px;
-    transition:background .2s,opacity .2s;
+    width:100%;
+    height:44px;
+    border:none;outline:none;
+    border-radius:10px;
+    background:var(--green);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:8px;
+    transition:background 0.2s;
   }
-  .btn:active{background:var(--green-press)}
-  .btn[disabled]{opacity:.7;cursor:not-allowed}
-  .msg{min-height:20px;font-size:13px;margin-top:8px}
-  .msg.error{color:#DC2626}
-  .msg.ok{color:#16A34A}
+  .btn:active{ background:var(--green-press); }
+
+  .error{color:#DC2626;font-size:13px;margin-top:6px}
+  .ok{color:#16A34A;font-size:13px;margin-top:6px}
+
+  .links{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-top:18px;
+    padding:0 4px 4px;
+  }
+  .links a{
+    text-decoration:none;
+    color:#111827;
+  }
+  .links a:hover{text-decoration:underline;}
+
+  @media (max-width:480px){
+    .card{padding:24px 18px 18px;}
+    .title{font-size:24px;}
+    input{height:38px;font-size:14px;}
+    .btn{height:40px;font-size:15px;}
+  }
 </style>
 </head>
 <body>
 
 <section class="card" role="form" aria-labelledby="title">
   <h1 id="title" class="title">Sign in</h1>
+
+  <!-- เลือกว่าจะล็อกอินเป็น User หรือ Rescue -->
+  <div class="role-toggle">
+    <label><input type="radio" name="role" value="USER" checked> User</label>
+    <label><input type="radio" name="role" value="RESCUE"> Rescue</label>
+  </div>
 
   <div class="field">
     <label for="name">Name</label>
@@ -67,76 +139,107 @@
   </div>
 
   <button id="confirm" class="btn">Confirm</button>
-  <div id="msg" class="msg" aria-live="polite"></div>
+  <div id="msg" aria-live="polite"></div>
+
+  <div class="links">
+    <a href="/pages/signup-user.html">User Sign up</a>
+    <a href="/pages/signup-rescue.html">Rescue Sign up</a>
+  </div>
 </section>
 
 <script>
-const API_BASE  = "http://localhost:8080/api/users";
-const LOGIN_PATH = API_BASE + "/login";
+const USER_LOGIN_API   = "http://localhost:8080/api/users/login";
+const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
 
-function setMsg(text, type="error"){
+const HOME_USER_PAGE   = "/pages/homeUser.html";
+const HOME_RESCUE_PAGE = "/pages/homeRescue.html";
+
+function extractToken(j) {
+  if (!j) return null;
+  return j.token || j.jwt || j.accessToken || (j.data && j.data.token);
+}
+
+function showMsg(t, type="error"){
   const el = document.getElementById("msg");
-  el.className = "msg " + (type === "ok" ? "ok" : "error");
-  el.textContent = text || "";
+  el.className = type==="ok" ? "ok" : "error";
+  el.textContent = t;
 }
-function persistAndGo(token){
-  try{ localStorage.setItem("authToken", token); }catch(e){}
-  window.location.href = "/pages/home.html?token=" + encodeURIComponent(token);
+
+function getRole(){
+  return document.querySelector("input[name='role']:checked").value;
 }
-function validate(name, phone){
-  if(!name || name.trim().length < 2) return "กรุณากรอกชื่อให้ถูกต้อง";
-  if(!/^0\d{9}$/.test(phone)) return "กรุณากรอกเบอร์โทร 10 หลักที่ถูกต้อง (เช่น 0812345678)";
-  return null;
+
+function updateBackground(){
+  const role = getRole();
+  document.body.style.background = role==="RESCUE" ? "var(--red)" : "var(--blue)";
 }
-async function doLogin(){
-  const btn   = document.getElementById("confirm");
+document.querySelectorAll("input[name='role']").forEach(rb =>
+  rb.addEventListener("change", updateBackground)
+);
+updateBackground();
+
+document.getElementById("confirm").addEventListener("click", async e=>{
+  e.preventDefault();
+
   const name  = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
+  const role  = getRole();
 
-  const v = validate(name, phone);
-  if (v){ setMsg(v); return; }
+  if (!name || !phone){
+    showMsg("กรุณากรอกข้อมูลให้ครบ");
+    return;
+  }
 
-  setMsg("กำลังเข้าสู่ระบบ...", "ok");
-  btn.disabled = true;
+  showMsg("กำลังเข้าสู่ระบบ...", "ok");
+
+  let url = (role==="USER") ? USER_LOGIN_API : RESCUE_LOGIN_API;
+
+  // ⭐ ใช้รูปแบบ login เหมือนกันทั้ง User และ Rescue
+  const bodyObj = {
+    name: name,
+    phone_number: phone   // ❗ backend ต้องการ key นี้เท่านั้น
+  };
 
   try{
-    const res = await fetch(LOGIN_PATH, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ name: name, phone_number: phone })
+    const res = await fetch(url,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(bodyObj)
     });
-    const data = await res.json().catch(()=> ({}));
+
+    const json = await res.json().catch(()=>({}));
 
     if(!res.ok){
-      const m = data?.message || data?.error || "เข้าสู่ระบบไม่สำเร็จ";
-      setMsg(m);
-      btn.disabled = false;
+      showMsg(json.message || "เข้าสู่ระบบไม่สำเร็จ");
       return;
     }
 
-    const token = data?.token || data?.jwt || data?.accessToken;
+    const token = extractToken(json);
     if(!token){
-      setMsg("ไม่พบโทเค็นจากเซิร์ฟเวอร์");
-      btn.disabled = false;
+      showMsg("ไม่พบ token จากเซิร์ฟเวอร์");
       return;
     }
 
-    setMsg("เข้าสู่ระบบสำเร็จ กำลังนำทาง...", "ok");
-    persistAndGo(token);
+    // save token
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("authRole", role);
+
+    showMsg("เข้าสู่ระบบสำเร็จ! กำลังนำทาง...", "ok");
+
+    const goto = (role==="USER") ? HOME_USER_PAGE : HOME_RESCUE_PAGE;
+
+    setTimeout(()=>{
+      window.location.href = goto + "?token=" + encodeURIComponent(token);
+    }, 1000);
 
   }catch(err){
     console.error(err);
-    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-    btn.disabled = false;
+    showMsg("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
   }
-}
 
-document.getElementById("confirm").addEventListener("click", (e)=>{
-  e.preventDefault(); doLogin();
-});
-document.addEventListener("keydown", (e)=>{
-  if(e.key === "Enter") doLogin();
 });
 </script>
+
+
 </body>
 </html>
