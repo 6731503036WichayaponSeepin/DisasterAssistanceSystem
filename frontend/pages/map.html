@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เลือกตำแหน่งบนแผนที่</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root{
+      --blue:#0A53E4;
+      --card:#FFFFFF;
+      --label:#111827;
+      --subtext:#6B7280;
+      --input-bg:#EEF1F5;
+      --border:#D1D5DB;
+      --radius:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--blue);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      border-radius:18px;
+      padding:18px 16px 20px;
+      box-shadow:0 10px 26px rgba(0,0,0,.18);
+    }
+
+    .title{
+      font-size:20px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:2px;
+      text-align:center;
+    }
+    .subtitle{
+      font-size:12px;
+      color:var(--subtext);
+      text-align:center;
+      margin-bottom:14px;
+    }
+
+    .section-label{
+      font-size:13px;
+      font-weight:600;
+      color:var(--label);
+      margin-bottom:6px;
+    }
+
+    /* กล่อง map */
+    #map{
+      width:100%;
+      height:260px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid #D1D5DB;
+      margin-bottom:10px;
+    }
+
+    .hint{
+      font-size:11px;
+      color:var(--subtext);
+      margin-bottom:8px;
+      text-align:center;
+    }
+
+    .row{
+      display:flex;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .field{
+      flex:1;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:600;
+      color:var(--label);
+      margin-bottom:4px;
+    }
+    .field input{
+      width:100%;
+      padding:7px 9px;
+      border-radius:9px;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      font-size:12px;
+      color:#111827;
+      outline:none;
+    }
+    .field input:focus{
+      border-color:var(--blue);
+      background:#FFF;
+    }
+
+    .address-field{
+      margin-top:2px;
+    }
+
+    .btn-row{
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+    }
+    button{
+      flex:1;
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .08s ease, box-shadow .08s ease, background-color .1s;
+    }
+    .btn-primary{
+      background:var(--blue);
+      color:#fff;
+      box-shadow:0 8px 16px rgba(10,83,228,.45);
+    }
+    .btn-primary:active{
+      transform:translateY(1px);
+      box-shadow:0 4px 10px rgba(0,0,0,.35);
+      background:#0842b6;
+    }
+    .btn-ghost{
+      background:#EEF1F5;
+      color:#111827;
+    }
+    .btn-ghost:active{
+      background:#E0E4EC;
+      transform:translateY(1px);
+    }
+
+    .status{
+      margin-top:10px;
+      font-size:11px;
+      color:var(--subtext);
+      min-height:14px;
+    }
+
+    /* 🔍 ส่วน search */
+    .search-box{
+      margin-bottom:10px;
+    }
+    .search-row{
+      display:flex;
+      gap:8px;
+      margin-bottom:4px;
+    }
+    .search-row input{
+      flex:1;
+      padding:7px 9px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      font-size:12px;
+      outline:none;
+    }
+    .search-row input:focus{
+      border-color:var(--blue);
+      background:#fff;
+    }
+    .search-row button{
+      flex:0 0 auto;
+      padding:7px 14px;
+      font-size:12px;
+    }
+    .search-hint{
+      font-size:11px;
+      color:var(--subtext);
+    }
+    .search-results{
+      margin-top:6px;
+      max-height:110px;
+      overflow-y:auto;
+      border-radius:10px;
+      border:1px solid #E5E7EB;
+      background:#F9FAFB;
+    }
+    .search-item{
+      padding:6px 8px;
+      font-size:11px;
+      border-bottom:1px solid #E5E7EB;
+      cursor:pointer;
+    }
+    .search-item:last-child{
+      border-bottom:none;
+    }
+    .search-item:hover{
+      background:#E5F0FF;
+    }
+    .search-item-title{
+      font-weight:600;
+      color:#111827;
+      margin-bottom:2px;
+    }
+    .search-item-sub{
+      color:#6B7280;
+    }
+    .search-empty{
+      padding:6px 8px;
+      font-size:11px;
+      color:#6B7280;
+    }
+
+    @media (max-width:480px){
+      .card{
+        padding:16px 12px 18px;
+        border-radius:16px;
+      }
+      #map{
+        height:250px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="title">เลือกตำแหน่งบนแผนที่</div>
+  <div class="subtitle">แตะบนแผนที่เพื่อปักหมุด หรือค้นหาสถานที่สำคัญ</div>
+
+  <!-- 🔍 กล่องค้นหา -->
+  <div class="search-box">
+    <div class="section-label">ค้นหาสถานที่</div>
+    <div class="search-row">
+      <input id="search-input" type="text" placeholder="เช่น Mae Fah Luang University, Central Chiang Rai, รพ.เชียงราย ฯลฯ">
+      <button class="btn-primary" id="btn-search">ค้นหา</button>
+    </div>
+    <div class="search-hint">พิมพ์ชื่อสถานที่/หมู่บ้าน/ตำบล/อำเภอ แล้วกดค้นหา จากนั้นแตะที่ผลลัพธ์เพื่อเลื่อนไปตำแหน่งนั้น</div>
+    <div id="search-results" class="search-results" style="display:none;"></div>
+  </div>
+
+  <div class="section-label">แผนที่</div>
+  <div id="map"></div>
+  <div class="hint">คลิกบนแผนที่ 1 ครั้งเพื่อสร้างหมุด แล้วลากหมุดเพื่อปรับตำแหน่งได้</div>
+
+  <div class="row">
+    <div class="field">
+      <label for="lat">Latitude</label>
+      <input id="lat" type="text" readonly placeholder="รอเลือกจากแผนที่...">
+    </div>
+    <div class="field">
+      <label for="lng">Longitude</label>
+      <input id="lng" type="text" readonly placeholder="รอเลือกจากแผนที่...">
+    </div>
+  </div>
+
+  <div class="field address-field">
+    <label for="address">ที่อยู่โดยประมาณ</label>
+    <input id="address" type="text" readonly placeholder="รอระบบค้นหาที่อยู่...">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-ghost" id="btn-clear">ลบหมุด</button>
+    <button class="btn-primary" id="btn-confirm">ยืนยันตำแหน่งนี้</button>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin="">
+</script>
+
+<script>
+  // 🌏 ตั้งค่าเริ่มต้นโซนเชียงราย / MFU
+  const initialLat = 19.9105;
+  const initialLng = 99.8406;
+  const initialZoom = 13;
+
+  const map = L.map('map').setView([initialLat, initialLng], initialZoom);
+
+  // Base map จาก OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let marker = null;
+
+  const latInput    = document.getElementById('lat');
+  const lngInput    = document.getElementById('lng');
+  const addrInput   = document.getElementById('address');
+  const statusEl    = document.getElementById('status');
+  const btnClear    = document.getElementById('btn-clear');
+  const btnConfirm  = document.getElementById('btn-confirm');
+
+  const searchInput   = document.getElementById('search-input');
+  const btnSearch     = document.getElementById('btn-search');
+  const searchResults = document.getElementById('search-results');
+
+  function setStatus(msg){
+    statusEl.textContent = msg || '';
+  }
+
+  function updateInputs(latlng){
+    latInput.value = latlng.lat.toFixed(6);
+    lngInput.value = latlng.lng.toFixed(6);
+    reverseGeocode(latlng.lat, latlng.lng);
+  }
+
+  // คลิกบนแผนที่ → ปักหมุด
+  map.on('click', function(e){
+    const latlng = e.latlng;
+
+    if (!marker){
+      marker = L.marker(latlng, {draggable:true}).addTo(map);
+
+      marker.on('dragend', function(ev){
+        const pos = ev.target.getLatLng();
+        updateInputs(pos);
+        setStatus('เลื่อนหมุดแล้ว');
+      });
+    }else{
+      marker.setLatLng(latlng);
+    }
+
+    updateInputs(latlng);
+    setStatus('เลือกตำแหน่งแล้ว');
+  });
+
+  // ดึงข้อมูลที่อยู่แบบคร่าว ๆ จาก Nominatim
+  function reverseGeocode(lat, lng){
+    addrInput.value = 'กำลังค้นหาที่อยู่...';
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.display_name){
+          addrInput.value = data.display_name;
+          setStatus('ดึงที่อยู่สำเร็จ');
+        }else{
+          addrInput.value = '';
+          setStatus('ไม่พบที่อยู่โดยประมาณ');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        addrInput.value = '';
+        setStatus('ไม่สามารถดึงที่อยู่ได้');
+      });
+  }
+
+  // 🔍 ฟังก์ชันค้นหาสถานที่ด้วย Nominatim (forward geocoding)
+  function searchPlace(){
+    const q = searchInput.value.trim();
+    if (!q){
+      setStatus('กรุณาพิมพ์คำค้นหาก่อน');
+      return;
+    }
+    setStatus('กำลังค้นหา...');
+    searchResults.style.display = 'none';
+    searchResults.innerHTML = '';
+
+    // จำกัดประเทศเป็นไทย (countrycodes=th) ถ้าอยากได้ทั่วโลก ลบพารามิเตอร์นี้ออก
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=7&countrycodes=th`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0){
+          searchResults.style.display = 'block';
+          searchResults.innerHTML = '<div class="search-empty">ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา</div>';
+          setStatus('ไม่พบผลลัพธ์');
+          return;
+        }
+
+        searchResults.style.display = 'block';
+        searchResults.innerHTML = '';
+
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'search-item';
+
+          const title = document.createElement('div');
+          title.className = 'search-item-title';
+          title.textContent = item.display_name.split(',')[0] || 'ไม่ทราบชื่อสถานที่';
+
+          const sub = document.createElement('div');
+          sub.className = 'search-item-sub';
+          sub.textContent = item.display_name;
+
+          div.appendChild(title);
+          div.appendChild(sub);
+
+          div.addEventListener('click', () => {
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+
+            // ซูมไปที่ตำแหน่ง + ปักหมุด
+            map.setView([lat, lon], 16);
+
+            if (!marker){
+              marker = L.marker([lat, lon], {draggable:true}).addTo(map);
+              marker.on('dragend', function(ev){
+                const pos = ev.target.getLatLng();
+                updateInputs(pos);
+                setStatus('เลื่อนหมุดแล้ว');
+              });
+            }else{
+              marker.setLatLng([lat, lon]);
+            }
+
+            updateInputs({lat: lat, lng: lon});
+            addrInput.value = item.display_name;
+            setStatus('เลือกจากผลลัพธ์การค้นหาแล้ว');
+
+            // ซ่อนรายการ
+            searchResults.style.display = 'none';
+          });
+
+          searchResults.appendChild(div);
+        });
+
+        setStatus('พบผลลัพธ์ ' + data.length + ' รายการ');
+      })
+      .catch(err => {
+        console.error(err);
+        searchResults.style.display = 'block';
+        searchResults.innerHTML = '<div class="search-empty">เกิดข้อผิดพลาดระหว่างค้นหา</div>';
+        setStatus('ไม่สามารถค้นหาได้');
+      });
+  }
+
+  // ปุ่มค้นหา + กด Enter
+  btnSearch.addEventListener('click', searchPlace);
+  searchInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      searchPlace();
+    }
+  });
+
+  // ปุ่มลบหมุด
+  btnClear.addEventListener('click', function(){
+    if (marker){
+      map.removeLayer(marker);
+      marker = null;
+    }
+    latInput.value = '';
+    lngInput.value = '';
+    addrInput.value = '';
+    setStatus('ลบหมุดแล้ว');
+  });
+
+  // ปุ่มยืนยัน
+  btnConfirm.addEventListener('click', function(){
+    if (!latInput.value || !lngInput.value){
+      setStatus('กรุณาเลือกตำแหน่งบนแผนที่ก่อน');
+      return;
+    }
+    const lat = latInput.value;
+    const lng = lngInput.value;
+    const addr = addrInput.value;
+
+    // ในโปรเจ็กต์จริง: ส่งค่า lat, lng, addr ไป backend / form
+    alert(
+      'ตำแหน่งที่เลือก:\n' +
+      'Lat: ' + lat + '\n' +
+      'Lng: ' + lng + '\n\n' +
+      'ที่อยู่: ' + (addr || '-')
+    );
+    setStatus('ยืนยันตำแหน่งแล้ว (สามารถส่งต่อไป backend ได้)');
+  });
+</script>
+
+</body>
+</html>

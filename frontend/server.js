@@ -84,6 +84,9 @@ app.get("/pages/home.html", verifyToken, (req, res) => {
 });
 
 // (อันอื่นๆ ค่อยเติมทีหลังได้)
+app.get("/pages/homeRescue.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "homeRescue.html"));
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Frontend running at http://localhost:${PORT}`);
