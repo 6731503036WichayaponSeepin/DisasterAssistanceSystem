@@ -137,8 +137,8 @@ const RESCUE_API_BASE   = "http://localhost:8080/api/rescues";
 const RESCUE_REGISTER   = RESCUE_API_BASE + "/register";
 const UNITS_API         = "http://localhost:8080/api/units";
 
-// เปลี่ยน path นี้ให้ตรงกับหน้า Sign In ของ rescue จริง ๆ ในโปรเจกต์
-const RESCUE_SIGNIN_PAGE = "/pages/rescue-signin.html";
+// ✅ หลังสมัครเสร็จ ให้กลับไปหน้า Sign in เดิม
+const RESCUE_SIGNIN_PAGE = "/pages/signin.html";
 
 // === UI helper ===
 function showMsg(text, type="error") {
@@ -168,7 +168,6 @@ async function loadUnits() {
     }
     const units = await res.json();
 
-    // ล้าง option เดิม (เหลือแต่ตัวแรก)
     select.innerHTML = '<option value="">-- เลือกหน่วยสังกัด --</option>';
 
     if (!Array.isArray(units) || units.length === 0) {
@@ -208,9 +207,6 @@ document.getElementById('confirm').addEventListener('click', async (e) => {
   showMsg("กำลังสมัครสมาชิกกู้ภัย...", "ok");
 
   try {
-    // JSON ตรงกับ RescueController.registerRescue(@RequestBody Rescue rescue)
-    // - detail: name + phoneNumber
-    // - affiliatedUnit: แค่ส่ง id ก็พอ (backend ไป findById เอง)
     const body = {
       detail: {
         name: name,
@@ -219,7 +215,6 @@ document.getElementById('confirm').addEventListener('click', async (e) => {
       affiliatedUnit: {
         id: Number(unitId)
       }
-      // ถ้าวันหน้าต้องเลือกทีมเพิ่ม ค่อยแนบ rescueTeam: { id: ... } เข้าไป
     };
 
     const regRes = await fetch(RESCUE_REGISTER, {
@@ -236,7 +231,6 @@ document.getElementById('confirm').addEventListener('click', async (e) => {
       return;
     }
 
-    // ส่วนใหญ่ backend จะส่ง message + rescueId กลับมา
     const rescueId = regJson?.rescueId;
     if (rescueId) {
       showMsg(`สมัครสำเร็จ! รหัสกู้ภัยของคุณคือ ${rescueId} กำลังกลับไปหน้าเข้าสู่ระบบ...`, "ok");
