@@ -287,21 +287,37 @@
 <script>
   /* ============= CONFIG TOKEN / PATH ============= */
   const API_BASE    = "http://localhost:8080";
-  const TOKEN_KEY   = "authToken";   // ต้องตรงกับหน้า Sign in
+  const TOKEN_KEY   = "authToken";
   const ROLE_KEY    = "authRole";
-  const PAGE_SIGNIN = "/";           // หน้า Sign in
+  const PAGE_SIGNIN = "/";
 
-  // อ่าน query param (ใช้เอา type=SOS / SUSTENANCE ถ้าส่งมาจากหน้า homeUser)
+  // อ่าน query param
   function getQueryParam(name){
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
   }
-  const CASE_TYPE = getQueryParam("type") || "SOS"; // default ไว้ก่อน
 
-  // ตรวจ token ตั้งแต่โหลดหน้า
-  const authToken = localStorage.getItem(TOKEN_KEY);
-  const authRole  = localStorage.getItem(ROLE_KEY);
+  // case type (จริง ๆ จะมีหรือไม่มีก็ได้)
+  const CASE_TYPE = getQueryParam("type") || "SOS";
 
+  // ----- โหลด token -----
+  let authToken = localStorage.getItem(TOKEN_KEY);
+  let authRole  = localStorage.getItem(ROLE_KEY);
+
+  // ถ้า localStorage ยังไม่มี แต่ URL มี token → เก็บลง localStorage
+  const urlToken = getQueryParam("token");
+  if (!authToken && urlToken) {
+    authToken = urlToken;
+    localStorage.setItem(TOKEN_KEY, authToken);
+  }
+
+  // ถ้ายังไม่มี role → set เป็น USER
+  if (!authRole) {
+    authRole = "USER";
+    localStorage.setItem(ROLE_KEY, authRole);
+  }
+
+  // ถ้าไม่มี token หรือไม่ใช่ USER → เด้งกลับไปหน้า login
   if (!authToken || authRole !== "USER") {
     alert("กรุณาเข้าสู่ระบบด้วยบัญชี User ก่อนใช้งานหน้านี้");
     window.location.href = PAGE_SIGNIN;

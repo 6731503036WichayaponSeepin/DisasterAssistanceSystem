@@ -88,7 +88,7 @@ app.get("/pages/location", verifyToken,(req, res) => {
 
 
 // (อันอื่นๆ ค่อยเติมทีหลังได้)
-app.get("/pages/homeRescue.html",  (req, res) => {
+app.get("/pages/homeRescue",  (req, res) => {
   res.sendFile(path.join(pagesPath, "homeRescue.html"));
 });
 

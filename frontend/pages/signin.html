@@ -152,9 +152,12 @@
 const USER_LOGIN_API   = "http://localhost:8080/api/users/login";
 const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
 
-const HOME_USER_PAGE   = "/pages/homeUser.html";
-const HOME_RESCUE_PAGE = "/pages/homeRescue.html";
+const HOME_USER_PAGE   = "/pages/homeUser";
+const HOME_RESCUE_PAGE = "/pages/homeRescue";
 
+// 🔑 key กลาง
+const TOKEN_KEY = "authToken";
+const ROLE_KEY  = "authRole";
 
 function extractToken(j) {
   if (!j) return null;
@@ -196,10 +199,9 @@ document.getElementById("confirm").addEventListener("click", async e=>{
 
   let url = (role==="USER") ? USER_LOGIN_API : RESCUE_LOGIN_API;
 
-  // ⭐ ใช้รูปแบบ login เหมือนกันทั้ง User และ Rescue
   const bodyObj = {
     name: name,
-    phone_number: phone   // ❗ backend ต้องการ key นี้เท่านั้น
+    phone_number: phone
   };
 
   try{
@@ -222,22 +224,16 @@ document.getElementById("confirm").addEventListener("click", async e=>{
       return;
     }
 
-    // save token
-    if (role === "USER") {
-  localStorage.setItem("userToken", token);
-} else {
-  localStorage.setItem("rescueToken", token);
-}
-localStorage.setItem("authRole", role);
-
+    // ✅ เก็บ token ลง localStorage
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(ROLE_KEY, role);
 
     showMsg("เข้าสู่ระบบสำเร็จ! กำลังนำทาง...", "ok");
 
     const goto = (role==="USER") ? HOME_USER_PAGE : HOME_RESCUE_PAGE;
 
-    setTimeout(()=>{
-      window.location.href = goto + "?token=" + encodeURIComponent(token);
-    }, 1000);
+    // ✅ ส่ง token ให้ server.js ผ่าน query param
+    window.location.href = goto + "?token=" + encodeURIComponent(token);
 
   }catch(err){
     console.error(err);

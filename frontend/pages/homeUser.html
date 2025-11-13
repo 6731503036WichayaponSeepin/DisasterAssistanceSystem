@@ -336,106 +336,90 @@
   </div>
 
 <script>
-  /* ============= CONFIG: ปรับ path ได้ตรงนี้ ============= */
-  const API_BASE   = "http://localhost:8080";
-const TOKEN_KEY  = "authToken";      // << ใช้ให้ตรงกับ signin
+const API_BASE   = "http://localhost:8080";
+const TOKEN_KEY  = "authToken";
 const ROLE_KEY   = "authRole";
 
-const PAGE_SIGNIN   = "/";                     // หน้า signin
-const PAGE_ACCOUNT  = "/pages/account.html";   // รอทำทีหลัง
-const PAGE_ADDRESS  = "/pages/location";
-const PAGE_MAP      = "/pages/map.html";
+const PAGE_SIGNIN  = "/";
+const PAGE_ADDRESS = "/pages/location";   // route ใน server.js
 
+// helper อ่าน query param
+function getQueryParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const token      = localStorage.getItem("token");    // key token
-    const userNameEl = document.getElementById("userName");
-    const userPhoneEl= document.getElementById("userPhone");
+document.addEventListener("DOMContentLoaded", () => {
+  let token = localStorage.getItem(TOKEN_KEY);
+  let role  = localStorage.getItem(ROLE_KEY);
 
-    // ถ้าไม่มี token ให้เด้งไป login
-    //if (!token) {
-     // window.location.href = PAGE_SIGNIN;
-     // return;
-   // }
+  // ถ้า localStorage ยังไม่มี แต่ URL มี token → เก็บลง localStorage
+  const urlToken = getQueryParam("token");
+  if (!token && urlToken) {
+    token = urlToken;
+    localStorage.setItem(TOKEN_KEY, token);
+  }
 
-    // ---------- ดึงข้อมูลผู้ใช้จาก backend ----------
-    fetch(API_BASE + "/api/users/me", {
-      headers:{
-        "Authorization": "Bearer " + token,
-        "Accept": "application/json"
-      }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("unauthorized");
-      return res.json();
-    })
+  // ถ้ายังไม่มี role แต่รู้ว่าเป็นหน้า user ก็ set เป็น USER ไปเลย
+  if (!role) {
+    role = "USER";
+    localStorage.setItem(ROLE_KEY, role);
+  }
+
+  // ถ้ายังไม่มี token หรือ role ไม่ใช่ USER → เด้งกลับหน้า sign in
+  if (!token || role !== "USER") {
+    window.location.href = PAGE_SIGNIN;
+    return;
+  }
+
+  const userNameEl  = document.getElementById("userName");
+  const userPhoneEl = document.getElementById("userPhone");
+
+  // ดึงข้อมูล user จาก backend
+  fetch(API_BASE + "/api/users/me", {
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Accept": "application/json"
+    }
+  })
+    .then(res => res.ok ? res.json() : Promise.reject())
     .then(data => {
-      // สมมติ response มี name, phoneNumber
       userNameEl.textContent  = data.name || "User";
       userPhoneEl.textContent = data.phoneNumber || "";
     })
-    .catch(err => {
-      console.error("Load user failed:", err);
-      userNameEl.textContent = "User";
+    .catch(() => {
+      userNameEl.textContent  = "User";
       userPhoneEl.textContent = "";
-      // ถ้า token เสีย ให้เคลียร์แล้วเด้งกลับ login
-      // window.location.href = PAGE_SIGNIN;
     });
 
-    // ---------- ปุ่มเมนู ----------
-    const menuBtn   = document.getElementById("menuButton");
-    const menuPanel = document.getElementById("menuPanel");
-    const btnAccount= document.getElementById("btnAccount");
-    const btnLogout = document.getElementById("btnLogout");
+  // ---------- เมนู & logout ----------
+  const menuBtn   = document.getElementById("menuButton");
+  const menuPanel = document.getElementById("menuPanel");
+  const btnLogout = document.getElementById("btnLogout");
 
-    menuBtn.addEventListener("click", () => {
-      menuPanel.classList.toggle("open");
-    });
-
-    // คลิกข้างนอกให้เมนูปิด
-    document.addEventListener("click", (e) => {
-      if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) {
-        menuPanel.classList.remove("open");
-      }
-    });
-
-    btnAccount.addEventListener("click", () => {
-      window.location.href = PAGE_ACCOUNT;  // เปลี่ยน path ได้
-    });
-
-    btnLogout.addEventListener("click", () => {
-      localStorage.removeItem("token");
-      window.location.href = PAGE_SIGNIN;
-    });
-
-    // ---------- ปุ่ม Address ----------
-    const btnAddress = document.getElementById("btnAddress");
-    btnAddress.addEventListener("click", () => {
-      // เด้งไปหน้า address (หน้าที่เลือก/แก้ที่อยู่)
-      window.location.href = PAGE_ADDRESS;
-    });
-
-    // ---------- ปุ่มเคส SOS / Sustenance ----------
-    const cardSOS        = document.getElementById("cardSOS");
-    const cardSustenance = document.getElementById("cardSustenance");
-
-    cardSOS.addEventListener("click", () => {
-      // ไปหน้าถัดไป พร้อมส่งชนิดเคสเป็น query param
-      window.location.href = PAGE_MAP + "?type=SOS";
-    });
-
-    cardSustenance.addEventListener("click", () => {
-      window.location.href = PAGE_MAP + "?type=SUSTENANCE";
-    });
-
-    // ถ้าภายหลังอยากสร้างเคสตรงนี้เลย ให้ใช้ fetch POST /api/cases
-    // แล้วค่อย redirect ต่อได้เหมือนกัน
+  menuBtn.addEventListener("click", () => {
+    menuPanel.classList.toggle("open");
   });
- 
-      app.get("/map", (req, res) => {
-  res.sendFile(path.join(pagesPath, "map.html"));
+
+  document.addEventListener("click", (e) => {
+    if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) {
+      menuPanel.classList.remove("open");
+    }
+  });
+
+  btnLogout.addEventListener("click", () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
+    window.location.href = PAGE_SIGNIN;
+  });
+
+  // 🏠 ปุ่ม Address → ไปหน้า map/location พร้อมส่ง token ใน query
+  const btnAddress = document.getElementById("btnAddress");
+  btnAddress.addEventListener("click", () => {
+    window.location.href = PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
+  });
 });
-  
 </script>
+
 </body>
 </html>
