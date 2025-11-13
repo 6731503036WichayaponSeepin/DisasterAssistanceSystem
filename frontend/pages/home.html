@@ -1,11 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Home</title>
+<style>
+  :root{
+    --blue:#0A53E4;
+    --card:#FFFFFF;
+    --label:#111827;
+    --muted:#6B7280;
+    --btn-green:#16A34A;
+    --btn-green-press:#12833C;
+    --sos-red:#EF1616;
+    --sos-red-dark:#B70F0F;
+    --sus-yellow:#FACC15;
+    --sus-yellow-dark:#D4A90F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--blue);
+    display:flex;justify-content:center;
+    color:#111827;
+  }
+  .phone{
+    width:min(420px,100%);
+    min-height:100dvh;
+    background:var(--blue);
+    position:relative;
+    overflow:hidden;
+  }
+  /* Top appbar */
+  .appbar{
+    padding:18px 18px 70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    color:#fff;
+  }
+  .appbar-title{
+    font-weight:700;
+    font-size:18px;
+  }
+  .menu-icon{
+    width:26px;height:18px;cursor:pointer;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .menu-icon span{
+    display:block;height:3px;border-radius:999px;background:#fff;
+  }
+
+  /* White sheet */
+  .sheet{
+    position:absolute;
+    top:72px;
+    left:0;right:0;
+    background:#fff;
+    border-radius:22px 22px 0 0;
+    padding:18px 18px 40px;
+    min-height:calc(100dvh - 72px);
+  }
+
+  /* user card */
+  .user-card{
+    background:#ffffff;
+    border-radius:14px;
+    padding:14px 14px 16px;
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .avatar-circle{
+    width:40px;height:40px;border-radius:999px;
+    border:2px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    flex-shrink:0;
+  }
+  .avatar-circle span{
+    font-size:20px;
+  }
+  .user-info-top{
+    font-size:14px;
+    font-weight:600;
+    color:#111827;
+  }
+  .user-phone{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .user-role{
+    font-size:12px;
+    color:#fff;
+    background:rgba(15,23,42,.9);
+    display:inline-block;
+    padding:1px 8px;
+    border-radius:999px;
+    margin-top:5px;
+  }
+  .address-row{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+  }
+  .addr-btn{
+    flex:1;
+    border-radius:9px;
+    border:1px solid #cbd5f5;
+    background:#E5EDFF;
+    color:#111827;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    gap:6px;
+    cursor:pointer;
+  }
+  .addr-btn span.plus{
+    font-size:16px;font-weight:700;
+  }
+  .addr-text{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  /* content section */
+  .content{
+    margin-top:26px;
+  }
+
+  .card-large{
+    border-radius:20px;
+    padding:18px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#fff;
+    box-shadow:0 10px 20px rgba(0,0,0,.25);
+    cursor:pointer;
+    transition:transform .1s, box-shadow .1s, filter .1s;
+  }
+  .card-large + .card-large{margin-top:18px;}
+  .card-large:active{
+    transform:scale(0.98);
+    box-shadow:0 6px 14px rgba(0,0,0,.25);
+    filter:brightness(0.95);
+  }
+  .card-title{
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:4px;
+  }
+  .card-sub{
+    font-size:12px;
+  }
+  .card-icon{
+    font-size:42px;
+  }
+
+  .card-sos{background:var(--sos-red);}
+  .card-sustenance{background:var(--sus-yellow);color:#111827;}
+  .card-sustenance .card-sub{color:#1f2937;}
+
+  /* message area */
+  .msg{
+    margin-top:20px;
+    font-size:13px;
+    min-height:18px;
+  }
+  .msg.error{color:#DC2626;}
+  .msg.ok{color:#16A34A;}
+
+  @media (max-width:480px){
+    .appbar{padding-inline:14px;}
+    .sheet{padding-inline:14px;}
+  }
+</style>
 </head>
 <body>
-    <div>Hello</div>
+<div class="phone">
+
+  <header class="appbar">
+    <div class="appbar-title">Disaster Assist</div>
+    <div class="menu-icon" aria-label="menu">
+      <span></span><span></span><span></span>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <!-- user card -->
+    <section class="user-card">
+      <div class="avatar-circle">
+        <span>👤</span>
+      </div>
+      <div style="flex:1">
+        <div class="user-info-top" id="user-name">ชื่อผู้ใช้</div>
+        <div class="user-phone" id="user-phone">เบอร์โทร</div>
+        <div class="user-role" id="user-role">User</div>
+
+        <div class="address-row">
+          <button class="addr-btn" id="address-btn">
+            <span class="plus">＋</span>
+            <span>Address</span>
+          </button>
+        </div>
+        <div class="addr-text" id="address-text">
+          ยังไม่มีที่อยู่ กรุณาเพิ่มที่อยู่สำหรับระบุตำแหน่งช่วยเหลือ
+        </div>
+      </div>
+    </section>
+
+    <!-- main content -->
+    <section class="content">
+      <div class="card-large card-sos" id="btn-sos">
+        <div>
+          <div class="card-title">SOS</div>
+          <div class="card-sub">Evacuate from the area</div>
+        </div>
+        <div class="card-icon">🚤</div>
+      </div>
+
+      <div class="card-large card-sustenance" id="btn-sus">
+        <div>
+          <div class="card-title">Sustenance</div>
+          <div class="card-sub">Water / food / medicine</div>
+        </div>
+        <div class="card-icon">🧃</div>
+      </div>
+
+      <div id="msg" class="msg"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_BASE  = "http://localhost:8080";
+const API_USERS = API_BASE + "/api/users";
+const API_CASES = API_BASE + "/api/cases";
+
+/* ====== STATE ====== */
+let authToken = null;
+let currentLat = null;
+let currentLon = null;
+let userAddressId = null;
+
+/* ====== UTIL ====== */
+function setMsg(text, type = "error") {
+  const el = document.getElementById("msg");
+  el.className = "msg " + (type === "ok" ? "ok" : "error");
+  el.textContent = text || "";
+}
+
+function getTokenFromAnywhere() {
+  const fromLS = localStorage.getItem("authToken");
+  if (fromLS) return fromLS;
+  const qsToken = new URLSearchParams(location.search).get("token");
+  if (qsToken) {
+    try { localStorage.setItem("authToken", qsToken); } catch(e){}
+    return qsToken;
+  }
+  return null;
+}
+
+/* ====== LOAD PROFILE ====== */
+async function loadProfile() {
+  authToken = getTokenFromAnywhere();
+  if (!authToken) {
+    setMsg("ไม่พบโทเค็น กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+    return;
+  }
+
+  try {
+    const res = await fetch(API_USERS + "/me", {
+      headers: { "Authorization": "Bearer " + authToken }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMsg(data.message || data.error || "โหลดข้อมูลผู้ใช้ไม่สำเร็จ");
+      return;
+    }
+
+    document.getElementById("user-name").textContent  = data.name || "-";
+    document.getElementById("user-phone").textContent = data.phoneNumber || "-";
+    document.getElementById("user-role").textContent  = data.role || "User";
+
+    if (data.address) {
+      userAddressId = data.address.id || null;
+      const parts = [
+        data.address.houseNumber,
+        data.address.subdistrict,
+        data.address.moreDetails
+      ].filter(Boolean);
+      document.getElementById("address-text").textContent =
+        parts.length ? parts.join(" | ") : "ที่อยู่ยังไม่สมบูรณ์";
+    } else {
+      userAddressId = null;
+      document.getElementById("address-text").textContent =
+        "ยังไม่มีที่อยู่ กรุณาเพิ่มที่อยู่สำหรับระบุตำแหน่งช่วยเหลือ";
+    }
+
+  } catch (err) {
+    console.error(err);
+    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+  }
+}
+
+/* ====== GEOLOCATION ====== */
+function initGeolocation() {
+  if (!("geolocation" in navigator)) {
+    setMsg("เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง", "error");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentLat = pos.coords.latitude;
+      currentLon = pos.coords.longitude;
+      console.log("Location:", currentLat, currentLon);
+    },
+    err => {
+      console.warn(err);
+      setMsg("ไม่สามารถดึงตำแหน่งอัตโนมัติได้ กรุณาอนุญาต location", "error");
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+
+/* ====== REPORT CASE ====== */
+async function sendCase(caseType) {
+  if (!authToken) {
+    setMsg("ไม่พบโทเค็น กรุณาเข้าสู่ระบบใหม่", "error");
+    return;
+  }
+  if (currentLat == null || currentLon == null) {
+    setMsg("ยังไม่มีพิกัดตำแหน่ง กรุณาเปิด location หรือรอสักครู่", "error");
+    return;
+  }
+
+  setMsg("กำลังส่งคำขอช่วยเหลือ...", "ok");
+
+  try {
+    const res = await fetch(API_CASES + "/report", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + authToken
+      },
+      body: JSON.stringify({
+        latitude: currentLat,
+        longitude: currentLon,
+        reporterAddressId: userAddressId,
+        caseType: caseType   // "SOS" หรือ "SUSTENANCE"
+      })
+    });
+
+    const data = await res.json().catch(()=> ({}));
+    if (!res.ok) {
+      setMsg(data.message || data.error || "แจ้งเคสไม่สำเร็จ", "error");
+      return;
+    }
+
+    console.log("Case saved:", data);
+    setMsg("ส่งคำขอ " + caseType + " สำเร็จแล้ว", "ok");
+
+  } catch (err) {
+    console.error(err);
+    setMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", "error");
+  }
+}
+
+/* ====== EVENTS ====== */
+document.getElementById("btn-sos").addEventListener("click", () => {
+  sendCase("SOS");
+});
+document.getElementById("btn-sus").addEventListener("click", () => {
+  sendCase("SUSTENANCE");
+});
+document.getElementById("address-btn").addEventListener("click", () => {
+  // แก้ตรงนี้ให้ลิงก์ไปหน้าแก้ที่อยู่ของโปรเจ็กต์จริง ๆ
+  window.location.href = "/pages/address.html";
+});
+
+/* ====== INIT ====== */
+loadProfile();
+initGeolocation();
+</script>
 </body>
 </html>
