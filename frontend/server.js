@@ -79,10 +79,10 @@ function verifyToken(req, res, next) {
 /* =====================================================
    🔐 3️⃣ หน้าที่ต้อง login ก่อนเข้า (Protected pages)
    ===================================================== */
-app.get("/pages/homeUser", (req, res) => {
+app.get("/pages/homeUser",verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "homeUser.html"));
 });
-app.get("/pages/location", (req, res) => {
+app.get("/pages/location", verifyToken,(req, res) => {
   res.sendFile(path.join(pagesPath, "map.html"));
 });
 
