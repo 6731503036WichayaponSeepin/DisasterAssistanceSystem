@@ -1,6 +1,7 @@
 package th.mfu.controller.locationdatacontroller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -35,14 +36,19 @@ public class ApiMapController {
     // ✅ 1️⃣ บันทึกพิกัดใหม่จาก React Map
     @PostMapping
     public LocationData saveLocation(@RequestBody LocationRequest request, Authentication authentication) {
-        // ดึงชื่อผู้ใช้จาก JWT token (subject)
-        String username = authentication.getName();
-
-        // ดึงข้อมูล User จาก DB
-        User user = userRepo.findByPhoneNumber(username);
-        if (user == null) {
-            throw new RuntimeException("User not found for token: " + username);
+        if (authentication == null) {
+            throw new RuntimeException("Unauthorized");
         }
+
+        // subject ใน JWT = phoneNumber จาก Detail
+        String phoneNumber = authentication.getName();
+
+        // ✅ หา user จาก detail.phoneNumber
+        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+        if (optUser.isEmpty()) {
+            throw new RuntimeException("User not found for token: " + phoneNumber);
+        }
+        User user = optUser.get();
 
         // ตรวจสอบว่า address ที่ส่งมาเป็นของ user นี้หรือไม่
         Address address = addressRepo.findById(request.getAddressId())
@@ -64,13 +70,20 @@ public class ApiMapController {
     // ✅ 2️⃣ ดึงพิกัดของผู้ใช้ที่ล็อกอินอยู่
     @GetMapping
     public List<LocationData> getUserLocations(Authentication authentication) {
-        String username = authentication.getName();
-        User user = userRepo.findByPhoneNumber(username);
-        if (user == null) {
-            throw new RuntimeException("User not found for token: " + username);
+        if (authentication == null) {
+            throw new RuntimeException("Unauthorized");
         }
 
-        // คืนเฉพาะพิกัดของ user นี้
+        String phoneNumber = authentication.getName();
+
+        // ✅ หา user จาก detail.phoneNumber
+        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+        if (optUser.isEmpty()) {
+            throw new RuntimeException("User not found for token: " + phoneNumber);
+        }
+        User user = optUser.get();
+
+        // คืนเฉพาะพิกัดของ user นี้ (ตาม address)
         return locationRepo.findAll().stream()
                 .filter(l -> l.getAddress().equals(user.getAddress()))
                 .toList();

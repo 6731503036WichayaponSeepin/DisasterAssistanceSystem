@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import th.mfu.model.Detail;
 import th.mfu.model.rescue.Rescue;
 import th.mfu.model.rescue.RescueTeam;
 
@@ -14,7 +15,8 @@ public interface RescueRepository extends JpaRepository<Rescue, Long> {
 
     // ✅ ค้นหากู้ภัยจากรหัสเฉพาะ (ใช้ตอน login หรือค้นหาสมาชิก)
     Optional<Rescue> findByRescueId(String rescueId);
-
+    
+    Optional<Rescue> findByDetail(Detail detail);
     // ✅ ดึงรายชื่อกู้ภัยทั้งหมดตามหน่วยสังกัด
     List<Rescue> findByAffiliatedUnit_Id(Long unitId);
 

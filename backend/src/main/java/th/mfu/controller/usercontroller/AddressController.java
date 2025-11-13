@@ -1,6 +1,7 @@
 package th.mfu.controller.usercontroller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,14 @@ public class AddressController {
     public ResponseEntity<?> createOrUpdateAddress(@RequestBody Address address, Authentication authentication) {
         try {
             if (authentication == null) return ResponseEntity.status(401).body("Unauthorized");
+
+            // subject ใน JWT = phoneNumber ที่อยู่ใน Detail
             String phoneNumber = authentication.getName();
-            User user = userRepo.findByPhoneNumber(phoneNumber);
-            if (user == null) return ResponseEntity.status(404).body("User not found");
+
+            // ✅ หา user จาก detail.phoneNumber
+            Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+            if (optUser.isEmpty()) return ResponseEntity.status(404).body("User not found");
+            User user = optUser.get();
 
             if (address.getSubdistrict() == null || address.getSubdistrict().getId() == null)
                 return ResponseEntity.badRequest().body("Subdistrict is required");
@@ -77,9 +83,13 @@ public class AddressController {
     public ResponseEntity<?> getMyAddress(Authentication authentication) {
         try {
             if (authentication == null) return ResponseEntity.status(401).body("Unauthorized");
+
             String phoneNumber = authentication.getName();
-            User user = userRepo.findByPhoneNumber(phoneNumber);
-            if (user == null) return ResponseEntity.status(404).body("User not found");
+
+            // ✅ หา user จาก detail.phoneNumber
+            Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+            if (optUser.isEmpty()) return ResponseEntity.status(404).body("User not found");
+            User user = optUser.get();
 
             Address address = user.getAddress();
             if (address == null) return ResponseEntity.status(404).body("Address not found");
@@ -96,10 +106,13 @@ public class AddressController {
     public ResponseEntity<?> updateMyAddress(@RequestBody Address updatedAddress, Authentication authentication) {
         try {
             if (authentication == null) return ResponseEntity.status(401).body("Unauthorized");
+
             String phoneNumber = authentication.getName();
 
-            User user = userRepo.findByPhoneNumber(phoneNumber);
-            if (user == null) return ResponseEntity.status(404).body("User not found");
+            // ✅ หา user จาก detail.phoneNumber
+            Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+            if (optUser.isEmpty()) return ResponseEntity.status(404).body("User not found");
+            User user = optUser.get();
 
             Address currentAddress = user.getAddress();
             if (currentAddress == null) return ResponseEntity.status(404).body("Address not found");
