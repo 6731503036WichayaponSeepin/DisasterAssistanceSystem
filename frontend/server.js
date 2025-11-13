@@ -28,7 +28,7 @@ app.use("/js", express.static(jsPath));
    🟢 1️⃣ หน้าทั่วไป (Public pages) — เข้าได้โดยไม่ต้อง login
    ===================================================== */
 app.get("/", (req, res) => {
-    res.sendFile(path.join(pagesPath, "signup.html"));
+    res.sendFile(path.join(pagesPath, "signupUser.html"));
 });
 
 app.get("/signup.html", (req, res) => {

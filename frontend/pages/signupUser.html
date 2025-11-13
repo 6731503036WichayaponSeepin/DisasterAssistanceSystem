@@ -106,7 +106,7 @@
 <body>
 
 <section class="card" role="form" aria-labelledby="title">
-  <h1 id="title" class="title">Sign Up</h1>
+  <h1 id="title" class="title">Sign Up User</h1>
 
   <div class="field">
     <label for="name">Name</label>
@@ -124,22 +124,16 @@
 </section>
 
 <script>
+// signup สำหรับ USER เท่านั้น
 const API_BASE = "http://localhost:8080/api/users";
 const REGISTER_PATH = API_BASE + "/register";
-const LOGIN_PATH = API_BASE + "/login";
 
-function extractToken(respJson) {
-  return respJson?.token || respJson?.jwt || respJson?.accessToken || respJson?.data?.token || null;
-}
-function persistAndGo(token) {
-  try { localStorage.setItem("authToken", token); } catch(e) {}
-  window.location.href = "/pages/home.html?token=" + encodeURIComponent(token);
-}
 function showMsg(text, type="error") {
   const el = document.getElementById("msg");
   el.className = type === "ok" ? "ok" : "error";
   el.textContent = text;
 }
+
 function validate(name, phone) {
   if (!name || name.trim().length < 2) return "กรุณากรอกชื่อให้ถูกต้อง";
   if (!/^0\d{9}$/.test(phone)) return "กรุณากรอกเบอร์โทร 10 หลักที่ถูกต้อง (เช่น 0812345678)";
@@ -156,16 +150,18 @@ document.getElementById('confirm').addEventListener('click', async (e) => {
   showMsg("กำลังสมัครสมาชิก...", "ok");
 
   try {
-    // (1) REGISTER
+    // (1) REGISTER → ต้องส่ง User ที่มี detail
     const regRes = await fetch(REGISTER_PATH, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: { "Content-Type":"application/json" },
       body: JSON.stringify({
-        phoneNumber: phone,
-        detail: { name: name },
-        role: "USER"
+        detail: {
+          name: name,
+          phoneNumber: phone
+        }
       })
     });
+
     const regJson = await regRes.json().catch(() => ({}));
     if (!regRes.ok) {
       const msg = regJson?.message || regJson?.error || "สมัครไม่สำเร็จ";
@@ -173,27 +169,12 @@ document.getElementById('confirm').addEventListener('click', async (e) => {
       return;
     }
 
-    // (2) LOGIN เพื่อรับ token (ตาม controller ต้องส่ง name + phone_number)
-    const loginRes = await fetch(LOGIN_PATH, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ name: name, phone_number: phone })
-    });
-    const loginJson = await loginRes.json().catch(() => ({}));
-    if (!loginRes.ok) {
-      const msg = loginJson?.message || loginJson?.error || "เข้าสู่ระบบไม่สำเร็จ";
-      showMsg("เข้าสู่ระบบไม่สำเร็จ: " + msg);
-      return;
-    }
+    // ⭐ สำเร็จ → กลับไปหน้า Sign In
+    showMsg("สมัครสำเร็จ! กำลังกลับไปหน้าเข้าสู่ระบบ...", "ok");
 
-    const token = extractToken(loginJson); // backend ของคุณคืน key "token"
-    if (!token) {
-      showMsg("ไม่พบโทเค็นจากเซิร์ฟเวอร์ (token is missing)");
-      return;
-    }
-
-    showMsg("สมัครและเข้าสู่ระบบสำเร็จ กำลังนำทาง...", "ok");
-    persistAndGo(token);
+    setTimeout(() => {
+      window.location.href = "/pages/signin.html";
+    }, 1200);  // หน่วง 1.2 วินาทีให้ user เห็นข้อความ
 
   } catch (err) {
     console.error(err);
