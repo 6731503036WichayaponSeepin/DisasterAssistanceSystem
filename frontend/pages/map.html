@@ -530,14 +530,19 @@
     try {
       setStatus('กำลังบันทึกตำแหน่งไปยังเซิร์ฟเวอร์...');
 
-      // 🟡 TODO: เปลี่ยน path ให้ตรงกับ controller จริงของคุณ
-      const res = await fetch(API_BASE + "/api/location/home", {
+      // เรียก endpoint สำหรับบันทึกตำแหน่งบ้านของผู้ใช้ (backend: UserLocationController)
+      const res = await fetch(API_BASE + "/api/user-location/home", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + authToken
         },
-        body: JSON.stringify(payload)
+        // backend expects { latitude, longitude, description }
+        body: JSON.stringify({
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          description: addr
+        })
       });
 
       if (!res.ok) {

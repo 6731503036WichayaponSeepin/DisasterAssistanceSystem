@@ -55,7 +55,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/users/**",
                     "/api/address/**",
-                    "/api/location/**"
+                    "/api/location/**",
+                    "/api/user-location/**"
                 ).hasAuthority("ROLE_USER")
 
                 // ⬇️ เคส: ผู้ใช้แจ้งเคส
