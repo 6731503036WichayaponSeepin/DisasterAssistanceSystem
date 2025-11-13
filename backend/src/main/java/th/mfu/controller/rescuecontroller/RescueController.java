@@ -24,16 +24,41 @@ public class RescueController {
     @Autowired private RescueTeamRepository teamRepo;
     @Autowired private JwtUtil jwtUtil;
 
-    // ✅ 1️⃣ สมัครเป็นกู้ภัย
+    // ⭐ Helper: สร้างรหัสกู้ภัยใหม่อัตโนมัติ เช่น RS-001, RS-002
+    private String generateNewRescueId() {
+        List<Rescue> rescues = rescueRepo.findAll();
+        int max = 0;
+
+        for (Rescue r : rescues) {
+            String rid = r.getRescueId();
+            if (rid != null && rid.startsWith("RS-")) {
+                try {
+                    int num = Integer.parseInt(rid.substring(3)); // ตัด "RS-"
+                    if (num > max) {
+                        max = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                    // ถ้ารูปแบบไม่ตรง เช่น RS-ABC ก็ข้ามไป
+                }
+            }
+        }
+
+        int next = max + 1;
+        return String.format("RS-%03d", next); // RS-001, RS-002, ...
+    }
+
+    // ✅ 1️⃣ สมัครเป็นกู้ภัย (ชื่อ, เบอร์, หน่วย) — rescueId ระบบออกเอง
     @PostMapping("/register")
     public ResponseEntity<?> registerRescue(@RequestBody Rescue rescue) {
-        // ✅ ตรวจสอบข้อมูลส่วนตัว
+        // ✅ ตรวจสอบข้อมูลส่วนตัว (ชื่อ / เบอร์ อยู่ใน Detail)
         if (rescue.getDetail() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Detail is required");
         }
 
-        // ✅ บันทึก Detail
-        Detail savedDetail = detailRepo.save(rescue.getDetail());
+        // 👉 ตรงนี้สมมติว่า Detail มี name และ (อาจจะ) phoneNumber
+        // ถ้ายังไม่มี phoneNumber ใน entity/detail ให้ไปเพิ่มใน model + ตาราง DB ด้วยนะ
+        Detail detail = rescue.getDetail();
+        Detail savedDetail = detailRepo.save(detail);
         rescue.setDetail(savedDetail);
 
         // ✅ ตรวจสอบหน่วยสังกัด
@@ -51,10 +76,14 @@ public class RescueController {
             rescue.setRescueTeam(team);
         }
 
-        // ✅ ตรวจสอบ Rescue ID ซ้ำ
-        if (rescueRepo.findByRescueId(rescue.getRescueId()).isPresent()) {
+        // ⭐ ไม่ใช้ rescueId จาก client แล้ว — ให้ระบบออกเอง
+        String newRescueId = generateNewRescueId();
+        rescue.setRescueId(newRescueId);
+
+        // (จะเช็คซ้ำอีกรอบก็ได้ เผื่อวันหน้ามีการแก้ logic generate)
+        if (rescueRepo.findByRescueId(newRescueId).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Rescue ID already exists: " + rescue.getRescueId());
+                    "Generated Rescue ID already exists: " + newRescueId);
         }
 
         // ✅ ตั้งค่า role เป็น RESCUE
@@ -66,7 +95,7 @@ public class RescueController {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Rescue registered successfully");
-        response.put("rescueId", saved.getRescueId());
+        response.put("rescueId", saved.getRescueId()); // 👉 ส่งรหัสที่ระบบออกให้กลับไป
         response.put("name", saved.getName());
         response.put("role", saved.getRole());
         response.put("navigateTo", "/loginRescue");

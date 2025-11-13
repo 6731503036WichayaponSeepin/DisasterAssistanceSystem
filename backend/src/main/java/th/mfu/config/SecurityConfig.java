@@ -34,6 +34,8 @@ public class SecurityConfig {
                     "/api/users/register",
                     "/api/rescues/login",
                     "/api/rescues/register",
+                    "/api/units",
+
                     // ⬇️ เคส: ping เปิดสาธารณะ
                     "/api/cases/ping"
                 ).permitAll()
