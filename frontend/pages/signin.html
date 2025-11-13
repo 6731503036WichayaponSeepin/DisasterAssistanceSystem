@@ -155,6 +155,7 @@ const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
 const HOME_USER_PAGE   = "/pages/homeUser.html";
 const HOME_RESCUE_PAGE = "/pages/homeRescue.html";
 
+
 function extractToken(j) {
   if (!j) return null;
   return j.token || j.jwt || j.accessToken || (j.data && j.data.token);
@@ -222,8 +223,13 @@ document.getElementById("confirm").addEventListener("click", async e=>{
     }
 
     // save token
-    localStorage.setItem("authToken", token);
-    localStorage.setItem("authRole", role);
+    if (role === "USER") {
+  localStorage.setItem("userToken", token);
+} else {
+  localStorage.setItem("rescueToken", token);
+}
+localStorage.setItem("authRole", role);
+
 
     showMsg("เข้าสู่ระบบสำเร็จ! กำลังนำทาง...", "ok");
 

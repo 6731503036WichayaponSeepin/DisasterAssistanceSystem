@@ -285,6 +285,28 @@
 </script>
 
 <script>
+  /* ============= CONFIG TOKEN / PATH ============= */
+  const API_BASE    = "http://localhost:8080";
+  const TOKEN_KEY   = "authToken";   // ต้องตรงกับหน้า Sign in
+  const ROLE_KEY    = "authRole";
+  const PAGE_SIGNIN = "/";           // หน้า Sign in
+
+  // อ่าน query param (ใช้เอา type=SOS / SUSTENANCE ถ้าส่งมาจากหน้า homeUser)
+  function getQueryParam(name){
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+  const CASE_TYPE = getQueryParam("type") || "SOS"; // default ไว้ก่อน
+
+  // ตรวจ token ตั้งแต่โหลดหน้า
+  const authToken = localStorage.getItem(TOKEN_KEY);
+  const authRole  = localStorage.getItem(ROLE_KEY);
+
+  if (!authToken || authRole !== "USER") {
+    alert("กรุณาเข้าสู่ระบบด้วยบัญชี User ก่อนใช้งานหน้านี้");
+    window.location.href = PAGE_SIGNIN;
+  }
+
   // 🌏 ตั้งค่าเริ่มต้นโซนเชียงราย / MFU
   const initialLat = 19.9105;
   const initialLng = 99.8406;
@@ -464,24 +486,66 @@
     setStatus('ลบหมุดแล้ว');
   });
 
-  // ปุ่มยืนยัน
-  btnConfirm.addEventListener('click', function(){
-    if (!latInput.value || !lngInput.value){
+  // ปุ่มยืนยัน → ส่งไป backend
+  btnConfirm.addEventListener('click', async function () {
+    if (!latInput.value || !lngInput.value) {
       setStatus('กรุณาเลือกตำแหน่งบนแผนที่ก่อน');
       return;
     }
-    const lat = latInput.value;
-    const lng = lngInput.value;
-    const addr = addrInput.value;
 
-    // ในโปรเจ็กต์จริง: ส่งค่า lat, lng, addr ไป backend / form
-    alert(
-      'ตำแหน่งที่เลือก:\n' +
-      'Lat: ' + lat + '\n' +
-      'Lng: ' + lng + '\n\n' +
-      'ที่อยู่: ' + (addr || '-')
-    );
-    setStatus('ยืนยันตำแหน่งแล้ว (สามารถส่งต่อไป backend ได้)');
+    const lat  = parseFloat(latInput.value);
+    const lng  = parseFloat(lngInput.value);
+    const addr = addrInput.value || '';
+
+    if (!authToken) {
+      setStatus('ไม่พบ token กรุณา login ใหม่');
+      alert('ไม่พบ token กรุณา login ใหม่');
+      window.location.href = PAGE_SIGNIN;
+      return;
+    }
+
+    const payload = {
+      latitude: lat,
+      longitude: lng,
+      address: addr,
+      caseType: CASE_TYPE   // SOS / SUSTENANCE (เผื่อไปใช้ตอนสร้างเคส)
+    };
+
+    try {
+      setStatus('กำลังบันทึกตำแหน่งไปยังเซิร์ฟเวอร์...');
+
+      // 🟡 TODO: เปลี่ยน path ให้ตรงกับ controller จริงของคุณ
+      const res = await fetch(API_BASE + "/api/location/home", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + authToken
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('Save error:', text);
+        setStatus('บันทึกตำแหน่งไม่สำเร็จ (' + res.status + ')');
+        alert('บันทึกตำแหน่งไม่สำเร็จ: ' + text);
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      console.log('Saved location:', data);
+
+      setStatus('บันทึกตำแหน่งเรียบร้อยแล้ว');
+      alert('บันทึกตำแหน่งบ้านเรียบร้อยแล้ว ✅');
+
+      // ถ้าต้องการ กลับไปหน้า homeUser ก็ทำได้:
+      // window.location.href = "/pages/homeUser.html";
+
+    } catch (err) {
+      console.error(err);
+      setStatus('เกิดข้อผิดพลาดระหว่างบันทึกตำแหน่ง');
+      alert('เกิดข้อผิดพลาดระหว่างบันทึกตำแหน่ง');
+    }
   });
 </script>
 

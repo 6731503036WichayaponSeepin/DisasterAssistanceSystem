@@ -79,12 +79,16 @@ function verifyToken(req, res, next) {
 /* =====================================================
    🔐 3️⃣ หน้าที่ต้อง login ก่อนเข้า (Protected pages)
    ===================================================== */
-app.get("/pages/home.html", verifyToken, (req, res) => {
-  res.sendFile(path.join(pagesPath, "home.html"));
+app.get("/pages/homeUser", (req, res) => {
+  res.sendFile(path.join(pagesPath, "homeUser.html"));
+});
+app.get("/pages/location", (req, res) => {
+  res.sendFile(path.join(pagesPath, "map.html"));
 });
 
+
 // (อันอื่นๆ ค่อยเติมทีหลังได้)
-app.get("/pages/homeRescue.html", verifyToken, (req, res) => {
+app.get("/pages/homeRescue.html",  (req, res) => {
   res.sendFile(path.join(pagesPath, "homeRescue.html"));
 });
 
