@@ -238,10 +238,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if(res.ok){
-        alert("บันทึกข้อมูลสำเร็จ");
-    }else{
-        alert("บันทึกข้อมูลไม่สำเร็จ");
-    }
+    alert("บันทึกข้อมูลสำเร็จ โปรดเข้าสู่ระบบใหม่");
+
+    // เคลียร์ token เก่า
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
+
+    // redirect ไป signin
+    window.location.href = PAGE_SIGNIN;
+}
 };
 
     /* BACK button */
