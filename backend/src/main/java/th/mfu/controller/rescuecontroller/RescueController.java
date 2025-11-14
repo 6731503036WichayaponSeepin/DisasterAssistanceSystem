@@ -1,21 +1,36 @@
 package th.mfu.controller.rescuecontroller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import th.mfu.model.Detail;
-import th.mfu.model.rescue.*;
+import th.mfu.model.rescue.AffiliatedUnit;
+import th.mfu.model.rescue.Rescue;
+import th.mfu.model.rescue.RescueTeam;
 import th.mfu.repository.DetailRepository;
-import th.mfu.repository.rescuerepository.*;
+import th.mfu.repository.rescuerepository.AffiliatedUnitRepository;
+import th.mfu.repository.rescuerepository.RescueRepository;
+import th.mfu.repository.rescuerepository.RescueTeamRepository;
 import th.mfu.security.JwtUtil;
-
-import java.util.*;
 
 @RestController
 @RequestMapping("/api/rescues")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class RescueController {
 
     @Autowired private RescueRepository rescueRepo;
@@ -118,7 +133,7 @@ public class RescueController {
     // ✅ 4️⃣ ดึงรายชื่อกู้ภัยที่ยังไม่มีทีม
     @GetMapping("/available")
     public List<Map<String, Object>> getAvailableRescues() {
-        List<Rescue> rescues = rescueRepo.findByRescueTeamIsNull();
+        List<Rescue> rescues = rescueRepo.findAllByRescueTeamIsNull();
         List<Map<String, Object>> response = new ArrayList<>();
 
         for (Rescue r : rescues) {
@@ -167,7 +182,7 @@ public ResponseEntity<Map<String, Object>> loginRescue(@RequestBody Map<String, 
 
     // 3) สร้าง JWT Token
     //    👉 ยังใช้ rescueId เป็น subject ได้เหมือนเดิม
-    String token = jwtUtil.generateToken(rescue.getRescueId(), "RESCUE");
+    String token = jwtUtil.generateToken(rescue.getRescueId(), "ROLE_RESCUE");
 
     response.put("status", "success");
     response.put("message", "Login successful");
@@ -188,48 +203,65 @@ public ResponseEntity<Map<String, Object>> loginRescue(@RequestBody Map<String, 
     // ✅ 6️⃣ หน้า Main ของ Rescue (แสดงข้อมูลตนเอง)
     @GetMapping("/main/{id}")
     public ResponseEntity<?> getRescueMain(@PathVariable Long id) {
+
         Rescue rescue = rescueRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rescue not found"));
 
-        // ✅ ตรวจสอบสิทธิ์ role
-        if (!"RESCUE".equalsIgnoreCase(rescue.getRole())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only rescue role can access this page");
-        }
-
         Map<String, Object> response = new HashMap<>();
 
-        // 🔹 ข้อมูลส่วนตัว
-        Map<String, Object> personalInfo = new HashMap<>();
-        if (rescue.getDetail() != null) {
-            personalInfo.put("detailId", rescue.getDetail().getId());
-            personalInfo.put("name", rescue.getDetail().getName());
-        }
+        // 🔹 ข้อมูลพื้นฐานสำหรับหน้า Home
+        response.put("rescueDbId", rescue.getId());
+        response.put("rescueId", rescue.getRescueId());
+        response.put("name", rescue.getName());
+        response.put("unit", rescue.getAffiliatedUnit() != null ? rescue.getAffiliatedUnit().getUnitName() : "-");
+        response.put("role", rescue.getRole());
 
-        // 🔹 หน่วยสังกัด
-        Map<String, Object> unitInfo = new HashMap<>();
-        if (rescue.getAffiliatedUnit() != null) {
-            unitInfo.put("unitId", rescue.getAffiliatedUnit().getId());
-            unitInfo.put("unitName", rescue.getAffiliatedUnit().getUnitName());
-        }
-
-        // 🔹 ทีมกู้ภัย (ถ้ามี)
-        Map<String, Object> teamInfo = new HashMap<>();
+        // ----------------------------------------------------------------
+        // 🔹 ข้อมูลทีมกู้ภัย (ที่ FE ใช้ในทั้งหน้า Home และ RescueTeam.html)
+        // ----------------------------------------------------------------
         if (rescue.getRescueTeam() != null) {
+
             RescueTeam team = rescue.getRescueTeam();
+
+            response.put("rescueTeamId", team.getTeamId());
+            response.put("rescueTeamName", team.getName());
+            response.put("districtName", team.getDistrict().getName());
+            response.put("isLeader", team.getLeader().getId().equals(rescue.getId()));
+
+            // teamInfo (object)
+            Map<String, Object> teamInfo = new HashMap<>();
             teamInfo.put("teamId", team.getTeamId());
             teamInfo.put("teamName", team.getName());
             teamInfo.put("memberCount", team.getMembers() != null ? team.getMembers().size() : 0);
             teamInfo.put("leader", team.getLeader().getName());
-        }
+            response.put("teamInfo", teamInfo);
 
-        response.put("status", "success");
-        response.put("role", rescue.getRole());
-        response.put("rescueDbId", rescue.getId());
-        response.put("rescueId", rescue.getRescueId());
-        response.put("personalInfo", personalInfo);
-        response.put("unitInfo", unitInfo);
-        response.put("teamInfo", teamInfo);
+        } else {
+            // ❗ ถ้าไม่อยู่ในทีม ให้ส่งค่า default
+            response.put("rescueTeamId", null);
+            response.put("rescueTeamName", null);
+            response.put("districtName", "-");
+            response.put("isLeader", false);
+            response.put("teamInfo", null);
+        }
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/account/{id}")
+public ResponseEntity<?> getRescueAccount(@PathVariable Long id) {
+
+    Rescue rescue = rescueRepo.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Rescue not found"));
+
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("name", rescue.getName()); // ดึงจาก Detail
+    response.put("rescueId", rescue.getRescueId());
+    response.put("unit", rescue.getAffiliatedUnit().getUnitName());
+
+    return ResponseEntity.ok(response);
+}
+
 }

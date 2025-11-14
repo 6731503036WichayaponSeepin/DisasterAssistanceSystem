@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account</title>
+
+<style>
+    :root {
+        --blue: #0A53E4;
+        --red: #D81324;
+        --gray-bg: #F3F4F6;
+        --container-radius: 26px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: Inter, sans-serif;
+        background: var(--red);
+        display: flex;
+        justify-content: center;
+        padding: 30px 14px;
+    }
+
+    /* กล่องหลัก */
+    .container {
+        width: 100%;
+        max-width: 440px;
+        background: white;
+        border-radius: var(--container-radius);
+        min-height: 700px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    /* HEADER */
+    .header {
+        background: var(--blue);
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+        font-size: 22px;
+        font-weight: 700;
+        position: relative;
+    }
+
+    .back-btn {
+        position: absolute;
+        left: 16px;
+        top: 18px;
+        font-size: 22px;
+        cursor: pointer;
+    }
+
+    /* CONTENT */
+    .content {
+        padding: 28px;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .field-box {
+        width: 100%;
+        background: var(--gray-bg);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 22px;
+        font-size: 15px;
+        color: #111;
+    }
+
+    .logout-btn {
+        margin-top: 20px;
+        width: 140px;
+        padding: 12px 0;
+        background: var(--red);
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <span class="back-btn" onclick="goBack()">←</span>
+        Account
+    </div>
+
+    <div class="content">
+        <label>Name</label>
+        <div id="accName" class="field-box">Loading...</div>
+
+        <label>ID</label>
+        <div id="accId" class="field-box">-</div>
+
+        <label>Affiliated unit</label>
+        <div id="accUnit" class="field-box">-</div>
+
+        <div class="logout-btn" onclick="logout()">Sign Out</div>
+    </div>
+
+</div>
+
+
+<script>
+    // ปุ่ม Back
+    function goBack() {
+        window.location.href = "/pages/homeRescue.html?token=" + localStorage.getItem("authToken");
+    }
+
+    // โหลดข้อมูลจาก localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+        const name = localStorage.getItem("rescueName");
+        const rescueId = localStorage.getItem("rescueId");
+        const unit = localStorage.getItem("rescueUnit");
+
+        document.getElementById("accName").textContent = name || "-";
+        document.getElementById("accId").textContent = rescueId || "-";
+        document.getElementById("accUnit").textContent = unit || "-";
+    });
+
+    // Logout
+    function logout() {
+        localStorage.clear();
+        window.location.href = "/pages/signin.html";
+    }
+</script>
+
+</body>
+</html>

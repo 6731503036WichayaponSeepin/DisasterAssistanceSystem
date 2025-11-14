@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rescue Team</title>
+
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+            background: #d81324;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            min-height: 100vh;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #0A53E4;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 16px;
+            top: 20px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background: #fff;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+        }
+
+        .search-box button {
+            background: none;
+            border: none;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .team-create {
+            margin-top: 18px;
+            border: 1px solid #222;
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .team-create span {
+            font-size: 22px;
+        }
+
+        .team-card {
+            border: 1px solid #ddd;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            background: #f5f5f5;
+        }
+
+        .my-team {
+            background: #dcecff;
+            border-color: #0A53E4;
+        }
+
+        .t-head {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .t-sub {
+            font-size: 14px;
+            color: #444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <span class="back-btn" onclick="goBack()">←</span>
+            Rescue team
+        </div>
+
+        <div class="content">
+
+            <!-- Search Team -->
+            <div class="search-box">
+                <input id="teamIdInput" type="text" placeholder="Team ID: 12345" />
+                <button onclick="searchTeam()">🔍</button>
+            </div>
+
+            <!-- กล่องแสดงทีมทั้งหมด -->
+            <div id="teamList"></div>
+
+            <!-- ปุ่ม Create Team -->
+            <div id="createTeamBox" class="team-create" onclick="goToCreateTeam()" style="display:none;">
+                <span>➕</span> Team
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8080";
+
+        const token = localStorage.getItem("authToken");
+        const rescueDbId = localStorage.getItem("rescueDbId");
+
+        if (!token || !rescueDbId) {
+            window.location.href = "/pages/signin.html?error=need_login";
+        }
+
+        function goBack() {
+            window.location.href = `/pages/homeRescue.html?token=${encodeURIComponent(token)}`;
+        }
+
+        function goToCreateTeam() {
+            window.location.href = `/pages/createTeam.html?token=${encodeURIComponent(token)}`;
+        }
+
+        /* ----------------------------------------------------------
+           ⭐ โหลดทีมทั้งหมด
+        ----------------------------------------------------------- */
+        async function loadAllTeams() {
+            const res = await fetch(`${API_BASE}/api/rescue-teams`, {
+                headers: { Authorization: "Bearer " + token }
+            });
+            return await res.json();
+        }
+
+        /* ----------------------------------------------------------
+           ⭐ โหลดข้อมูลของตัวผู้ใช้เอง
+        ----------------------------------------------------------- */
+        async function loadMyTeam() {
+            const res = await fetch(`${API_BASE}/api/rescues/main/${rescueDbId}`, {
+                headers: { Authorization: "Bearer " + token }
+            });
+            return await res.json();
+        }
+
+        /* ----------------------------------------------------------
+           ⭐ แสดงทีมของตัวเอง + ทีมอื่นๆ
+        ----------------------------------------------------------- */
+        async function initTeams() {
+            const my = await loadMyTeam();
+            const allTeams = await loadAllTeams();
+
+            const container = document.getElementById("teamList");
+            container.innerHTML = "";
+
+            //--- ดึงค่าใหม่จาก backend ----
+            const myTeamInfo = my.teamInfo || null;
+            const myTeamId = my.teamInfo?.teamId || null;
+            const myTeamName = myTeamInfo?.teamName || null;
+            const myDistrict = my.districtName || "-";
+            const myIsLeader = my.isLeader || false;
+
+            /* ----------------------------------------------------------
+               🔵 ถ้ามีทีม → ซ่อนปุ่มสร้างทีม + แสดงทีมตัวเองบนสุด
+            ----------------------------------------------------------- */
+            if (myTeamId) {
+                document.getElementById("createTeamBox").style.display = "none";
+
+                const box = document.createElement("div");
+                box.className = "team-card my-team";
+
+                box.innerHTML = `
+                    <div class="t-head">
+                        <span><b>Team :</b> ${myTeamName}</span>
+                        <span><b>ID :</b> ${myTeamId}</span>
+                    </div>
+                    <div class="t-sub">
+                        Rescue Team ${myIsLeader ? "Leader" : "Member"}<br>
+                        ${myTeamInfo.leader}
+                    </div>
+                `;
+
+                box.addEventListener("click", () => {
+                    window.location.href =
+                        `/pages/viewTeam.html?token=${encodeURIComponent(token)}` +
+                        `&teamId=${myTeamId}` +
+                        `&district=${encodeURIComponent(myDistrict)}` +
+                        `&isLeader=${myIsLeader}`;
+                });
+
+                container.appendChild(box);
+            } else {
+                // ไม่มีทีม: แสดงปุ่มสร้างทีม
+                document.getElementById("createTeamBox").style.display = "flex";
+            }
+
+            /* ----------------------------------------------------------
+               🔵 แสดงทีมอื่นๆ
+            ----------------------------------------------------------- */
+            allTeams.forEach(team => {
+                if (team.teamId === myTeamId) return;
+
+                const item = document.createElement("div");
+                item.className = "team-card";
+
+                item.innerHTML = `
+                    <div class="t-head">
+                        <span><b>Team :</b> ${team.name}</span>
+                        <span><b>ID :</b> ${team.teamId}</span>
+                    </div>
+                    <div class="t-sub">
+                        Rescue Team Leader<br>
+                        ${team.leader?.detail?.name ?? "-"}
+                    </div>
+                `;
+
+                // ไม่สามารถกดทีมอื่นได้
+                item.style.opacity = "0.6";
+                item.style.cursor = "not-allowed";
+
+                container.appendChild(item);
+            });
+        }
+
+        /* ----------------------------------------------------------
+           🔍 ค้นหา Team (กดได้เฉพาะทีมตัวเอง)
+        ----------------------------------------------------------- */
+        async function searchTeam() {
+            const inputId = document.getElementById("teamIdInput").value.trim();
+
+            if (!inputId) {
+                alert("กรุณากรอก Team ID");
+                return;
+            }
+
+            const url = `${API_BASE}/api/rescue-teams/${inputId}/members/${localStorage.getItem("rescueId")}`;
+            const res = await fetch(url, {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (res.status === 403) {
+                alert("❌ ไม่สามารถเข้าทีมนี้ได้ (ไม่ได้อยู่ในทีม)");
+                return;
+            }
+
+            if (!res.ok) {
+                alert("❌ ไม่พบทีมที่ค้นหา");
+                return;
+            }
+
+            const data = await res.json();
+
+            window.location.href =
+                `/pages/viewTeam.html?token=${encodeURIComponent(token)}` +
+                `&teamId=${inputId}` +
+                `&district=${encodeURIComponent(data.district)}` +
+                `&isLeader=${data.isViewerLeader}`;
+        }
+
+        /* ----------------------------------------------------------
+           🔥 Init Page
+        ----------------------------------------------------------- */
+        initTeams();
+
+    </script>
+
+</body>
+
+</html>

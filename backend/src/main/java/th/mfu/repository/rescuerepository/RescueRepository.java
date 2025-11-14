@@ -24,7 +24,7 @@ public interface RescueRepository extends JpaRepository<Rescue, Long> {
     List<Rescue> findAllByRescueTeam(RescueTeam team);
 
     // ✅ ดึงกู้ภัยที่ยังไม่มีทีม (ใช้ตอนเพิ่มสมาชิกเข้าใหม่)
-    List<Rescue> findByRescueTeamIsNull();
+    List<Rescue> findAllByRescueTeamIsNull();
 
     // ✅ ตรวจสอบว่ามี RescueId นี้อยู่ในระบบหรือไม่
     boolean existsByRescueId(String rescueId);

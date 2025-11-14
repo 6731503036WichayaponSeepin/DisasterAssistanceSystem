@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Select members</title>
+  <style>
+    :root {
+      --blue: #0A53E4;
+      --red: #D81324;
+      --card: #FFFFFF;
+      --row: #E5E7EB;
+      --green: #16A34A;
+      --green-press: #12833C;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--red);
+      display: flex;
+      justify-content: center;
+      padding: 24px 12px;
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 440px;
+      border-radius: 26px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--blue);
+      color: #fff;
+      padding: 14px 20px 18px;
+      position: relative;
+    }
+
+    .header-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 22px;
+    }
+
+    .back {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .header-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+    }
+
+    .body {
+      flex: 1;
+      padding: 18px 20px 24px;
+      background: #fff;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+    }
+
+    .member-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .member-list {
+      margin-top: 6px;
+    }
+
+    .row {
+      background: var(--row);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: transform .05s;
+    }
+
+    .row:active {
+      transform: scale(.99);
+    }
+
+    .row-main {
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+    }
+
+    .row-main span:nth-child(1) {
+      font-weight: 600;
+    }
+
+    .row-main span:nth-child(2) {
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .select-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #4B5563;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .row.selected .select-dot {
+      background: #4B5563;
+      color: #fff;
+    }
+
+    .hint {
+      font-size: 12px;
+      margin-top: 6px;
+      opacity: .8;
+    }
+
+    .btn {
+      margin-top: 18px;
+      width: 100%;
+      height: 44px;
+      border-radius: 8px;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .btn:active {
+      background: var(--green-press);
+    }
+
+    .msg {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .msg.error {
+      color: #DC2626;
+    }
+
+    .msg.ok {
+      color: #16A34A;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone">
+    <div class="header">
+      <span class="back" id="backBtn">←</span>
+      <div class="header-title">Team</div>
+      <div class="header-sub">
+        <span>District: <span id="districtLabel">-</span></span>
+        <span>ID: <span id="teamIdLabel">-</span></span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="member-header">
+        <span>Member</span>
+        <span style="font-size:13px;">Select</span>
+      </div>
+      <div id="memberList" class="member-list"></div>
+      <div class="hint">เลือกสมาชิกอย่างน้อย 5 คน และไม่เกิน 10 คน</div>
+
+      <button id="confirmBtn" class="btn" disabled>Confirm</button>
+      <div id="msg" class="msg"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8080";
+
+    /* -----------------------------------------
+       SYNC TOKEN จาก URL ถ้ามี
+    ------------------------------------------*/
+    (function syncTokenFromUrl() {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get("token");
+      if (t) localStorage.setItem("authToken", t);
+    })();
+
+    /* -----------------------------------------
+       โหลด token และ rescueDbId
+    ------------------------------------------*/
+    const token = localStorage.getItem("authToken");
+    const rescueDbId = localStorage.getItem("rescueDbId");
+
+    if (!token || !rescueDbId) {
+      window.location.href = "/pages/signin.html?error=need_login";
+    }
+
+    let leaderRescueId = localStorage.getItem("rescueId") || null;
+
+    /* -----------------------------------------
+       LOAD PARAMS
+    ------------------------------------------*/
+    const params = new URLSearchParams(window.location.search);
+    const teamId = params.get("teamId");
+    const districtName = params.get("district") || "-";
+
+    document.getElementById("teamIdLabel").textContent = teamId || "-";
+    document.getElementById("districtLabel").textContent = districtName;
+
+    /* -----------------------------------------
+       BACK BUTTON
+    ------------------------------------------*/
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "/pages/rescueTeam.html?token=" + encodeURIComponent(token);
+    });
+
+    /* -----------------------------------------
+       MESSAGE fn
+    ------------------------------------------*/
+    function showMsg(text, isError) {
+      const el = document.getElementById("msg");
+      el.textContent = text;
+      el.className = "msg " + (isError ? "error" : "ok");
+    }
+
+    /* -----------------------------------------
+       ดึง rescueId ของหัวหน้าทีม (viewer)
+    ------------------------------------------*/
+    async function ensureLeaderRescueId() {
+      if (leaderRescueId) return leaderRescueId;
+
+      const res = await fetch(`${API_BASE}/api/rescues/main/${rescueDbId}`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      if (!res.ok) throw new Error("cannot load rescue main");
+
+      const data = await res.json();
+      leaderRescueId = data.rescueId;
+
+      localStorage.setItem("rescueId", leaderRescueId);
+      return leaderRescueId;
+    }
+
+    /* -----------------------------------------
+       RENDER MEMBER LIST
+    ------------------------------------------*/
+    const selected = new Set();
+
+    function renderList(items) {
+      const container = document.getElementById("memberList");
+      container.innerHTML = "";
+
+      if (!items.length) {
+        container.innerHTML = "<div style='font-size:13px;opacity:.7;'>ยังไม่มีรายชื่อกู้ภัยที่ว่างจากทีม</div>";
+        return;
+      }
+
+      items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.dataset.rescueId = item.rescueId;
+
+        const main = document.createElement("div");
+        main.className = "row-main";
+        main.innerHTML = `<span>${item.name}</span><span>${item.rescueId}</span>`;
+
+        const dot = document.createElement("div");
+        dot.className = "select-dot";
+
+        row.appendChild(main);
+        row.appendChild(dot);
+
+        row.addEventListener("click", () => {
+          const id = row.dataset.rescueId;
+
+          if (selected.has(id)) selected.delete(id);
+          else selected.add(id);
+
+          row.classList.toggle("selected");
+          updateButtonState();
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    /* -----------------------------------------
+       ENABLE / DISABLE ปุ่ม Confirm
+    ------------------------------------------*/
+    function updateButtonState() {
+      const count = selected.size;
+      const btn = document.getElementById("confirmBtn");
+
+      if (count >= 5 && count <= 10) {
+        btn.disabled = false;
+        showMsg(`เลือกแล้ว ${count} คน`, false);
+      } else {
+        btn.disabled = true;
+        if (count === 0) showMsg("", false);
+        else if (count < 5) showMsg("ต้องเลือกอย่างน้อย 5 คน", true);
+        else showMsg("เลือกได้สูงสุด 10 คน", true);
+      }
+    }
+
+    /* -----------------------------------------
+       โหลดรายชื่อกู้ภัยที่ยังไม่มีทีม
+    ------------------------------------------*/
+    async function loadAvailableRescues() {
+      try {
+        const res = await fetch(`${API_BASE}/api/rescues/available`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) throw new Error("Fail load available");
+
+        const data = await res.json();
+        renderList(data);
+
+      } catch (err) {
+        console.error(err);
+        showMsg("โหลดรายชื่อกู้ภัยไม่สำเร็จ", true);
+      }
+    }
+
+    /* -----------------------------------------
+       CONFIRM → ADD MEMBERS
+    ------------------------------------------*/
+    document.getElementById("confirmBtn").addEventListener("click", async () => {
+      const ids = Array.from(selected);
+
+      if (ids.length < 5 || ids.length > 10) {
+        updateButtonState();
+        return;
+      }
+
+      if (!teamId) {
+        showMsg("ไม่พบ teamId", true);
+        return;
+      }
+
+      showMsg("กำลังเพิ่มสมาชิกเข้าทีม...", false);
+      document.getElementById("confirmBtn").disabled = true;
+
+      try {
+        const leaderId = await ensureLeaderRescueId();
+
+        for (const rid of ids) {
+
+          const res = await fetch(
+            `${API_BASE}/api/rescue-teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(rid)}/add/${encodeURIComponent(leaderId)}`,
+            {
+              method: "PUT",
+              headers: { "Authorization": "Bearer " + token }
+            }
+          );
+
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            showMsg(j.message || `เพิ่มสมาชิก ${rid} ไม่สำเร็จ (${res.status})`, true);
+            document.getElementById("confirmBtn").disabled = false;
+            return;
+          }
+        }
+
+        showMsg("เพิ่มสมาชิกสำเร็จ", false);
+
+        // ไปหน้า viewTeam
+        const url = `/pages/viewTeam.html?token=${encodeURIComponent(token)}&teamId=${encodeURIComponent(teamId)}&district=${encodeURIComponent(districtName)}&isLeader=true`;
+
+        setTimeout(() => {
+          window.location.href = url;
+        }, 700);
+
+      } catch (err) {
+        console.error(err);
+        showMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
+        document.getElementById("confirmBtn").disabled = false;
+      }
+    });
+
+    /* -----------------------------------------
+       เริ่มทำงาน
+    ------------------------------------------*/
+    ensureLeaderRescueId().catch(err => {
+      console.error(err);
+      showMsg("โหลดข้อมูลหัวหน้าทีมไม่สำเร็จ", true);
+    });
+
+    loadAvailableRescues();
+  </script>
+</body>
+
+</html>

@@ -1,254 +1,407 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>User Home</title>
-<style>
-  :root{
-    --blue:#0A53E4;
-    --red:#E02424;
-    --yellow:#F7B500;
-    --navy:#1D1A72;
-    --teal:#00B7A6;
-    --card-radius:12px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    background:#f0f2f6;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:16px;
-  }
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Home</title>
 
-  /* phone frame */
-  .phone{
-    width:min(360px,100%);
-    height:640px;
-    background:#fff;
-    border-radius:0;
-    box-shadow:0 10px 25px rgba(0,0,0,.2);
-    overflow:hidden;
-    position:relative;
-  }
+    <style>
+        :root {
+            --blue: #0A53E4;
+            --red: #D81324;
+            --yellow: #F7B500;
+            --navy: #1D1A72;
+            --teal: #00B7A6;
 
-  /* top blue header */
-  .header{
-    background:var(--blue);
-    height:190px;
-    padding:20px 18px 0;
-    color:#fff;
-    position:relative;
-  }
-  .header-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-  }
-  .user-info{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .avatar{
-    width:52px;
-    height:52px;
-    border-radius:50%;
-    border:2px solid #fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-  }
-  .user-text .name{
-    font-size:14px;
-    font-weight:600;
-    line-height:1.3;
-    margin-bottom:2px;
-  }
-  .user-text .phone{
-    font-size:12px;
-    opacity:.9;
-  }
+            --radius-card: 18px;
+            --radius-container: 26px;
+        }
 
-  /* hamburger */
-  .menu-btn{
-    width:26px;
-    cursor:pointer;
-    padding-top:4px;
-  }
-  .menu-btn span{
-    display:block;
-    height:3px;
-    border-radius:999px;
-    background:#fff;
-    margin-bottom:5px;
-  }
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  /* white sheet area */
-  .sheet{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    top:150px;
-    background:#fff;
-    border-radius:18px 18px 0 0;
-    padding:26px 20px 24px;
-  }
+        body {
+            font-family: Inter, sans-serif;
+            background: var(--red);
+            display: flex;
+            justify-content: center;
+            padding: 30px 14px;
+        }
 
-  /* grid for 4 cards */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    grid-row-gap:18px;
-    grid-column-gap:24px;
-    justify-items:center;
-  }
+        /* MAIN WHITE CONTAINER (เหมือนในภาพ) */
+        .container {
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            /* ควบคุมไม่ให้แตกบน Desktop */
+            background: white;
+            border-radius: var(--radius-container);
+            padding-bottom: 40px;
+            min-height: 700px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
 
-  .card{
-    width:149px;
-    max-width:100%;
-    aspect-ratio:1/1;
-    border-radius:var(--card-radius);
-    box-shadow:0 8px 8px rgba(0,0,0,.25);
-    padding:14px 12px;
-    position:relative;
-    color:#fff;
-    overflow:hidden;
-    cursor:pointer;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-  }
-  .card-title{
-    font-size:20px;
-    font-weight:500;
-    letter-spacing:-0.43px;
-    text-shadow:0 8px 8px rgba(0,0,0,0.25);
-    line-height:1.2;
-  }
-  .card-icon{
-    align-self:flex-end;
-    width:52px;
-    height:52px;
-    border-radius:50%;
-    opacity:.85;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    /* ตรงนี้เดี๋ยวเปลี่ยนเป็น SVG ที่จะให้ */
-  }
+        /* HEADER */
+        .header {
+            background: var(--blue);
+            color: white;
+            padding: 18px 22px 28px;
+        }
 
-  /* badge บนปุ่ม Request */
-  .badge{
-    position:absolute;
-    right:10px;
-    top:10px;
-    background:#FFCB3C;
-    color:#fff;
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    font-size:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:600;
-    box-shadow:0 3px 6px rgba(0,0,0,.3);
-  }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-  .card--request{background:var(--red);}
-  .card--follow{background:var(--yellow);}
-  .card--action{background:var(--navy);}
-  .card--completed{background:var(--teal);}
-</style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0;
+        }
+
+        .avatar::after {
+            content: "";
+            width: 28px;
+            height: 28px;
+            background: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z"/></svg>');
+            background-size: cover;
+        }
+
+        .user-name {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .user-phone {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .menu-btn span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        /* GRID MENU */
+        .content {
+            margin-top: 40px;
+            /* ดึงขึ้นมาให้ทับ header แบบในภาพ */
+            padding: 28px 22px 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* CARD STYLE - แบบภาพ */
+        .card {
+            border-radius: var(--radius-card);
+            padding: 18px 18px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .card-icon {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            font-size: 38px;
+            /* ให้ใหญ่แบบในภาพ */
+            opacity: 0.85;
+        }
+
+        /* COLORS */
+        .card--red {
+            background: var(--red);
+        }
+
+        .card--yellow {
+            background: var(--yellow);
+            color: #222;
+        }
+
+        .card--navy {
+            background: var(--navy);
+        }
+
+        .card--teal {
+            background: var(--teal);
+        }
+
+        /* BADGE */
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FFCB3C;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        /* SIDE MENU อยู่ใน container */
+        .side-menu {
+            position: absolute;
+            top: 0;
+            right: -260px;
+            /* ซ่อนเมนูอยู่หลัง container */
+            width: 230px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            transition: right 0.3s ease;
+            z-index: 50;
+            /* สูงกว่าเนื้อหาใน container */
+        }
+
+        .side-menu.open {
+            right: 0;
+            /* เลื่อนออกมาจากขวาของกล่อง */
+        }
+
+        /* OVERLAY ต้องอยู่เฉพาะใน container ไม่ใช่ทั้งเบราว์เซอร์ */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            display: none;
+            z-index: 40;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="phone">
-  <div class="header">
-    <div class="header-row">
-      <div class="user-info">
-        <div class="avatar">👤</div>
-        <div class="user-text">
-          <div class="name">นางสาว เจนจิรา อนุสรณ์</div>
-          <div class="phone">081-123-4567</div>
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-row">
+                <div style="margin-top:10px; font-size:13px; opacity:0.9;">
+                    หน่วย: <span id="unitName">-</span><br>
+                    ทีมกู้ภัย: <span id="teamName">-</span>
+                    (สมาชิก <span id="teamCount">0</span> คน)
+                </div>
+                <div class="user-info">
+                    <div class="avatar"></div>
+                    <div>
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-phone" id="userPhone">-</div>
+                    </div>
+                </div>
+
+                <div class="menu-btn" id="menuBtn">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="menu-btn" id="menuBtn">
-        <span></span><span></span><span></span>
-      </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <div class="grid">
+
+                <!-- 1. REQUEST -->
+                <div class="card card--red">
+                    <span class="badge">5</span>
+                    <div>
+                        <div class="card-title">Request</div>
+                        <div class="card-sub">Evacuate from the area</div>
+                    </div>
+                    <div class="card-icon">🚨</div>
+                </div>
+
+                <!-- 2. FOLLOW -->
+                <div class="card card--yellow">
+                    <div>
+                        <div class="card-title">Follow Cases</div>
+                        <div class="card-sub">Track rescue status</div>
+                    </div>
+                    <div class="card-icon">📍</div>
+                </div>
+
+                <!-- 3. IN ACTION -->
+                <div class="card card--navy">
+                    <div class="card-title">In Action</div>
+                    <div class="card-icon">🤝</div>
+                </div>
+
+                <!-- 4. COMPLETED -->
+                <div class="card card--teal">
+                    <div class="card-title">Completed Cases</div>
+                    <div class="card-icon">✔</div>
+                </div>
+
+            </div>
+
+        </div>
+        <!-- SIDE MENU -->
+        <div id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <span id="closeMenu" class="back-btn">←</span>
+            </div>
+
+            <div class="menu-item" onclick="goToRescueTeam()">
+                <span class="icon">👥</span> Rescue team
+            </div>
+
+            <div class="menu-item" onclick="goToAccount()">
+                <span class="icon">⚫</span> Account
+            </div>
+        </div>
+
+        <!-- OVERLAY -->
+        <div id="menuOverlay" class="overlay"></div>
+
     </div>
-  </div>
 
-  <div class="sheet">
-    <div class="grid">
-      <!-- Red: Request -->
-      <div class="card card--request" data-type="request">
-        <span class="badge" id="reqBadge">5</span>
-        <div class="card-title">Request</div>
-        <div class="card-icon">
-          <!-- ใส่ SVG ไอคอนไซเรนตรงนี้ -->
-          ⚠️
-        </div>
-      </div>
+    <script>
+        // ✔ อ่าน token จาก URL และเก็บลง localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromURL = urlParams.get("token");
 
-      <!-- Yellow: Follow Cases -->
-      <div class="card card--follow" data-type="follow">
-        <div class="card-title">Follow<br>Cases</div>
-        <div class="card-icon">
-          <!-- SVG สำหรับ Follow Cases -->
-          ⤵
-        </div>
-      </div>
+        if (tokenFromURL) {
+            localStorage.setItem("authToken", tokenFromURL);
+        }
 
-      <!-- Navy: In Action -->
-      <div class="card card--action" data-type="inaction">
-        <div class="card-title">In Action</div>
-        <div class="card-icon">
-          <!-- SVG สำหรับ In Action -->
-          🤝
-        </div>
-      </div>
+        document.addEventListener("DOMContentLoaded", async () => {
 
-      <!-- Teal: Completed Cases -->
-      <div class="card card--completed" data-type="completed">
-        <div class="card-title">Completed<br>Cases</div>
-        <div class="card-icon">
-          <!-- SVG สำหรับ Completed Cases -->
-          ✔
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+            /* -------------------- MENU -------------------- */
+            const menuBtn = document.getElementById("menuBtn");
+            const sideMenu = document.getElementById("sideMenu");
+            const menuOverlay = document.getElementById("menuOverlay");
+            const closeMenu = document.getElementById("closeMenu");
 
-<script>
-  // คลิกปุ่มเมนู
-  document.getElementById("menuBtn").addEventListener("click", function () {
-    alert("เปิดเมนู (ยังไม่ทำระบบเมนู)");
-  });
+            function openMenu() {
+                sideMenu.classList.add("open");
+                menuOverlay.classList.add("show");
+            }
 
-  // คลิกแต่ละการ์ด
-  document.querySelectorAll(".card").forEach(function(card){
-    card.addEventListener("click", function(){
-      const type = this.dataset.type;
-      // ตรงนี้เดี๋ยวค่อยเชื่อมกับหน้าอื่น / API
-      console.log("clicked:", type);
-      alert("เปิดหน้า: " + type);
-    });
-  });
+            function closeMenuFn() {
+                sideMenu.classList.remove("open");
+                menuOverlay.classList.remove("show");
+            }
 
-  // ตัวอย่าง: เปลี่ยนจำนวนแจ้งเตือนบน Request ได้ด้วย JS
-  // สมมติในอนาคตจะดึงจำนวนเคสใหม่จาก backend
-  const newRequestCount = 5;  // เปลี่ยนตัวเลขได้
-  document.getElementById("reqBadge").textContent = newRequestCount;
-</script>
+            menuBtn.addEventListener("click", openMenu);
+            closeMenu.addEventListener("click", closeMenuFn);
+            menuOverlay.addEventListener("click", closeMenuFn);
+
+            /* -------------------- NAVIGATION -------------------- */
+            window.goToAccount = function () {
+                const token = localStorage.getItem("authToken");
+                window.location.href = "/pages/accountRescue.html?token=" + encodeURIComponent(token);
+            };
+
+            window.goToRescueTeam = function () {
+                const token = localStorage.getItem("authToken");
+                window.location.href = "/pages/rescueTeam.html?token=" + encodeURIComponent(token);
+            };
+
+            const token = localStorage.getItem("authToken");
+            const rescueDbId = localStorage.getItem("rescueDbId");
+
+            if (!token) {
+                alert("Token หาย! กรุณาเข้าสู่ระบบใหม่");
+                return;
+            }
+
+            if (!rescueDbId) {
+                alert("ไม่พบข้อมูลผู้กู้ภัย กรุณาเข้าสู่ระบบใหม่");
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://localhost:8080/api/rescues/main/${rescueDbId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token
+                    }
+                });
+
+                if (!res.ok) {
+                    console.log("ERROR:", res.status);
+                    alert("โหลดข้อมูลไม่ได้: " + res.status);
+                    return;
+                }
+
+                const data = await res.json();
+                console.log("API DATA:", data);
+
+                // SET UI
+                document.getElementById("userName").textContent = data.name || "-";
+                document.getElementById("userPhone").textContent = data.rescueId || "-";
+                document.getElementById("unitName").textContent = data.unit || "-";
+
+                document.getElementById("teamName").textContent =
+                    data.rescueTeamName ?? "ไม่อยู่ในทีม";
+
+                document.getElementById("teamCount").textContent =
+                    data.teamInfo?.memberCount ?? 0;
+
+            } catch (err) {
+                console.error(err);
+                alert("เกิดข้อผิดพลาดเชื่อมต่อ API");
+            }
+        });
+    </script>
+
 
 </body>
+
 </html>
