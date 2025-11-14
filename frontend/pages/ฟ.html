@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Home</title>
+
+<style>
+    :root{
+        --blue:#0A53E4;
+        --card-bg:#FFFFFF;
+        --radius:28px;
+        --font:'Inter', sans-serif;
+        --shadow:0 6px 18px rgba(0,0,0,0.16);
+
+        --sos-red:#E51010;
+        --sus-yellow:#FFC319;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
+
+    body{
+        background:var(--blue);
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+    }
+
+    .container{
+        width:min(420px,100%);
+        background:var(--card-bg);
+        margin-top:40px;
+        padding:30px 24px;
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        margin-bottom:40px;
+        position:relative;
+    }
+
+    /* HAMBURGER */
+    .hamburger{
+        position:absolute;
+        right:20px;
+        top:20px;
+        font-size:30px;
+        color:var(--blue);
+        cursor:pointer;
+    }
+
+    .menu{
+        position:absolute;
+        right:20px;
+        top:60px;
+        background:white;
+        border-radius:14px;
+        width:150px;
+        box-shadow:0 6px 20px rgba(0,0,0,0.2);
+        padding:10px 0;
+        display:none;
+        z-index:10;
+    }
+
+    .menu a{
+        display:block;
+        padding:12px 18px;
+        text-decoration:none;
+        color:#111;
+        font-size:15px;
+    }
+
+    .menu a:hover{
+        background:#F2F4F7;
+    }
+
+    .menu a.danger{
+        color:#E51010;
+        font-weight:600;
+    }
+    .menu a.danger:hover{
+        background:#FFE5E5;
+    }
+
+    .profile-box{
+        display:flex;
+        align-items:center;
+        gap:14px;
+        margin-bottom:20px;
+        margin-top:20px;
+    }
+
+    .profile-icon{
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        border:3px solid var(--blue);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:28px;
+        color:var(--blue);
+        background:white;
+    }
+
+    .name{
+        font-size:18px;
+        font-weight:700;
+        color:#111;
+    }
+
+    .phone{
+        font-size:14px;
+        color:#333;
+        margin-top:4px;
+        opacity:.8;
+    }
+
+    .address-btn{
+        width:100%;
+        background:#E8EDF7;
+        border:1px solid #C7D2E5;
+        padding:10px 14px;
+        border-radius:12px;
+        font-size:14px;
+        color:#0A53E4;
+        font-weight:600;
+        text-align:left;
+        margin-bottom:30px;
+        cursor:pointer;
+    }
+
+    /* ปุ่ม help เท่ากัน */
+    .card{
+        width:100%;
+        min-height:140px;
+        padding:30px 26px;
+        border-radius:20px;
+        margin-bottom:26px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        box-shadow:0 4px 12px rgba(0,0,0,0.12);
+        cursor:pointer;
+        transition:.2s;
+    }
+
+    .card:hover{
+        transform:translateY(-3px);
+        box-shadow:0 8px 22px rgba(0,0,0,0.18);
+    }
+
+    .card-title{
+        font-size:24px;
+        font-weight:800;
+        margin-bottom:6px;
+        color:white;
+    }
+
+    .card-sub{
+        font-size:14px;
+        color:white;
+        opacity:.9;
+    }
+
+    .icon-box svg{
+        width:105px;
+        height:auto;
+    }
+
+    .sos{ background:var(--sos-red); }
+    .sus{ background:var(--sus-yellow); }
+
+    .sus .card-title,
+    .sus .card-sub{
+        color:#111;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HAMBURGER -->
+    <div class="hamburger" id="menuButton">☰</div>
+
+    <div class="menu" id="dropdownMenu">
+        <a id="btnAccount">Account</a>
+        <a class="danger" id="btnLogout">Sign out</a>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="profile-box">
+        <div class="profile-icon">👤</div>
+        <div>
+            <div class="name" id="userName">Loading...</div>
+            <div class="phone" id="userPhone"></div>
+        </div>
+    </div>
+
+    <!-- ADDRESS BUTTON -->
+    <button class="address-btn" id="btnAddress">➕ Address</button>
+
+    <!-- SOS CARD -->
+    <div class="card sos" id="cardSOS">
+        <div>
+            <div class="card-title">SOS</div>
+            <div class="card-sub">Evacuate from the area</div>
+        </div>
+        <div class="icon-box">
+            <!-- เรือ -->
+            <!-- SVG เรือเหมือนเดิม -->
+            <svg width="152" height="72" viewBox="0 0 152 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- ... SVG ของเดิม ... -->
+            </svg>
+        </div>
+    </div>
+
+    <!-- SUSTENANCE CARD -->
+    <div class="card sus" id="cardSustenance">
+        <div>
+            <div class="card-title">Sustenance</div>
+            <div class="card-sub">Water / Food / Medicine</div>
+        </div>
+
+        <div class="icon-box">
+            <!-- SVG เดิม -->
+            <svg width="100" height="101" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- … SVG ของเดิม … -->
+            </svg>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const API_BASE   = "http://localhost:8080";
+const TOKEN_KEY  = "authToken";
+const ROLE_KEY   = "authRole";
+
+const PAGE_SIGNIN  = "/";
+const PAGE_ADDRESS = "/pages/location";
+
+/* อ่าน query param */
+function getQueryParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  let token = localStorage.getItem(TOKEN_KEY);
+  let role  = localStorage.getItem(ROLE_KEY);
+
+  const urlToken = getQueryParam("token");
+  if (!token && urlToken) {
+    token = urlToken;
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  if (!role) {
+    role = "USER";
+    localStorage.setItem(ROLE_KEY, role);
+  }
+
+  if (!token || role !== "USER") {
+    window.location.href = PAGE_SIGNIN;
+    return;
+  }
+
+  const userNameEl  = document.getElementById("userName");
+  const userPhoneEl = document.getElementById("userPhone");
+
+  fetch(API_BASE + "/api/users/me", {
+    headers: { "Authorization": "Bearer " + token }
+  })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => {
+      userNameEl.textContent  = data.name || "User";
+      userPhoneEl.textContent = data.phoneNumber || "";
+    })
+    .catch(() => {
+      userNameEl.textContent  = "User";
+      userPhoneEl.textContent = "";
+    });
+
+  // MENU ------------------------------------------------
+  const menuBtn   = document.getElementById("menuButton");
+  const menuBox   = document.getElementById("dropdownMenu");
+  const btnLogout = document.getElementById("btnLogout");
+
+  menuBtn.onclick = () => {
+    menuBox.style.display = menuBox.style.display === "block" ? "none" : "block";
+  };
+
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !menuBox.contains(e.target)) {
+      menuBox.style.display = "none";
+    }
+  });
+
+  btnLogout.onclick = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
+    window.location.href = PAGE_SIGNIN;
+  };
+
+  // ADDRESS PAGE ---------------------------------------
+  const btnAddress = document.getElementById("btnAddress");
+  btnAddress.onclick = () => {
+    window.location.href = PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
+  };
+});
+</script>
+
+</body>
+</html>
