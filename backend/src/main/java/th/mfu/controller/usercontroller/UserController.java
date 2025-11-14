@@ -28,12 +28,13 @@ public class UserController {
     @Autowired private DetailRepository detailRepo;
     @Autowired private JwtUtil jwtUtil;
 
-    // ✅ สมัครสมาชิก
+    // ===========================
+    //   REGISTER USER
+    // ===========================
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         Map<String, Object> response = new HashMap<>();
 
-        // 🔹 ต้องมีข้อมูล Detail
         if (user.getDetail() == null) {
             response.put("status", "error");
             response.put("message", "Detail is required");
@@ -42,38 +43,37 @@ public class UserController {
 
         Detail detail = user.getDetail();
 
-        // 🔹 เช็กว่ามีเบอร์โทรไหม
         if (detail.getPhoneNumber() == null || detail.getPhoneNumber().isBlank()) {
-            response.put("status", "error");
-            response.put("message", "Phone number is required.");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(Map.of(
+                "status", "error",
+                "message", "Phone number is required"
+            ));
         }
 
-        // 🔹 ตรวจสอบเบอร์ซ้ำจากตาราง detail (ไม่ให้เบอร์ซ้ำกับใครทั้ง user/rescue)
         if (detailRepo.findByPhoneNumber(detail.getPhoneNumber()).isPresent()) {
-            response.put("status", "error");
-            response.put("message", "This phone number is already registered.");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(Map.of(
+                "status", "error",
+                "message", "This phone number is already registered"
+            ));
         }
 
-        // 🔹 บันทึก detail ก่อน
         Detail savedDetail = detailRepo.save(detail);
         user.setDetail(savedDetail);
 
-        // 🔹 ตั้ง role เป็น USER
         user.setRole("USER");
 
-        // 🔹 บันทึก user
-        User saved = userRepo.save(user);
+        User savedUser = userRepo.save(user);
 
-        response.put("status", "success");
-        response.put("message", "User registered successfully");
-        response.put("user", saved);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "User registered successfully",
+            "user", savedUser
+        ));
     }
 
-    // ✅ เข้าสู่ระบบ (Login) ด้วย name + phone (จาก Detail)
+    // ===========================
+    //   LOGIN USER
+    // ===========================
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginRequest) {
         String name = loginRequest.get("name");
@@ -86,7 +86,6 @@ public class UserController {
             ));
         }
 
-        // 1) หา Detail จาก name + phoneNumber
         Optional<Detail> optDetail = detailRepo.findByNameAndPhoneNumber(name, phoneNumber);
         if (optDetail.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of(
@@ -94,9 +93,9 @@ public class UserController {
                 "message", "Invalid name or phone number"
             ));
         }
+
         Detail detail = optDetail.get();
 
-        // 2) หา User จาก Detail
         Optional<User> optUser = userRepo.findByDetail(detail);
         if (optUser.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of(
@@ -107,7 +106,7 @@ public class UserController {
 
         User user = optUser.get();
 
-        // ✅ สร้าง JWT Token (subject = phoneNumber จาก Detail)
+        // Generate JWT
         String token = jwtUtil.generateToken(detail.getPhoneNumber(), user.getRole());
 
         return ResponseEntity.ok(Map.of(
@@ -120,45 +119,41 @@ public class UserController {
         ));
     }
 
-    // ✅ ดึงผู้ใช้ทั้งหมด (เฉพาะ admin)
+    // ===========================
+    //   GET ALL USERS
+    // ===========================
     @GetMapping
     public List<User> getAllUsers() {
         return userRepo.findAll();
     }
 
-    // ✅ ดึงข้อมูลโปรไฟล์ของผู้ใช้ที่ login อยู่
+    // ===========================
+    //   GET PROFILE OF LOGGED USER
+    // ===========================
     @GetMapping("/me")
     public ResponseEntity<?> getMyProfile(Authentication authentication) {
         try {
             if (authentication == null) {
                 return ResponseEntity.status(401).body(Map.of(
-                    "error", "Unauthorized - Missing authentication"
+                    "error", "Unauthorized"
                 ));
             }
 
-            // ✅ ดึง phoneNumber จาก Authentication ที่ JwtAuthFilter เซ็ตไว้ (subject)
             String phoneNumber = authentication.getName();
-            if (phoneNumber == null) {
-                return ResponseEntity.status(401).body(Map.of(
-                    "error", "Invalid token: no phone number"
-                ));
-            }
 
-            // ✅ หา user จากเบอร์ที่อยู่ใน detail
             Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
             if (optUser.isEmpty()) {
                 return ResponseEntity.status(404).body(Map.of(
-                    "error", "User not found for " + phoneNumber
+                    "error", "User not found for phone: " + phoneNumber
                 ));
             }
-            User user = optUser.get();
 
+            User user = optUser.get();
             Detail detail = user.getDetail();
 
-            // ✅ สร้างข้อมูลตอบกลับแบบอ่านง่าย
             Map<String, Object> response = new HashMap<>();
-            response.put("name", (detail != null) ? detail.getName() : "-");
-            response.put("phoneNumber", (detail != null) ? detail.getPhoneNumber() : "-");
+            response.put("name", detail != null ? detail.getName() : "-");
+            response.put("phoneNumber", detail != null ? detail.getPhoneNumber() : "-");
             response.put("role", user.getRole());
             response.put("address", user.getAddress());
 
@@ -173,10 +168,14 @@ public class UserController {
         }
     }
 
-    // ✅ ดึง Detail ของผู้ใช้ (เฉพาะเจ้าของเท่านั้น)
+    // ===========================
+    //   GET DETAIL OF SPECIFIC USER
+    // ===========================
     @GetMapping("/{phoneNumber}/detail")
-    public ResponseEntity<?> getUserDetail(@PathVariable String phoneNumber,
-                                           @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getUserDetail(
+            @PathVariable String phoneNumber,
+            @RequestHeader("Authorization") String authHeader) {
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(401).body("Missing or invalid token");
         }
@@ -188,7 +187,6 @@ public class UserController {
             return ResponseEntity.status(403).body("You are not authorized to view this data");
         }
 
-        // หา user จากเบอร์ใน detail
         Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
         if (optUser.isEmpty()) {
             return ResponseEntity.status(404).body("User not found");
@@ -199,16 +197,21 @@ public class UserController {
         if (user.getDetail() == null) {
             return ResponseEntity.status(404).body(Map.of(
                 "status", "error",
-                "message", "User has no detail assigned yet"
+                "message", "User has no detail data"
             ));
         }
 
         return ResponseEntity.ok(user.getDetail());
     }
 
-    // ✅ อัปเดต Detail ของผู้ใช้ (แก้ไขชื่อ ฯลฯ)
+    // ===========================
+    //   UPDATE USER DETAIL
+    // ===========================
     @PutMapping("/detail")
-    public ResponseEntity<?> updateMyDetail(@RequestBody Detail newDetail, Authentication authentication) {
+    public ResponseEntity<?> updateMyDetail(
+            @RequestBody Detail newDetail,
+            Authentication authentication) {
+
         if (authentication == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
@@ -227,9 +230,6 @@ public class UserController {
         }
 
         detail.setName(newDetail.getName());
-        // ถ้าอยากให้แก้เบอร์ได้ด้วย เติมบรรทัดนี้ (แล้วเช็คซ้ำเอง):
-        // detail.setPhoneNumber(newDetail.getPhoneNumber());
-
         detailRepo.save(detail);
 
         user.setDetail(detail);
@@ -242,7 +242,9 @@ public class UserController {
         ));
     }
 
-    // ✅ อัปเดต Address ของผู้ใช้
+    // ===========================
+    //   UPDATE ADDRESS
+    // ===========================
     @PutMapping("/address")
     public ResponseEntity<?> updateMyAddress(@RequestBody Address newAddress, Authentication authentication) {
         if (authentication == null) {

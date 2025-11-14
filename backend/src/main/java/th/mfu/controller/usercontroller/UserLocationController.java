@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import th.mfu.dto.SaveLocationRequest;
 import th.mfu.model.locationdata.LocationData;
-import th.mfu.model.user.Address;
 import th.mfu.model.user.User;
 import th.mfu.repository.locationdatarepository.LocationRepository;
 import th.mfu.repository.userrepository.UserRepository;
 
 @RestController
-@RequestMapping("/api/user-location")   // 👈 ไม่ชนของเดิมแล้ว
+@RequestMapping("/api/user-location")
 @CrossOrigin
 public class UserLocationController {
 
@@ -27,13 +26,14 @@ public class UserLocationController {
     @Autowired
     private UserRepository userRepo;
 
-    // ------------------------------------------
-    // 🔵 บันทึกตำแหน่งบ้านของ user
-    // ------------------------------------------
+    // -------------------------------------------------------
+    // 🔵 บันทึกตำแหน่งบ้านของ user (ใช้ user_id)
+    // -------------------------------------------------------
     @PostMapping("/home")
     public ResponseEntity<?> saveMyHomeLocation(
             @RequestBody SaveLocationRequest req,
             Authentication authentication) {
+
         try {
             if (authentication == null) {
                 return ResponseEntity.status(401).body("Unauthorized");
@@ -46,48 +46,47 @@ public class UserLocationController {
             if (optUser.isEmpty()) {
                 return ResponseEntity.status(404).body("User not found");
             }
+
             User user = optUser.get();
 
-            Address address = user.getAddress();
-            if (address == null) {
-                return ResponseEntity.badRequest()
-                        .body("User has no address saved. Please add address first.");
-            }
+            // หา location เดิมตาม user_id (มีแค่ตำแหน่งเดียว)
+            LocationData location = locationRepo.findFirstByUserOrderByIdDesc(user)
+                    .orElse(new LocationData());
 
-            // หา location เดิมจาก address นี้
-            LocationData locationData = locationRepo.findByAddress_Id(address.getId())
-                    .orElseGet(LocationData::new);
+            // บันทึกข้อมูลตำแหน่ง
+            location.setUser(user);
+            location.setLatitude(req.getLatitude());
+            location.setLongitude(req.getLongitude());
 
-            locationData.setLatitude(req.getLatitude());
-            locationData.setLongitude(req.getLongitude());
-            locationData.setAddress(address);
+            // 🔵 บันทึก field ที่อยู่แบบแยก (ถ้ามี)
+            location.setRoad(req.getRoad());
+            location.setSubdistrict(req.getSubdistrict());
+            location.setDistrict(req.getDistrict());
+            location.setProvince(req.getProvince());
+            location.setPostcode(req.getPostcode());
 
-            if (locationData.getId() == null) {
-                locationData.setConfirmed(false);
-                locationData.setFollowed(false);
-            }
-
-            LocationData saved = locationRepo.save(locationData);
+            LocationData saved = locationRepo.save(location);
 
             Map<String, Object> res = new HashMap<>();
             res.put("status", "success");
-            res.put("message", "Home location saved successfully");
             res.put("locationId", saved.getId());
 
             return ResponseEntity.ok(res);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError()
-                    .body("Error saving location: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(
+                    "Error saving location: " + e.getMessage()
+            );
         }
     }
 
-    // ------------------------------------------
-    // 🔵 โหลดตำแหน่งบ้านของ user
-    // ------------------------------------------
+    // -------------------------------------------------------
+    // 🔵 โหลดตำแหน่งบ้านของ user ( lat / lng + address )
+    // -------------------------------------------------------
     @GetMapping("/home")
     public ResponseEntity<?> getMyHomeLocation(Authentication authentication) {
+
         try {
             if (authentication == null) {
                 return ResponseEntity.status(401).body("Unauthorized");
@@ -99,14 +98,10 @@ public class UserLocationController {
             if (optUser.isEmpty()) {
                 return ResponseEntity.status(404).body("User not found");
             }
+
             User user = optUser.get();
 
-            Address address = user.getAddress();
-            if (address == null) {
-                return ResponseEntity.status(404).body("User has no address saved");
-            }
-
-            Optional<LocationData> optLoc = locationRepo.findByAddress_Id(address.getId());
+            Optional<LocationData> optLoc = locationRepo.findFirstByUserOrderByIdDesc(user);
             if (optLoc.isEmpty()) {
                 return ResponseEntity.status(404).body("Location not found");
             }
@@ -116,14 +111,19 @@ public class UserLocationController {
             Map<String, Object> res = new HashMap<>();
             res.put("latitude", loc.getLatitude());
             res.put("longitude", loc.getLongitude());
-            res.put("addressId", address.getId());
+            res.put("road", loc.getRoad());
+            res.put("subdistrict", loc.getSubdistrict());
+            res.put("district", loc.getDistrict());
+            res.put("province", loc.getProvince());
+            res.put("postcode", loc.getPostcode());
 
             return ResponseEntity.ok(res);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError()
-                    .body("Error loading location: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(
+                    "Error loading location: " + e.getMessage()
+            );
         }
     }
 }
