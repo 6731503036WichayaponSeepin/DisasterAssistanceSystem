@@ -63,6 +63,7 @@ function verifyToken(req, res, next) {
   }
 }
 
+app.use("/pages", express.static(pagesPath));
 /* -------------------------
    Protected pages (อยู่เหนือ static!)
 -------------------------- */
@@ -78,6 +79,11 @@ app.get("/pages/SOS", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "SOS.html"));
 });
 
+app.get("/pages/SUSTENANCE", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "SUSTENANCE.html"));
+});
+
+
 app.get("/pages/account", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "accountUser.html"));
 });
@@ -89,7 +95,6 @@ app.get("/pages/homeRescue", (req, res) => {
 /* -------------------------
    Static fallback (อยู่ล่างสุด)
 -------------------------- */
-app.use("/pages", express.static(pagesPath));
 
 app.listen(PORT, () => {
   console.log(`🚀 Frontend running at http://localhost:${PORT}`);

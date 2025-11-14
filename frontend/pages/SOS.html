@@ -244,18 +244,7 @@ async function loadStatus() {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/api/cases/status/${CASE_ID}`, {
-            method: "GET",
-            headers: {
-                "Authorization": "Bearer " + TOKEN,
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await res.json();
-        console.log("📥 STATUS:", data.status);
-
-        updateStatusUI(data.status);
+       svg
 
     } catch (err) {
         console.error("❌ Error fetching status", err);

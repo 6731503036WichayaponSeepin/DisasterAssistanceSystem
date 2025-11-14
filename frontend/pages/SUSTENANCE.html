@@ -1,232 +1,145 @@
-    <!DOCTYPE html>
-    <html lang="th">
-    <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Home</title>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Status Request - Sustenance</title>
 
-    <style>
-        :root{
-            --blue:#0A53E4;
-            --card-bg:#FFFFFF;
-            --radius:28px;
-            --font:'Inter', sans-serif;
-            --shadow:0 6px 18px rgba(0,0,0,0.16);
+<style>
+    :root{
+        --blue:#000000;
+        --card-bg:#FFFFFF;
+        --radius:28px;
+        --font:'Inter', sans-serif;
+        --shadow:0 6px 18px rgba(0,0,0,0.16);
 
-            --sos-red:#E51010;
-            --sus-yellow:#FFC319;
-        }
+        /* สีประจำ SUSTENANCE */
+        --sus-yellow:#FFC319;
 
-        *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
+        /* สี Timeline แต่ละจุด */
+        --point-1-color:#0A53E4;
+        --point-2-color:#6B7280;
+        --point-3-color:#6B7280;
+        --point-4-color:#6B7280;
 
-        body{
-            background:var(--blue);
-            min-height:100vh;
-            display:flex;
-            justify-content:center;
-        }
+        --timeline-line-color:#CFCFCF;
+        --timeline-text-color:#111111;
+    }
 
-        .container{
-            width:min(420px,100%);
-            background:var(--card-bg);
-            margin-top:40px;
-            padding:30px 24px;
-            border-radius:var(--radius);
-            box-shadow:var(--shadow);
-            margin-bottom:40px;
-            position:relative;
-        }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
 
-        /* HAMBURGER */
-        .hamburger{
-            position:absolute;
-            right:20px;
-            top:20px;
-            font-size:30px;
-            color:var(--blue);
-            cursor:pointer;
-        }
+    body{
+        background:#0a53e4;
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+    }
 
-        .menu{
-            position:absolute;
-            right:20px;
-            top:60px;
-            background:white;
-            border-radius:14px;
-            width:150px;
-            box-shadow:0 6px 20px rgba(0,0,0,0.2);
-            padding:10px 0;
-            display:none;
-            z-index:10;
-        }
+    .container{
+        width:min(420px,100%);
+        background:var(--card-bg);
+        margin-top:40px;
+        padding:30px 24px;
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        margin-bottom:40px;
+        position:relative;
+    }
 
-        .menu a{
-            display:block;
-            padding:12px 18px;
-            text-decoration:none;
-            color:#111;
-            font-size:15px;
-        }
+    .back-btn{
+        font-size:26px;
+        cursor:pointer;
+        color:var(--blue);
+        margin-bottom:10px;
+    }
 
-        .menu a:hover{
-            background:#F2F4F7;
-        }
+    .title{
+        font-size:26px;
+        font-weight:800;
+        color:#000;
+        margin-bottom:26px;
+    }
 
-        .menu a.danger{
-            color:#E51010;
-            font-weight:600;
-        }
-        .menu a.danger:hover{
-            background:#FFE5E5;
-        }
+    /* SUSTENANCE card */
+    .sus-card{
+        background:var(--sus-yellow);
+        border-radius:20px;
+        padding:20px 20px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        box-shadow:0 10px 20px rgba(0,0,0,0.25);
+        margin-bottom:40px;
+    }
 
-        .profile-box{
-            display:flex;
-            align-items:center;
-            gap:14px;
-            margin-bottom:20px;
-            margin-top:20px;
-        }
+    .sus-title{
+        font-size:22px;
+        font-weight:700;
+        color:#111;
+    }
 
-        .profile-icon{
-            width:60px;
-            height:60px;
-            border-radius:50%;
-            border:3px solid var(--blue);
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            font-size:28px;
-            color:var(--blue);
-            background:white;
-        }
+    .sus-sub{
+        font-size:14px;
+        margin-top:4px;
+        opacity:.9;
+        color:#111;
+    }
 
-        .name{
-            font-size:18px;
-            font-weight:700;
-            color:#111;
-        }
+    /* TIMELINE */
+    .timeline{
+        margin-left:25px;
+        padding-left:10px;
+    }
 
-        .phone{
-            font-size:14px;
-            color:#333;
-            margin-top:4px;
-            opacity:.8;
-        }
+    .step-row{
+        display:flex;
+        align-items:center;
+    }
 
-        .address-btn{
-            width:100%;
-            background:#E8EDF7;
-            border:1px solid #C7D2E5;
-            padding:10px 14px;
-            border-radius:12px;
-            font-size:14px;
-            color:#0A53E4;
-            font-weight:600;
-            text-align:left;
-            margin-bottom:30px;
-            cursor:pointer;
-        }
+    .point{
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        margin-right:14px;
+    }
 
-        /* HELP CARDS */
-        .card{
-            width:100%;
-            min-height:140px;
-            padding:30px 26px;
-            border-radius:20px;
-            margin-bottom:26px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            box-shadow:0 4px 12px rgba(0,0,0,0.12);
-            cursor:pointer;
-            transition:.2s;
-        }
+    .p1{ background:var(--point-1-color); }
+    .p2{ background:var(--point-2-color); }
+    .p3{ background:var(--point-3-color); }
+    .p4{ background:var(--point-4-color); }
 
-        .card:hover{
-            transform:translateY(-3px);
-            box-shadow:0 8px 22px rgba(0,0,0,0.18);
-        }
+    .step-text{
+        font-size:16px;
+        color:var(--timeline-text-color);
+    }
 
-        .card-title{
-            font-size:24px;
-            font-weight:800;
-            margin-bottom:6px;
-            color:white;
-        }
+    .line{
+        width:3px;
+        height:50px;
+        background:var(--timeline-line-color);
+        margin-left:7px;
+    }
+</style>
+</head>
 
-        .card-sub{
-            font-size:14px;
-            color:white;
-            opacity:.9;
-        }
+<body>
 
-        .icon-box svg{
-            width:105px;
-            height:auto;
-        }
+<div class="container">
 
-        .sos{ background:var(--sos-red); }
-        .sus{ background:var(--sus-yellow); }
+    <div class="back-btn" onclick="history.back()">←</div>
 
-        .sus .card-title,
-        .sus .card-sub{
-            color:#111;
-        }
-    </style>
-    </head>
-    <body>
+    <div class="title">Status Request (Sustenance)</div>
 
-    <div class="container">
-
-        <!-- HAMBURGER -->
-        <div class="hamburger" id="menuButton">☰</div>
-
-        <div class="menu" id="dropdownMenu">
-            <a id="btnAccount">Account</a>
-            <a class="danger" id="btnLogout">Sign out</a>
+    <!-- SUSTENANCE CARD -->
+    <div class="sus-card">
+        <div>
+            <div class="sus-title">Sustenance</div>
+            <div class="sus-sub">Water / Food / Medicine</div>
         </div>
 
-        <!-- PROFILE -->
-        <div class="profile-box">
-            <div class="profile-icon">👤</div>
-            <div>
-                <div class="name" id="userName">Loading...</div>
-                <div class="phone" id="userPhone"></div>
-            </div>
-        </div>
-
-        <!-- ADDRESS BUTTON -->
-        <button class="address-btn" id="btnAddress">➕ Address</button>
-
-        <!-- SOS CARD -->
-        <div class="card sos" id="cardSOS">
-            <div>
-                <div class="card-title">SOS</div>
-                <div class="card-sub">Evacuate from the area</div>
-            </div>
-            <div class="icon-box">
-                <svg width="152" height="72" viewBox="0 0 152 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <mask id="mask0_112_215" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="156" height="72">
-    <path d="M0 0H155.462V71.1053H0V0Z" fill="white"/>
-    </mask>
-    <g mask="url(#mask0_112_215)">
-    <path d="M155.871 21.2074C148.073 20.299 140.326 18.4952 132.433 18.8612C132.528 20.6061 132.63 22.3315 132.745 24.0765C135.432 24.5405 138.138 24.9457 140.85 25.3182C141.009 27.9127 141.118 30.4942 141.188 33.0888C136.204 32.6574 131.239 32.0954 126.256 31.651C126.141 26.8736 125.841 22.1028 126.326 17.345C127.168 12.6591 132.222 9.73776 132.375 4.88849C130.997 2.28086 127.883 3.10432 125.522 2.79716C107.431 1.93448 89.3139 1.38551 71.2484 0H64.2225C59.3408 7.81635 53.7252 15.0968 48.7287 22.8217C33.439 21.8544 18.2897 19.2337 3 18.3384V26.5272C4.95907 34.7618 8.73044 42.6043 14.6587 48.5842C27.683 62.3282 46.3229 68.38 64.4523 70.6413H170.459C174.722 56.8777 178.283 42.8592 183.196 29.3244V25.2855C174.186 23.2987 164.965 22.6191 155.871 21.2074ZM96.0271 7.56801C105.152 8.04509 114.271 8.5091 123.409 8.88162C122.299 10.8161 120.959 12.6329 120.046 14.6655C119.932 20.0376 120.212 25.4227 120.091 30.7949C111.132 30.0041 102.223 28.8212 93.2576 28.0565C93.934 21.1943 94.9423 14.3714 96.0271 7.56801ZM67.3622 6.79029C74.6433 5.6662 82.3009 7.4373 89.7224 7.2347C89.1289 13.927 87.9994 20.5604 87.0869 27.22C76.4619 26.2527 65.8881 24.7235 55.2568 23.9327C59.2834 18.2077 63.0037 12.2408 67.3622 6.79029Z" fill="white"/>
-    </g>
-    </svg>
-
-            </div>
-            
-        </div>
-
-        <!-- SUSTENANCE CARD -->
-        <div class="card sus" id="cardSustenance">
-            <div>
-                <div class="card-title">Sustenance</div>
-                <div class="card-sub">Water / Food / Medicine</div>
-            </div>
-
-            <div class="icon-box">
+        
+        <!-- เอา SVG เดียวกับหน้าบ้าน -->
+         <div class="icon-box">
                 <svg width="104" height="101" viewBox="0 0 104 101" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M103.069 45.1863C102.55 45.1863 102.149 44.7854 102.149 44.2673V36.2122H93.1562C92.6374 36.2122 92.2297 35.8051 92.2297 35.287C92.2297 34.7689 92.6374 34.368 93.1562 34.368H103.069C103.588 34.368 103.995 34.7689 103.995 35.287V44.2673C103.995 44.7854 103.588 45.1863 103.069 45.1863Z" fill="white"/>
     <path d="M45.6412 20.0205C45.4559 20.0205 45.2768 19.965 45.11 19.854C44.7024 19.5579 44.5913 18.9843 44.8877 18.5587C46.7899 15.9004 49.3592 14.4202 52.1199 14.4202C54.6706 14.4202 57.1287 15.7339 59.0001 18.1147C59.3151 18.5217 59.241 19.0953 58.8519 19.4099C58.4442 19.7244 57.8699 19.6504 57.5549 19.2619C56.0356 17.3437 54.0963 16.2705 52.1199 16.2705C49.9706 16.2705 47.9572 17.4732 46.4008 19.6319C46.2156 19.891 45.9376 20.0205 45.6412 20.0205Z" fill="white"/>
@@ -272,195 +185,95 @@
     </svg>
 
             </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline">
+
+        <div class="step-row">
+            <div class="point p1"></div>
+            <div class="step-text">Send a request for help</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p2"></div>
+            <div class="step-text">Accept request</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p3"></div>
+            <div class="step-text">Coming to help</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p4"></div>
+            <div class="step-text">Succeed</div>
         </div>
 
     </div>
 
-    <script>
-    const API_BASE = "http://localhost:8080";
-    const TOKEN_KEY = "authToken";
+</div>
 
-    let PAGE_SIGNIN  = "/";
-    let PAGE_ADDRESS = "/pages/location";
+<script>
+const API_BASE = "http://localhost:8080";
+const TOKEN = localStorage.getItem("authToken");
+const CASE_ID = new URLSearchParams(window.location.search).get("caseId");
 
-    if (location.port !== "5173") {
-        PAGE_SIGNIN  = "./signin.html";
-        PAGE_ADDRESS = "./map.html";
+/* เปลี่ยนสถานะแต่ละจุด */
+function updateStatusUI(status){
+    document.querySelector(".p1").style.background="var(--point-2-color)";
+    document.querySelector(".p2").style.background="var(--point-2-color)";
+    document.querySelector(".p3").style.background="var(--point-2-color)";
+    document.querySelector(".p4").style.background="var(--point-2-color)";
+
+    if (status === "NEW") {
+        document.querySelector(".p1").style.background="var(--point-1-color)";
     }
-
-    function getQueryParam(name){
-        return new URLSearchParams(window.location.search).get(name);
+    if (status === "ASSIGNED") {
+        document.querySelector(".p1").style.background="var(--point-1-color)";
+        document.querySelector(".p2").style.background="var(--point-1-color)";
     }
+    if (status === "COMING") {
+        document.querySelector(".p1").style.background="var(--point-1-color)";
+        document.querySelector(".p2").style.background="var(--point-1-color)";
+        document.querySelector(".p3").style.background="var(--point-1-color)";
+    }
+    if (status === "DONE") {
+        document.querySelector(".p1").style.background="var(--point-1-color)";
+        document.querySelector(".p2").style.background="var(--point-1-color)";
+        document.querySelector(".p3").style.background="var(--point-1-color)";
+        document.querySelector(".p4").style.background="var(--point-1-color)";
+    }
+}
 
-    document.addEventListener("DOMContentLoaded", () => {
-
-        let token = localStorage.getItem(TOKEN_KEY);
-        const urlToken = getQueryParam("token");
-
-        if (!token && urlToken){
-            token = urlToken;
-            localStorage.setItem(TOKEN_KEY, token);
-        }
-
-        if (!token){
-            window.location.href = PAGE_SIGNIN;
-            return;
-        }
-
-        /* ---------------- FETCH USER INFO ---------------- */
-        fetch(API_BASE + "/api/users/me", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            }
-        })
-        .then(res => res.json())
-        .then(user => {
-            document.getElementById("userName").textContent =
-                user.name ?? "Unknown User";
-            document.getElementById("userPhone").textContent =
-                user.phoneNumber ?? "No Phone";
-        });
-
-        /* ---------------- MENU ---------------- */
-        const menuBtn = document.getElementById("menuButton");
-        const menuBox = document.getElementById("dropdownMenu");
-
-        menuBtn.onclick = () => {
-            menuBox.style.display =
-                menuBox.style.display === "block" ? "none" : "block";
-        };
-
-        /* ---------------- ACCOUNT PAGE (มีปัญหา) ---------------- */
-        document.getElementById("btnAccount").onclick = () => {
-            window.location.href = "/pages/account?token=" + encodeURIComponent(token);
-        };
-
-        /* ---------------- ADDRESS PAGE ---------------- */
-        document.getElementById("btnAddress").onclick = () => {
-            window.location.href =
-                PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
-        };
-
-        /* ---------------- LOGOUT ---------------- */
-        document.getElementById("btnLogout").onclick = () => {
-            localStorage.removeItem(TOKEN_KEY);
-            window.location.href = PAGE_SIGNIN;
-        };
-
-    }); // END DOMContentLoaded
-    /* ---------------- CREATE CASE: SOS ---------------- */
-    document.getElementById("cardSOS").onclick = async () => {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (!token) return window.location.href = PAGE_SIGNIN;
-
-        try {
-            const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
-                method: "GET",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!locRes.ok) {
-                alert("⚠ กรุณาปักหมุดที่อยู่ก่อนทำการแจ้งเหตุ!");
-                return;
-            }
-
-            const loc = await locRes.json();
-            const locationId = loc.locationId ?? loc.id;
-
-            const res = await fetch(`${API_BASE}/api/cases/report`, {
-                method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    caseType: "SOS",
-                    locationId: locationId
-                })
-            });
-
-            const data = await res.json();
-            console.log("CREATE SOS RESULT:", data);
-
-            if (!res.ok) {
-                alert("❌ ไม่สามารถสร้างเคสได้: " + (data.message || data));
-                return;
-            }
-
-            // ⭐⭐⭐ ตรงนี้คือส่วนที่ต้องแก้ ⭐⭐⭐
-            window.location.href =
-                `/pages/SOS?token=${encodeURIComponent(token)}&caseId=${data.id}`;
-
-        } catch (err) {
-            console.error(err);
-            alert("เกิดข้อผิดพลาด");
-        }
-    };
-
-
-    /* ---------------- CREATE CASE: SUSTENANCE ---------------- */
-    /* ---------------- CREATE CASE: SUSTENANCE ---------------- */
-document.getElementById("cardSustenance").onclick = async () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return window.location.href = PAGE_SIGNIN;
+/* โหลดสถานะจาก backend */
+async function loadStatus(){
+    if (!TOKEN || !CASE_ID) return;
 
     try {
-        // 1) โหลด locationId ของ user
-        const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
-            method: "GET",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (!locRes.ok) {
-            alert("⚠ กรุณาปักหมุดที่อยู่ก่อนทำการแจ้งเหตุ!");
-            return;
-        }
-
-        const loc = await locRes.json();
-        const locationId = loc.locationId ?? loc.id;
-
-        // 2) รายงานเคสประเภท Sustenance
-        const res = await fetch(`${API_BASE}/api/cases/report`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                caseType: "SUSTENANCE",
-                locationId: locationId
-            })
+        const res = await fetch(`${API_BASE}/api/cases/status/${CASE_ID}`, {
+            headers: { "Authorization": "Bearer " + TOKEN }
         });
 
         const data = await res.json();
-        console.log("CREATE SUSTENANCE RESULT:", data);
+        console.log("STATUS SUSTENANCE:", data.status);
 
-        if (!res.ok) {
-            alert("❌ ไม่สามารถสร้างเคสได้: " + (data.message || data));
-            return;
-        }
+        updateStatusUI(data.status);
 
-        // 3) ไปหน้า Sustenance (ถูกต้อง!!)
-        window.location.href =
-            `/pages/SUSTENANCE?token=${encodeURIComponent(token)}&caseId=${data.id}`;
-
-    } catch (err) {
-        console.error(err);
-        alert("เกิดข้อผิดพลาด");
+    } catch (e){
+        console.error(e);
     }
-};
+}
 
-    </script>
+document.addEventListener("DOMContentLoaded", loadStatus);
+</script>
 
 
-
-    </body>
-    </html>
+</body>
+</html>
