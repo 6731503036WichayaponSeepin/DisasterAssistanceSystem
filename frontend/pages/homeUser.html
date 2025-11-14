@@ -2,422 +2,322 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Request Type</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Home</title>
+
 <style>
-  :root{
-    --blue:#0A53E4;
-    --white:#FFFFFF;
-    --red:#F23535;
-    --yellow:#FFC928;
-    --subtext:#E5E7EB;
-    --card-radius:18px;
-    --shadow-strong:0 16px 32px rgba(0,0,0,.25);
-    --shadow-soft:0 10px 20px rgba(0,0,0,.18);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    background:var(--blue);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px 12px;
-  }
+    :root{
+        --blue:#0A53E4;
+        --card-bg:#FFFFFF;
+        --radius:28px;
+        --font:'Inter', sans-serif;
+        --shadow:0 6px 18px rgba(0,0,0,0.16);
 
-  /* กรอบจอมือถือ */
-  .phone{
-    width:360px;
-    max-width:100%;
-    min-height:640px;
-    background:var(--blue);
-    color:#fff;
-    border-radius:32px;
-    box-shadow:var(--shadow-strong);
-    overflow:hidden;
-    position:relative;
-  }
+        --sos-red:#E51010;
+        --sus-yellow:#FFC319;
+    }
 
-  /* แถบหัว */
-  .appbar{
-    padding:20px 18px 16px;
-  }
-  .appbar-row{
-    display:flex;
-    align-items:center;
-  }
-  .avatar{
-    width:54px;
-    height:54px;
-    border-radius:50%;
-    border:2px solid #fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-right:12px;
-  }
-  .avatar::before{
-    content:"";
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    border:2px solid #fff;
-    border-bottom:none;
-    box-shadow:0 9px 0 -6px #fff;
-  }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
 
-  .user-text{
-    font-size:13px;
-    line-height:1.4;
-    margin-right:auto;
-  }
-  .user-name{
-    font-size:13px;
-    font-weight:700;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:160px;
-  }
-  .user-phone{
-    font-size:11px;
-    color:var(--subtext);
-    margin-top:2px;
-  }
-
-  .menu-btn{
-    width:24px;
-    height:20px;
-    border:none;
-    background:none;
-    padding:0;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    cursor:pointer;
-  }
-  .menu-btn span{
-    height:2px;
-    border-radius:999px;
-    background:#fff;
-  }
-
-  .appbar-bottom{
-    display:flex;
-    align-items:center;
-    margin-top:16px;
-  }
-  .role-label{
-    font-size:12px;
-    padding-left:4px;
-  }
-
-  .address-btn{
-    margin-left:auto;
-    display:inline-flex;
-    align-items:center;
-    font-size:11px;
-    background:#2563F5;
-    border-radius:8px;
-    border:1px solid #5C8CF5;
-    padding:6px 12px;
-    color:#E5E7EB;
-    cursor:pointer;
-    box-shadow:0 6px 10px rgba(0,0,0,.22);
-    transition:.15s transform ease,.15s box-shadow ease;
-  }
-  .address-btn:hover{
-    transform:translateY(-1px);
-    box-shadow:0 10px 16px rgba(0,0,0,.25);
-  }
-  .address-icon{
-    width:16px;
-    height:16px;
-    border-radius:50%;
-    border:1px solid #E5E7EB;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    margin-right:6px;
-  }
-
-  /* ส่วนเนื้อหา */
-  .content{
-    background:var(--white);
-    border-radius:26px 26px 0 0;
-    padding:26px 20px 32px;
-    box-shadow:0 -8px 20px rgba(0,0,0,.18);
-    min-height:420px;
-  }
-
-  .card{
-    border-radius:var(--card-radius);
-    padding:18px 20px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:var(--shadow-soft);
-    color:#fff;
-    cursor:pointer;
-    transition:.15s transform ease,.15s box-shadow ease;
-  }
-  .card + .card{
-    margin-top:22px;
-  }
-  .card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 18px 26px rgba(0,0,0,.26);
-  }
-  .card-red{background:var(--red);}
-  .card-yellow{
-    background:var(--yellow);
-    color:#111827;
-  }
-
-  .card-main{
-    display:flex;
-    flex-direction:column;
-  }
-  .card-text-main{
-    font-size:24px;
-    font-weight:800;
-    letter-spacing:.04em;
-  }
-  .card-sub{
-    font-size:11px;
-    margin-top:6px;
-    opacity:.95;
-  }
-
-  .card-icon{
-    flex-shrink:0;
-    margin-left:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .card-icon svg{
-    display:block;
-    height:54px;
-    width:auto;
-  }
-  .card-yellow .card-sub{
-    color:#111827;
-  }
-
-  /* เมนูแฮมเบอร์เกอร์ */
-  .menu-panel{
-    position:absolute;
-    top:18px;
-    right:18px;
-    width:160px;
-    background:#0F3FB1;
-    border-radius:14px;
-    box-shadow:0 14px 26px rgba(0,0,0,.35);
-    padding:10px 8px;
-    display:none;
-    z-index:20;
-  }
-  .menu-panel.open{
-    display:block;
-  }
-  .menu-item{
-    width:100%;
-    padding:8px 10px;
-    border-radius:10px;
-    border:none;
-    background:transparent;
-    color:#F9FAFB;
-    font-size:13px;
-    text-align:left;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .menu-item + .menu-item{
-    margin-top:4px;
-  }
-  .menu-item:hover{
-    background:rgba(255,255,255,.12);
-  }
-  .menu-item span.label{
-    flex:1;
-  }
-  .menu-item span.chevron{
-    font-size:11px;
-    opacity:.7;
-  }
-
-  @media (max-width:420px){
     body{
-      padding:12px 6px;
-      align-items:flex-start;
+        background:var(--blue);
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
     }
+
+    .container{
+        width:min(420px,100%);
+        background:var(--card-bg);
+        margin-top:40px;
+        padding:30px 24px;
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        margin-bottom:40px;
+        position:relative;
+    }
+
+    /* HAMBURGER */
+    .hamburger{
+        position:absolute;
+        right:20px;
+        top:20px;
+        font-size:30px;
+        color:var(--blue);
+        cursor:pointer;
+    }
+
+    .menu{
+        position:absolute;
+        right:20px;
+        top:60px;
+        background:white;
+        border-radius:14px;
+        width:150px;
+        box-shadow:0 6px 20px rgba(0,0,0,0.2);
+        padding:10px 0;
+        display:none;
+        z-index:10;
+    }
+
+    .menu a{
+        display:block;
+        padding:12px 18px;
+        text-decoration:none;
+        color:#111;
+        font-size:15px;
+    }
+
+    .menu a:hover{
+        background:#F2F4F7;
+    }
+
+    .menu a.danger{
+        color:#E51010;
+        font-weight:600;
+    }
+    .menu a.danger:hover{
+        background:#FFE5E5;
+    }
+
+    .profile-box{
+        display:flex;
+        align-items:center;
+        gap:14px;
+        margin-bottom:20px;
+        margin-top:20px;
+    }
+
+    .profile-icon{
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        border:3px solid var(--blue);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:28px;
+        color:var(--blue);
+        background:white;
+    }
+
+    .name{
+        font-size:18px;
+        font-weight:700;
+        color:#111;
+    }
+
     .phone{
-      width:100%;
-      min-height:100vh;
-      border-radius:0;
-      box-shadow:none;
+        font-size:14px;
+        color:#333;
+        margin-top:4px;
+        opacity:.8;
     }
-  }
+
+    .address-btn{
+        width:100%;
+        background:#E8EDF7;
+        border:1px solid #C7D2E5;
+        padding:10px 14px;
+        border-radius:12px;
+        font-size:14px;
+        color:#0A53E4;
+        font-weight:600;
+        text-align:left;
+        margin-bottom:30px;
+        cursor:pointer;
+    }
+
+    /* HELP CARDS */
+    .card{
+        width:100%;
+        min-height:140px;
+        padding:30px 26px;
+        border-radius:20px;
+        margin-bottom:26px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        box-shadow:0 4px 12px rgba(0,0,0,0.12);
+        cursor:pointer;
+        transition:.2s;
+    }
+
+    .card:hover{
+        transform:translateY(-3px);
+        box-shadow:0 8px 22px rgba(0,0,0,0.18);
+    }
+
+    .card-title{
+        font-size:24px;
+        font-weight:800;
+        margin-bottom:6px;
+        color:white;
+    }
+
+    .card-sub{
+        font-size:14px;
+        color:white;
+        opacity:.9;
+    }
+
+    .icon-box svg{
+        width:105px;
+        height:auto;
+    }
+
+    .sos{ background:var(--sos-red); }
+    .sus{ background:var(--sus-yellow); }
+
+    .sus .card-title,
+    .sus .card-sub{
+        color:#111;
+    }
 </style>
 </head>
 <body>
-  <div class="phone">
-    <!-- เมนูซ่อน -->
-    <div id="menuPanel" class="menu-panel">
-      <button type="button" class="menu-item" id="btnAccount">
-        <span class="label">Account</span>
-        <span class="chevron">›</span>
-      </button>
-      <button type="button" class="menu-item" id="btnLogout">
-        <span class="label">Logout</span>
-        <span class="chevron">⇦</span>
-      </button>
+
+<div class="container">
+
+    <!-- HAMBURGER -->
+    <div class="hamburger" id="menuButton">☰</div>
+
+    <div class="menu" id="dropdownMenu">
+        <a id="btnAccount">Account</a>
+        <a class="danger" id="btnLogout">Sign out</a>
     </div>
 
-    <header class="appbar">
-      <div class="appbar-row">
-        <div class="avatar"></div>
-        <div class="user-text">
-          <div class="user-name" id="userName">Loading...</div>
-          <div class="user-phone" id="userPhone"></div>
+    <!-- PROFILE -->
+    <div class="profile-box">
+        <div class="profile-icon">👤</div>
+        <div>
+            <div class="name" id="userName">Loading...</div>
+            <div class="phone" id="userPhone"></div>
         </div>
-        <button class="menu-btn" aria-label="menu" id="menuButton">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-      <div class="appbar-bottom">
-        <span class="role-label">User</span>
-        <button class="address-btn" type="button" id="btnAddress">
-          <span class="address-icon">+</span>
-          <span>Address</span>
-        </button>
-      </div>
-    </header>
+    </div>
 
-    <main class="content">
-      <!-- SOS card -->
-      <div class="card card-red" id="cardSOS">
-        <div class="card-main">
-          <div class="card-text-main">SOS</div>
-          <div class="card-sub">Evacuate from the area</div>
-        </div>
-        <div class="card-icon">
-          <!-- SVG เรือ -->
-          <!-- (เหมือนของเดิม) -->
-          <svg viewBox="0 0 152 72" xmlns="http://www.w3.org/2000/svg">
-            <mask id="mask0_113_1117" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="156" height="72">
-              <path d="M0 0H155.462V71.1053H0V0Z" fill="white"/>
-            </mask>
-            <g mask="url(#mask0_113_1117)">
-              <path d="M155.871 21.2074C148.073 20.299 140.326 18.4952 132.433 18.8612C132.528 20.6061 132.631 22.3315 132.745 24.0765C135.432 24.5405 138.138 24.9457 140.85 25.3182C141.009 27.9127 141.118 30.4942 141.188 33.0888C136.204 32.6574 131.239 32.0954 126.256 31.651C126.141 26.8736 125.841 22.1028 126.326 17.345C127.168 12.6591 132.222 9.73776 132.375 4.88849C130.997 2.28086 127.883 3.10432 125.522 2.79716C107.431 1.93448 89.3141 1.38551 71.2485 0H64.2227C59.3409 7.81635 53.7254 15.0968 48.7288 22.8217C33.4391 21.8544 18.2898 19.2337 3.00012 18.3384V26.5272C4.95919 34.7618 8.73056 42.6043 14.6588 48.5842C27.6831 62.3282 46.323 68.38 64.4524 70.6413H170.459C174.722 56.8777 178.283 42.8592 183.196 29.3244V25.2855C174.186 23.2987 164.965 22.6191 155.871 21.2074ZM96.0272 7.56801C105.153 8.04509 114.271 8.5091 123.41 8.88162C122.299 10.8161 120.959 12.6329 120.047 14.6655C119.932 20.0376 120.213 25.4227 120.091 30.7949C111.132 30.0041 102.224 28.8212 93.2577 28.0565C93.9342 21.1943 94.9424 14.3714 96.0272 7.56801ZM67.3623 6.79029C74.6434 5.6662 82.301 7.4373 89.7225 7.2347C89.129 13.927 87.9995 20.5604 87.087 27.22C76.4621 26.2527 65.8882 24.7235 55.2569 23.9327C59.2835 18.2077 63.0038 12.2408 67.3623 6.79029Z" fill="white"/>
-            </g>
-          </svg>
-        </div>
-      </div>
+    <!-- ADDRESS BUTTON -->
+    <button class="address-btn" id="btnAddress">➕ Address</button>
 
-      <!-- Sustenance card -->
-      <div class="card card-yellow" id="cardSustenance">
-        <div class="card-main">
-          <div class="card-text-main">Sustenance</div>
-          <div class="card-sub">Water/food/medicine</div>
+    <!-- SOS CARD -->
+    <div class="card sos" id="cardSOS">
+        <div>
+            <div class="card-title">SOS</div>
+            <div class="card-sub">Evacuate from the area</div>
         </div>
-        <div class="card-icon">
-          <!-- SVG sustenance (เหมือนเดิม) -->
-          <!-- ... ยก SVG เดิมทั้งหมดมาวาง (ตัดทอนในคำตอบ) ... -->
-          <!-- วาง SVG ตัวเต็มที่คุณให้มา -->
+        <div class="icon-box">
+            <svg width="152" height="72" viewBox="0 0 152 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- กรอก SVG เดิม -->
+            </svg>
         </div>
-      </div>
-    </main>
-  </div>
+    </div>
+
+    <!-- SUSTENANCE CARD -->
+    <div class="card sus" id="cardSustenance">
+        <div>
+            <div class="card-title">Sustenance</div>
+            <div class="card-sub">Water / Food / Medicine</div>
+        </div>
+
+        <div class="icon-box">
+            <svg width="100" height="101" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- SVG เดิม -->
+            </svg>
+        </div>
+    </div>
+
+</div>
 
 <script>
-const API_BASE   = "http://localhost:8080";
-const TOKEN_KEY  = "authToken";
-const ROLE_KEY   = "authRole";
+/* -------------------- CONFIG -------------------- */
+const API_BASE = "http://localhost:8080";
+const TOKEN_KEY = "authToken";
+const ROLE_KEY = "authRole";
 
-const PAGE_SIGNIN  = "/";
-const PAGE_ADDRESS = "/pages/location";   // route ใน server.js
+/* auto detect: 5173 = Node server, else Live Server */
+let PAGE_SIGNIN  = "/";
+let PAGE_ADDRESS = "/pages/location";
 
-// helper อ่าน query param
-function getQueryParam(name) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
+if (location.port !== "5173") {
+    PAGE_SIGNIN  = "./signin.html";
+    PAGE_ADDRESS = "./map.html";
+}
+
+/* อ่าน query param */
+function getQueryParam(name){
+    return new URLSearchParams(window.location.search).get(name);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  let token = localStorage.getItem(TOKEN_KEY);
-  let role  = localStorage.getItem(ROLE_KEY);
+    let token = localStorage.getItem(TOKEN_KEY);
+    let role  = localStorage.getItem(ROLE_KEY);
 
-  // ถ้า localStorage ยังไม่มี แต่ URL มี token → เก็บลง localStorage
-  const urlToken = getQueryParam("token");
-  if (!token && urlToken) {
-    token = urlToken;
-    localStorage.setItem(TOKEN_KEY, token);
-  }
+    const urlToken = getQueryParam("token");
 
-  // ถ้ายังไม่มี role แต่รู้ว่าเป็นหน้า user ก็ set เป็น USER ไปเลย
-  if (!role) {
-    role = "USER";
-    localStorage.setItem(ROLE_KEY, role);
-  }
+    if (location.port !== "5173") {
+        console.warn("Live Server detected → Skip strict token check.");
+    } else {
+        /* ------------- TOKEN CHECK MODE (Node server) ------------- */
+        if (!token && urlToken){
+            token = urlToken;
+            localStorage.setItem(TOKEN_KEY, token);
+        }
 
-  // ถ้ายังไม่มี token หรือ role ไม่ใช่ USER → เด้งกลับหน้า sign in
-  if (!token || role !== "USER") {
-    window.location.href = PAGE_SIGNIN;
-    return;
-  }
+        if (!role){
+            role = "USER";
+            localStorage.setItem(ROLE_KEY, role);
+        }
 
-  const userNameEl  = document.getElementById("userName");
-  const userPhoneEl = document.getElementById("userPhone");
-
-  // ดึงข้อมูล user จาก backend
-  fetch(API_BASE + "/api/users/me", {
-    headers: {
-      "Authorization": "Bearer " + token,
-      "Accept": "application/json"
+        if (!token || role !== "USER"){
+            window.location.href = PAGE_SIGNIN;
+            return;
+        }
     }
-  })
+
+    /* ---------------- FETCH USER ---------------- */
+    fetch(API_BASE + "/api/users/me", {
+        headers:{ "Authorization": "Bearer " + token }
+    })
     .then(res => res.ok ? res.json() : Promise.reject())
     .then(data => {
-      userNameEl.textContent  = data.name || "User";
-      userPhoneEl.textContent = data.phoneNumber || "";
+        document.getElementById("userName").textContent =
+            data.name || "User";
+
+        document.getElementById("userPhone").textContent =
+            data.phoneNumber || "";
     })
     .catch(() => {
-      userNameEl.textContent  = "User";
-      userPhoneEl.textContent = "";
+        document.getElementById("userName").textContent = "User";
+        document.getElementById("userPhone").textContent = "";
     });
 
-  // ---------- เมนู & logout ----------
-  const menuBtn   = document.getElementById("menuButton");
-  const menuPanel = document.getElementById("menuPanel");
-  const btnLogout = document.getElementById("btnLogout");
+    /* ---------------- MENU ---------------- */
+    const menuBtn   = document.getElementById("menuButton");
+    const menuBox   = document.getElementById("dropdownMenu");
+    const btnLogout = document.getElementById("btnLogout");
 
-  menuBtn.addEventListener("click", () => {
-    menuPanel.classList.toggle("open");
-  });
+    menuBtn.onclick = () => {
+        menuBox.style.display =
+            menuBox.style.display === "block" ? "none" : "block";
+    };
 
-  document.addEventListener("click", (e) => {
-    if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) {
-      menuPanel.classList.remove("open");
-    }
-  });
+    document.addEventListener("click", (e) => {
+        if (!menuBtn.contains(e.target) && !menuBox.contains(e.target)){
+            menuBox.style.display = "none";
+        }
+    });
 
-  btnLogout.addEventListener("click", () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(ROLE_KEY);
-    window.location.href = PAGE_SIGNIN;
-  });
+    btnLogout.onclick = () => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = PAGE_SIGNIN;
+    };
 
-  // 🏠 ปุ่ม Address → ไปหน้า map/location พร้อมส่ง token ใน query
-  const btnAddress = document.getElementById("btnAddress");
-  btnAddress.addEventListener("click", () => {
-    window.location.href = PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
-  });
+    /* ---------------- ADDRESS ---------------- */
+    document.getElementById("btnAddress").onclick = () => {
+        window.location.href =
+            PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
+    };
 });
 </script>
 
