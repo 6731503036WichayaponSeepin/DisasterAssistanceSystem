@@ -63,7 +63,7 @@ function verifyToken(req, res, next) {
   }
 }
 
-app.use("/pages", express.static(pagesPath));
+//app.use("/pages", express.static(pagesPath));
 /* -------------------------
    Protected pages (อยู่เหนือ static!)
 -------------------------- */
@@ -88,9 +88,27 @@ app.get("/pages/account", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "accountUser.html"));
 });
 
-app.get("/pages/homeRescue", (req, res) => {
+app.get("/pages/homeRescue.html",verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "homeRescue.html"));
 });
+app.get("/pages/accountRescue.html",verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "accountRescue.html"));
+});
+app.get("/pages/rescueTeam.html",verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "rescueTeam.html"));
+});
+app.get("/pages/createTeam.html",verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "createTeam.html"));
+});
+app.get("/pages/selectMember.html",verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "selectMember.html"));
+});
+app.get("/pages/viewTeam.html",verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "viewTeam.html"));
+});
+
+
+
 
 /* -------------------------
    Static fallback (อยู่ล่างสุด)

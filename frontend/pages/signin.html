@@ -149,99 +149,94 @@
 </section>
 
 <script>
-const USER_LOGIN_API   = "http://localhost:8080/api/users/login";
-const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
+    const USER_LOGIN_API = "http://localhost:8080/api/users/login";
+    const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
 
-const HOME_USER_PAGE   = "/pages/homeUser";
-const HOME_RESCUE_PAGE = "/pages/homeRescue";
+    const HOME_USER_PAGE = "/pages/homeUser";
+    const HOME_RESCUE_PAGE = "/pages/homeRescue.html";
 
-// 🔑 key กลาง
-const TOKEN_KEY = "authToken";
-const ROLE_KEY  = "authRole";
+    function extractToken(j) {
+      return j.token || j.jwt || j.accessToken || null;
+    }
 
-function extractToken(j) {
-  if (!j) return null;
-  return j.token || j.jwt || j.accessToken || (j.data && j.data.token);
-}
+    function showMsg(msg, type = "error") {
+      const el = document.getElementById("msg");
+      el.className = type;
+      el.textContent = msg;
+    }
 
-function showMsg(t, type="error"){
-  const el = document.getElementById("msg");
-  el.className = type==="ok" ? "ok" : "error";
-  el.textContent = t;
-}
+    function getRole() {
+      return document.querySelector("input[name='role']:checked").value;
+    }
 
-function getRole(){
-  return document.querySelector("input[name='role']:checked").value;
-}
+    document.getElementById("confirm").addEventListener("click", async e => {
+      e.preventDefault();
 
-function updateBackground(){
-  const role = getRole();
-  document.body.style.background = role==="RESCUE" ? "var(--red)" : "var(--blue)";
-}
-document.querySelectorAll("input[name='role']").forEach(rb =>
-  rb.addEventListener("change", updateBackground)
-);
-updateBackground();
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const role = getRole();
 
-document.getElementById("confirm").addEventListener("click", async e=>{
-  e.preventDefault();
+      if (!name || !phone) {
+        showMsg("กรุณากรอกข้อมูลให้ครบ");
+        return;
+      }
 
-  const name  = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const role  = getRole();
+      showMsg("กำลังเข้าสู่ระบบ...", "ok");
 
-  if (!name || !phone){
-    showMsg("กรุณากรอกข้อมูลให้ครบ");
-    return;
-  }
+      const url = (role === "USER") ? USER_LOGIN_API : RESCUE_LOGIN_API;
 
-  showMsg("กำลังเข้าสู่ระบบ...", "ok");
+      const bodyObj = {
+        name: name,
+        phone_number: phone
+      };
 
-  let url = (role==="USER") ? USER_LOGIN_API : RESCUE_LOGIN_API;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyObj)
+        });
 
-  const bodyObj = {
-    name: name,
-    phone_number: phone
-  };
+        const json = await res.json().catch(() => ({}));
 
-  try{
-    const res = await fetch(url,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(bodyObj)
+        if (!res.ok) {
+          showMsg(json.message || "เข้าสู่ระบบไม่สำเร็จ");
+          return;
+        }
+
+        const token = extractToken(json);
+        if (!token) {
+          showMsg("เซิร์ฟเวอร์ไม่ได้ส่ง token มา");
+          return;
+        }
+
+        // ⭐ Save Token + Role
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("authRole", role);
+
+        // ⭐ Save Rescue Info (เพื่อใช้ในหน้า Account / Menu / Header)
+        if (role === "RESCUE") {
+          localStorage.setItem("rescueDbId", json.rescueDbId);  // PK
+          localStorage.setItem("rescueId", json.rescueId);      // RS-024
+          localStorage.setItem("rescueName", json.name);        // ชื่อ
+          localStorage.setItem("rescueUnit", json.unit);        // หน่วย
+        }
+
+        showMsg("สำเร็จ! กำลังนำทาง...", "ok");
+
+        const goto = (role === "USER") ? HOME_USER_PAGE : HOME_RESCUE_PAGE;
+        const id = json.rescueDbId || "";
+
+        setTimeout(() => {
+          window.location.href = `${goto}?token=${encodeURIComponent(token)}&id=${id}`;
+        }, 800);
+
+      } catch (err) {
+        console.error(err);
+        showMsg("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
+      }
     });
-
-    const json = await res.json().catch(()=>({}));
-
-    if(!res.ok){
-      showMsg(json.message || "เข้าสู่ระบบไม่สำเร็จ");
-      return;
-    }
-
-    const token = extractToken(json);
-    if(!token){
-      showMsg("ไม่พบ token จากเซิร์ฟเวอร์");
-      return;
-    }
-
-    // ✅ เก็บ token ลง localStorage
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(ROLE_KEY, role);
-
-    showMsg("เข้าสู่ระบบสำเร็จ! กำลังนำทาง...", "ok");
-
-    const goto = (role==="USER") ? HOME_USER_PAGE : HOME_RESCUE_PAGE;
-
-    // ✅ ส่ง token ให้ server.js ผ่าน query param
-    window.location.href = goto + "?token=" + encodeURIComponent(token);
-
-  }catch(err){
-    console.error(err);
-    showMsg("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
-  }
-
-});
-</script>
+  </script>
 
 
 </body>

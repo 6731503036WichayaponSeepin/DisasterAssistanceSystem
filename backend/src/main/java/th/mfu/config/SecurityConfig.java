@@ -7,10 +7,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import th.mfu.security.JwtAuthFilter;
-
-// ⬇️ เพิ่มแค่บรรทัดนี้เพื่อใช้กำหนดสิทธิ์ตาม HTTP method
 import org.springframework.http.HttpMethod;
 
 @Configuration
@@ -21,28 +22,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-            // ✅ ปิด CSRF เพราะใช้ JWT
+            // ⭐ เปิด CORS พร้อมกำหนด config ของเราเอง
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            // ⭐ ปิด CSRF (เพราะใช้ JWT)
             .csrf(csrf -> csrf.disable())
 
-            // ✅ ตั้งค่าการอนุญาตการเข้าถึง
+            // ⭐ RULE ทั้งหมด
             .authorizeHttpRequests(auth -> auth
 
-                // 🔓 Public endpoints (ไม่ต้อง login)
+                /* ====================================================
+                 *  PUBLIC (เข้าได้เลย)
+                 * ==================================================== */
                 .requestMatchers(
                     "/api/users/login",
                     "/api/users/register",
                     "/api/rescues/login",
                     "/api/rescues/register",
-                    "/api/units",
-
-                    // ⬇️ เคส: ping เปิดสาธารณะ
-                    "/api/cases/ping"
+                    "/api/cases/ping",
+                    "/api/units"
                 ).permitAll()
 
-                // 🔓 Static resources (HTML, CSS, JS)
+                /* ====================================================
+                 *  STATIC FILES (เข้าได้เลย)
+                 * ==================================================== */
                 .requestMatchers(
-                    "/", 
+                    "/",
                     "/index.html",
                     "/css/**",
                     "/js/**",
@@ -51,46 +58,78 @@ public class SecurityConfig {
                     "/static/**"
                 ).permitAll()
 
-                // 👤 USER role
+                /* ====================================================
+                 *  LOCATION API (ใช้ได้ทั้ง USER + RESCUE)
+                 * ==================================================== */
+                .requestMatchers("/api/location/**")
+                    .hasAnyAuthority("ROLE_USER", "ROLE_RESCUE")
+
+                /* ====================================================
+                 *  USER ONLY
+                 * ==================================================== */
                 .requestMatchers(
                     "/api/users/**",
                     "/api/address/**",
-                    "/api/location/**",
                     "/api/user-location/**"
                 ).hasAuthority("ROLE_USER")
 
-                // ⬇️ เคส: ผู้ใช้แจ้งเคส
-                .requestMatchers(HttpMethod.POST, "/api/cases/report").hasAuthority("ROLE_USER")
+                .requestMatchers(HttpMethod.POST, "/api/cases/report")
+                    .hasAuthority("ROLE_USER")
 
-                // 🚒 RESCUE role
+                /* ====================================================
+                 *  RESCUE ONLY
+                 * ==================================================== */
                 .requestMatchers(
+                    "/api/rescues/**",
                     "/api/rescue/**",
-                    "/api/rescue-teams/**"
+                    "/api/rescues/avaliable"
                 ).hasAuthority("ROLE_RESCUE")
 
-                // ⬇️ เคส: ทีมกู้ภัยจัดการ/ดูเคสของตัวเอง/เคสว่าง
+                .requestMatchers("/api/rescue-teams/**")
+                    .hasAuthority("ROLE_RESCUE")
+
                 .requestMatchers(HttpMethod.POST, "/api/cases/{id}/follow").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.POST, "/api/cases/{id}/coming").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.POST, "/api/cases/{id}/confirm").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.GET,  "/api/cases/my").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.GET,  "/api/cases/available").hasAuthority("ROLE_RESCUE")
 
-                // ⬇️ (แนะนำ) ให้ RESCUE ดูรายการเคสทั้งหมดและตามสถานะได้
+                .requestMatchers(HttpMethod.GET, "/api/cases/my").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.GET, "/api/cases/available").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.GET, "/api/cases").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.GET, "/api/cases/status/**").hasAuthority("ROLE_RESCUE")
 
-                // ❌ ปฏิเสธทุก request อื่น
+                /* ====================================================
+                 *  อื่น ๆ ปฏิเสธทั้งหมด
+                 * ==================================================== */
                 .anyRequest().denyAll()
             )
 
-            // ✅ Stateless session (JWT)
+            // ⭐ ใช้ JWT stateless mode
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            // ✅ ใช้ JWT Filter ก่อน UsernamePasswordAuthenticationFilter
+            // ⭐ JWT Filter แทน Username/Password แบบดั้งเดิม
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /* ====================================================
+     *  GLOBAL CORS CONFIG (ใช้ที่ FE port 5173)
+     * ==================================================== */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("http://127.0.0.1:5173");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 }
