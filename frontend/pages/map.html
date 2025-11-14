@@ -9,7 +9,6 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
 
@@ -57,14 +56,6 @@
       margin-bottom:14px;
     }
 
-    .section-label{
-      font-size:13px;
-      font-weight:600;
-      color:var(--label);
-      margin-bottom:6px;
-    }
-
-    /* กล่อง map */
     #map{
       width:100%;
       height:260px;
@@ -74,21 +65,6 @@
       margin-bottom:10px;
     }
 
-    .hint{
-      font-size:11px;
-      color:var(--subtext);
-      margin-bottom:8px;
-      text-align:center;
-    }
-
-    .row{
-      display:flex;
-      gap:8px;
-      margin-bottom:8px;
-    }
-    .field{
-      flex:1;
-    }
     .field label{
       display:block;
       font-size:12px;
@@ -103,16 +79,7 @@
       border:1px solid var(--border);
       background:var(--input-bg);
       font-size:12px;
-      color:#111827;
       outline:none;
-    }
-    .field input:focus{
-      border-color:var(--blue);
-      background:#FFF;
-    }
-
-    .address-field{
-      margin-top:2px;
     }
 
     .btn-row{
@@ -128,25 +95,14 @@
       font-size:13px;
       font-weight:600;
       cursor:pointer;
-      transition:transform .08s ease, box-shadow .08s ease, background-color .1s;
     }
     .btn-primary{
       background:var(--blue);
       color:#fff;
-      box-shadow:0 8px 16px rgba(10,83,228,.45);
-    }
-    .btn-primary:active{
-      transform:translateY(1px);
-      box-shadow:0 4px 10px rgba(0,0,0,.35);
-      background:#0842b6;
     }
     .btn-ghost{
       background:#EEF1F5;
       color:#111827;
-    }
-    .btn-ghost:active{
-      background:#E0E4EC;
-      transform:translateY(1px);
     }
 
     .status{
@@ -156,117 +112,44 @@
       min-height:14px;
     }
 
-    /* 🔍 ส่วน search */
-    .search-box{
-      margin-bottom:10px;
-    }
-    .search-row{
-      display:flex;
-      gap:8px;
-      margin-bottom:4px;
-    }
-    .search-row input{
-      flex:1;
-      padding:7px 9px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:var(--input-bg);
-      font-size:12px;
-      outline:none;
-    }
-    .search-row input:focus{
-      border-color:var(--blue);
-      background:#fff;
-    }
-    .search-row button{
-      flex:0 0 auto;
-      padding:7px 14px;
-      font-size:12px;
-    }
-    .search-hint{
-      font-size:11px;
-      color:var(--subtext);
-    }
-    .search-results{
-      margin-top:6px;
-      max-height:110px;
-      overflow-y:auto;
-      border-radius:10px;
-      border:1px solid #E5E7EB;
-      background:#F9FAFB;
-    }
-    .search-item{
-      padding:6px 8px;
-      font-size:11px;
-      border-bottom:1px solid #E5E7EB;
-      cursor:pointer;
-    }
-    .search-item:last-child{
-      border-bottom:none;
-    }
-    .search-item:hover{
-      background:#E5F0FF;
-    }
-    .search-item-title{
-      font-weight:600;
-      color:#111827;
-      margin-bottom:2px;
-    }
-    .search-item-sub{
-      color:#6B7280;
-    }
-    .search-empty{
-      padding:6px 8px;
-      font-size:11px;
-      color:#6B7280;
-    }
-
-    @media (max-width:480px){
-      .card{
-        padding:16px 12px 18px;
-        border-radius:16px;
-      }
-      #map{
-        height:250px;
-      }
-    }
   </style>
 </head>
 <body>
 
 <div class="card">
   <div class="title">เลือกตำแหน่งบนแผนที่</div>
-  <div class="subtitle">แตะบนแผนที่เพื่อปักหมุด หรือค้นหาสถานที่สำคัญ</div>
+  <div class="subtitle">แตะบนแผนที่เพื่อปักหมุด</div>
 
-  <!-- 🔍 กล่องค้นหา -->
-  <div class="search-box">
-    <div class="section-label">ค้นหาสถานที่</div>
-    <div class="search-row">
-      <input id="search-input" type="text" placeholder="เช่น Mae Fah Luang University, Central Chiang Rai, รพ.เชียงราย ฯลฯ">
-      <button class="btn-primary" id="btn-search">ค้นหา</button>
-    </div>
-    <div class="search-hint">พิมพ์ชื่อสถานที่/หมู่บ้าน/ตำบล/อำเภอ แล้วกดค้นหา จากนั้นแตะที่ผลลัพธ์เพื่อเลื่อนไปตำแหน่งนั้น</div>
-    <div id="search-results" class="search-results" style="display:none;"></div>
-  </div>
-
-  <div class="section-label">แผนที่</div>
   <div id="map"></div>
-  <div class="hint">คลิกบนแผนที่ 1 ครั้งเพื่อสร้างหมุด แล้วลากหมุดเพื่อปรับตำแหน่งได้</div>
 
-  <div class="row">
-    <div class="field">
-      <label for="lat">Latitude</label>
-      <input id="lat" type="text" readonly placeholder="รอเลือกจากแผนที่...">
-    </div>
-    <div class="field">
-      <label for="lng">Longitude</label>
-      <input id="lng" type="text" readonly placeholder="รอเลือกจากแผนที่...">
-    </div>
+  <div class="field">
+    <label>Latitude</label>
+    <input id="lat" readonly>
+  </div>
+  <div class="field">
+    <label>Longitude</label>
+    <input id="lng" readonly>
   </div>
 
-  <div class="field address-field">
-    <label for="address">ที่อยู่โดยประมาณ</label>
-    <input id="address" type="text" readonly placeholder="รอระบบค้นหาที่อยู่...">
+  <div class="field">
+    <label>ถนน</label>
+    <input id="road" readonly>
+  </div>
+  <div class="field">
+    <label>ตำบล</label>
+    <input id="subdistrict" readonly>
+  </div>
+  <div class="field">
+    <label>อำเภอ</label>
+    <input id="district" readonly>
+  </div>
+  <div class="field">
+    <label>จังหวัด</label>
+    <input id="province" readonly>
+  </div>
+  <div class="field">
+    <label>รหัสไปรษณีย์</label>
+    <input id="postcode" readonly>
   </div>
 
   <div class="btn-row">
@@ -278,296 +161,194 @@
 </div>
 
 <!-- Leaflet JS -->
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-  crossorigin="">
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
 <script>
-  /* ============= CONFIG TOKEN / PATH ============= */
-  const API_BASE    = "http://localhost:8080";
-  const TOKEN_KEY   = "authToken";
-  const ROLE_KEY    = "authRole";
-  const PAGE_SIGNIN = "/";
+  const API_BASE = "http://localhost:8080";
+  const TOKEN_KEY = "authToken";
 
-  // อ่าน query param
-  function getQueryParam(name){
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-  }
+  const authToken = localStorage.getItem(TOKEN_KEY);
 
-  // case type (จริง ๆ จะมีหรือไม่มีก็ได้)
-  const CASE_TYPE = getQueryParam("type") || "SOS";
+  const map = L.map('map').setView([19.9105, 99.8406], 13);
 
-  // ----- โหลด token -----
-  let authToken = localStorage.getItem(TOKEN_KEY);
-  let authRole  = localStorage.getItem(ROLE_KEY);
-
-  // ถ้า localStorage ยังไม่มี แต่ URL มี token → เก็บลง localStorage
-  const urlToken = getQueryParam("token");
-  if (!authToken && urlToken) {
-    authToken = urlToken;
-    localStorage.setItem(TOKEN_KEY, authToken);
-  }
-
-  // ถ้ายังไม่มี role → set เป็น USER
-  if (!authRole) {
-    authRole = "USER";
-    localStorage.setItem(ROLE_KEY, authRole);
-  }
-
-  // ถ้าไม่มี token หรือไม่ใช่ USER → เด้งกลับไปหน้า login
-  if (!authToken || authRole !== "USER") {
-    alert("กรุณาเข้าสู่ระบบด้วยบัญชี User ก่อนใช้งานหน้านี้");
-    window.location.href = PAGE_SIGNIN;
-  }
-
-  // 🌏 ตั้งค่าเริ่มต้นโซนเชียงราย / MFU
-  const initialLat = 19.9105;
-  const initialLng = 99.8406;
-  const initialZoom = 13;
-
-  const map = L.map('map').setView([initialLat, initialLng], initialZoom);
-
-  // Base map จาก OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
   let marker = null;
 
-  const latInput    = document.getElementById('lat');
-  const lngInput    = document.getElementById('lng');
-  const addrInput   = document.getElementById('address');
-  const statusEl    = document.getElementById('status');
-  const btnClear    = document.getElementById('btn-clear');
-  const btnConfirm  = document.getElementById('btn-confirm');
+  const latInput = document.getElementById("lat");
+  const lngInput = document.getElementById("lng");
+  const roadInput = document.getElementById("road");
+  const subInput = document.getElementById("subdistrict");
+  const distInput = document.getElementById("district");
+  const provInput = document.getElementById("province");
+  const postInput = document.getElementById("postcode");
+  const statusEl = document.getElementById("status");
 
-  const searchInput   = document.getElementById('search-input');
-  const btnSearch     = document.getElementById('btn-search');
-  const searchResults = document.getElementById('search-results');
-
-  function setStatus(msg){
-    statusEl.textContent = msg || '';
+  function setStatus(t){
+    statusEl.textContent = t;
   }
 
-  function updateInputs(latlng){
-    latInput.value = latlng.lat.toFixed(6);
-    lngInput.value = latlng.lng.toFixed(6);
-    reverseGeocode(latlng.lat, latlng.lng);
-  }
-
-  // คลิกบนแผนที่ → ปักหมุด
-  map.on('click', function(e){
-    const latlng = e.latlng;
-
-    if (!marker){
-      marker = L.marker(latlng, {draggable:true}).addTo(map);
-
-      marker.on('dragend', function(ev){
-        const pos = ev.target.getLatLng();
-        updateInputs(pos);
-        setStatus('เลื่อนหมุดแล้ว');
-      });
-    }else{
-      marker.setLatLng(latlng);
-    }
-
-    updateInputs(latlng);
-    setStatus('เลือกตำแหน่งแล้ว');
-  });
-
-  // ดึงข้อมูลที่อยู่แบบคร่าว ๆ จาก Nominatim
-  function reverseGeocode(lat, lng){
-    addrInput.value = 'กำลังค้นหาที่อยู่...';
+ // ✨ Reverse Geocode (ดึงจังหวัด อำเภอ ตำบล ถนน)
+function reverseGeocode(lat, lng){
     fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
-      .then(res => res.json())
+      .then(r => r.json())
       .then(data => {
-        if (data && data.display_name){
-          addrInput.value = data.display_name;
-          setStatus('ดึงที่อยู่สำเร็จ');
-        }else{
-          addrInput.value = '';
-          setStatus('ไม่พบที่อยู่โดยประมาณ');
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        addrInput.value = '';
-        setStatus('ไม่สามารถดึงที่อยู่ได้');
-      });
-  }
-
-  // 🔍 ฟังก์ชันค้นหาสถานที่ด้วย Nominatim (forward geocoding)
-  function searchPlace(){
-    const q = searchInput.value.trim();
-    if (!q){
-      setStatus('กรุณาพิมพ์คำค้นหาก่อน');
-      return;
-    }
-    setStatus('กำลังค้นหา...');
-    searchResults.style.display = 'none';
-    searchResults.innerHTML = '';
-
-    // จำกัดประเทศเป็นไทย (countrycodes=th) ถ้าอยากได้ทั่วโลก ลบพารามิเตอร์นี้ออก
-    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=7&countrycodes=th`;
-
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data) || data.length === 0){
-          searchResults.style.display = 'block';
-          searchResults.innerHTML = '<div class="search-empty">ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา</div>';
-          setStatus('ไม่พบผลลัพธ์');
+        if (!data.address){
+          setStatus("ไม่พบข้อมูลที่อยู่");
           return;
         }
 
-        searchResults.style.display = 'block';
-        searchResults.innerHTML = '';
+        const a = data.address;   // ❗ สำคัญที่สุด ต้องมี
 
-        data.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'search-item';
+        // ถนน
+        const road =
+          a.road ||
+          a.street ||
+          a.residential ||
+          a.neighbourhood ||
+          "";
 
-          const title = document.createElement('div');
-          title.className = 'search-item-title';
-          title.textContent = item.display_name.split(',')[0] || 'ไม่ทราบชื่อสถานที่';
+        // ตำบล (ตำบลจริงมักอยู่ใน suburb หรือ town ของไทย)
+        const subdistrict =
+          a.suburb ||
+          a.village ||
+          a.town ||
+          a.locality ||
+          "";
 
-          const sub = document.createElement('div');
-          sub.className = 'search-item-sub';
-          sub.textContent = item.display_name;
+        // อำเภอ
+        const district =
+          a.county ||        // อำเภอไทยอยู่ตรงนี้ 90%
+          a.city ||          // fallback
+          a.region ||        // fallback
+          "";
 
-          div.appendChild(title);
-          div.appendChild(sub);
+        // จังหวัด
+        // จังหวัด (รองรับหลาย key)
+// Nominatim ไทยอาจใช้ state, region, province หรือ ISO3166-2-lvl4
+let province =
+  a.state ||
+  a.province ||
+  a.region ||
+  a["ISO3166-2-lvl4"] ||
+  "";
 
-          div.addEventListener('click', () => {
-            const lat = parseFloat(item.lat);
-            const lon = parseFloat(item.lon);
+// แปลงชื่อจังหวัดให้เป็นแบบไทยหากเจอภาษาอังกฤษ
+if (province === "Chiang Rai" || province === "Chiang Rai Province") {
+  province = "เชียงราย";
+}
 
-            // ซูมไปที่ตำแหน่ง + ปักหมุด
-            map.setView([lat, lon], 16);
 
-            if (!marker){
-              marker = L.marker([lat, lon], {draggable:true}).addTo(map);
-              marker.on('dragend', function(ev){
-                const pos = ev.target.getLatLng();
-                updateInputs(pos);
-                setStatus('เลื่อนหมุดแล้ว');
-              });
-            }else{
-              marker.setLatLng([lat, lon]);
-            }
+        // ไปรษณีย์
+        const postcode = a.postcode || "";
 
-            updateInputs({lat: lat, lng: lon});
-            addrInput.value = item.display_name;
-            setStatus('เลือกจากผลลัพธ์การค้นหาแล้ว');
+        // แสดงบน UI
+        roadInput.value = road;
+        subInput.value = subdistrict;
+        distInput.value = district;
+        provInput.value = province;
+        postInput.value = postcode;
 
-            // ซ่อนรายการ
-            searchResults.style.display = 'none';
-          });
+        // เตรียมส่ง backend
+        window.lastAddress = {
+          road,
+          subdistrict,
+          district,
+          province,
+          postcode
+        };
 
-          searchResults.appendChild(div);
-        });
-
-        setStatus('พบผลลัพธ์ ' + data.length + ' รายการ');
+        setStatus("โหลดข้อมูลที่อยู่สำเร็จ");
       })
       .catch(err => {
         console.error(err);
-        searchResults.style.display = 'block';
-        searchResults.innerHTML = '<div class="search-empty">เกิดข้อผิดพลาดระหว่างค้นหา</div>';
-        setStatus('ไม่สามารถค้นหาได้');
+        setStatus("ไม่สามารถดึงข้อมูลที่อยู่ได้");
       });
-  }
+}
 
-  // ปุ่มค้นหา + กด Enter
-  btnSearch.addEventListener('click', searchPlace);
-  searchInput.addEventListener('keydown', function(e){
-    if (e.key === 'Enter'){
-      e.preventDefault();
-      searchPlace();
+
+
+  // คลิกเพื่อปักหมุด
+  map.on("click", function(e){
+    const pos = e.latlng;
+
+    if (!marker){
+      marker = L.marker(pos, {draggable:true}).addTo(map);
+      marker.on("dragend", (ev)=>{
+        const p = ev.target.getLatLng();
+        latInput.value = p.lat.toFixed(6);
+        lngInput.value = p.lng.toFixed(6);
+        reverseGeocode(p.lat, p.lng);
+      });
+    } else {
+      marker.setLatLng(pos);
     }
+
+    latInput.value = pos.lat.toFixed(6);
+    lngInput.value = pos.lng.toFixed(6);
+    reverseGeocode(pos.lat, pos.lng);
+
   });
 
-  // ปุ่มลบหมุด
-  btnClear.addEventListener('click', function(){
+  // ลบหมุด
+  document.getElementById("btn-clear").onclick = ()=>{
     if (marker){
       map.removeLayer(marker);
       marker = null;
     }
-    latInput.value = '';
-    lngInput.value = '';
-    addrInput.value = '';
-    setStatus('ลบหมุดแล้ว');
-  });
+    latInput.value = "";
+    lngInput.value = "";
+    roadInput.value = "";
+    subInput.value = "";
+    distInput.value = "";
+    provInput.value = "";
+    postInput.value = "";
+    setStatus("ลบหมุดแล้ว");
+  };
 
-  // ปุ่มยืนยัน → ส่งไป backend
-  btnConfirm.addEventListener('click', async function () {
-    if (!latInput.value || !lngInput.value) {
-      setStatus('กรุณาเลือกตำแหน่งบนแผนที่ก่อน');
+  // ยืนยันตำแหน่ง → ส่งไป backend
+  document.getElementById("btn-confirm").onclick = async ()=>{
+
+    if (!latInput.value || !lngInput.value){
+      setStatus("กรุณาเลือกตำแหน่งก่อน");
       return;
     }
 
-    const lat  = parseFloat(latInput.value);
-    const lng  = parseFloat(lngInput.value);
-    const addr = addrInput.value || '';
+    const addr = window.lastAddress || {};
 
-    if (!authToken) {
-      setStatus('ไม่พบ token กรุณา login ใหม่');
-      alert('ไม่พบ token กรุณา login ใหม่');
-      window.location.href = PAGE_SIGNIN;
-      return;
-    }
-
-    const payload = {
-      latitude: lat,
-      longitude: lng,
-      address: addr,
-      caseType: CASE_TYPE   // SOS / SUSTENANCE (เผื่อไปใช้ตอนสร้างเคส)
+    const body = {
+      latitude: parseFloat(latInput.value),
+      longitude: parseFloat(lngInput.value),
+      road: addr.road || "",
+      subdistrict: addr.subdistrict || "",
+      district: addr.district || "",
+      province: addr.province || "",
+      postcode: addr.postcode || ""
     };
 
-    try {
-      setStatus('กำลังบันทึกตำแหน่งไปยังเซิร์ฟเวอร์...');
+    setStatus("กำลังบันทึก...");
 
-      // เรียก endpoint สำหรับบันทึกตำแหน่งบ้านของผู้ใช้ (backend: UserLocationController)
-      const res = await fetch(API_BASE + "/api/user-location/home", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + authToken
-        },
-        // backend expects { latitude, longitude, description }
-        body: JSON.stringify({
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          description: addr
-        })
-      });
+    const res = await fetch(API_BASE + "/api/user-location/home", {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + authToken
+      },
+      body: JSON.stringify(body)
+    });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('Save error:', text);
-        setStatus('บันทึกตำแหน่งไม่สำเร็จ (' + res.status + ')');
-        alert('บันทึกตำแหน่งไม่สำเร็จ: ' + text);
-        return;
-      }
-
-      const data = await res.json().catch(() => ({}));
-      console.log('Saved location:', data);
-
-      setStatus('บันทึกตำแหน่งเรียบร้อยแล้ว');
-      alert('บันทึกตำแหน่งบ้านเรียบร้อยแล้ว ✅');
-
-      // ถ้าต้องการ กลับไปหน้า homeUser ก็ทำได้:
-      // window.location.href = "/pages/homeUser.html";
-
-    } catch (err) {
-      console.error(err);
-      setStatus('เกิดข้อผิดพลาดระหว่างบันทึกตำแหน่ง');
-      alert('เกิดข้อผิดพลาดระหว่างบันทึกตำแหน่ง');
+    if (!res.ok){
+      setStatus("บันทึกล้มเหลว");
+      alert("เกิดข้อผิดพลาด");
+      return;
     }
-  });
+
+    setStatus("บันทึกสำเร็จ");
+    alert("บันทึกตำแหน่งบ้านเรียบร้อยแล้ว ✔️");
+  };
+
 </script>
 
 </body>
