@@ -207,40 +207,59 @@ public class UserController {
     // ===========================
     //   UPDATE USER DETAIL
     // ===========================
-    @PutMapping("/detail")
-    public ResponseEntity<?> updateMyDetail(
-            @RequestBody Detail newDetail,
-            Authentication authentication) {
+  @PutMapping("/detail")
+public ResponseEntity<?> updateMyDetail(
+        @RequestBody Detail newDetail,
+        Authentication authentication) {
 
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-
-        String phoneNumber = authentication.getName();
-
-        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.status(404).body("User not found");
-        }
-
-        User user = optUser.get();
-        Detail detail = user.getDetail();
-        if (detail == null) {
-            detail = new Detail();
-        }
-
-        detail.setName(newDetail.getName());
-        detailRepo.save(detail);
-
-        user.setDetail(detail);
-        userRepo.save(user);
-
-        return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "message", "Detail updated successfully",
-            "detail", detail
-        ));
+    if (authentication == null) {
+        return ResponseEntity.status(401).body("Unauthorized");
     }
+
+    String phoneNumber = authentication.getName();
+
+    Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+    if (optUser.isEmpty()) {
+        return ResponseEntity.status(404).body("User not found");
+    }
+
+    User user = optUser.get();
+    Detail detail = user.getDetail();
+    if (detail == null) {
+        detail = new Detail();
+    }
+
+    // ---------------- VALIDATION เพิ่มใหม่ ----------------
+
+    if (newDetail.getName() == null || newDetail.getName().isBlank()) {
+        return ResponseEntity.badRequest().body("Name cannot be empty");
+    }
+
+    if (newDetail.getName().matches(".*\\d.*")) {
+        return ResponseEntity.badRequest().body("Name cannot contain numbers");
+    }
+
+    if (newDetail.getPhoneNumber() == null ||
+        !newDetail.getPhoneNumber().matches("\\d{10}")) {
+        return ResponseEntity.badRequest().body("Phone number must be 10 digits");
+    }
+
+    // -------------------------------------------------------
+
+    detail.setName(newDetail.getName());
+    detail.setPhoneNumber(newDetail.getPhoneNumber());
+
+    detailRepo.save(detail);
+
+    user.setDetail(detail);
+    userRepo.save(user);
+
+    return ResponseEntity.ok(Map.of(
+        "status", "success",
+        "message", "Detail updated successfully",
+        "detail", detail
+    ));
+}
 
     // ===========================
     //   UPDATE ADDRESS

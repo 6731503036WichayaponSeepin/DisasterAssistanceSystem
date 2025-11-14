@@ -276,12 +276,9 @@
 </div>
 
 <script>
-/* ---------------- CONFIG ---------------- */
 const API_BASE = "http://localhost:8080";
 const TOKEN_KEY = "authToken";
-const ROLE_KEY  = "authRole";
 
-/* รองรับโหมด Live Server */
 let PAGE_SIGNIN  = "/";
 let PAGE_ADDRESS = "/pages/location";
 
@@ -290,14 +287,12 @@ if (location.port !== "5173") {
     PAGE_ADDRESS = "./map.html";
 }
 
-/* อ่าน query param */
 function getQueryParam(name){
     return new URLSearchParams(window.location.search).get(name);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ดึง token */
     let token = localStorage.getItem(TOKEN_KEY);
     const urlToken = getQueryParam("token");
 
@@ -319,47 +314,26 @@ document.addEventListener("DOMContentLoaded", () => {
             "Authorization": "Bearer " + token
         }
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Unauthorized");
-        }
-        return res.json();
-    })
+    .then(res => res.json())
     .then(user => {
-        console.log("USER DATA:", user);
-
-        /* map ฟิลด์ให้ตรงกับ backend */
         document.getElementById("userName").textContent =
             user.name ?? "Unknown User";
-
         document.getElementById("userPhone").textContent =
             user.phoneNumber ?? "No Phone";
-    })
-    .catch(err => {
-        console.error("User fetch error:", err);
-        window.location.href = PAGE_SIGNIN;
     });
 
     /* ---------------- MENU ---------------- */
-    const menuBtn   = document.getElementById("menuButton");
-    const menuBox   = document.getElementById("dropdownMenu");
-    const btnLogout = document.getElementById("btnLogout");
+    const menuBtn = document.getElementById("menuButton");
+    const menuBox = document.getElementById("dropdownMenu");
 
     menuBtn.onclick = () => {
         menuBox.style.display =
             menuBox.style.display === "block" ? "none" : "block";
     };
 
-    document.addEventListener("click", (e) => {
-        if (!menuBtn.contains(e.target) && !menuBox.contains(e.target)){
-            menuBox.style.display = "none";
-        }
-    });
-
-    btnLogout.onclick = () => {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(ROLE_KEY);
-        window.location.href = PAGE_SIGNIN;
+    /* ---------------- ACCOUNT PAGE (มีปัญหา) ---------------- */
+    document.getElementById("btnAccount").onclick = () => {
+        window.location.href = "/pages/account?token=" + encodeURIComponent(token);
     };
 
     /* ---------------- ADDRESS PAGE ---------------- */
@@ -367,8 +341,16 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href =
             PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
     };
-});
+
+    /* ---------------- LOGOUT ---------------- */
+    document.getElementById("btnLogout").onclick = () => {
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = PAGE_SIGNIN;
+    };
+
+}); // END DOMContentLoaded
 </script>
+
 
 
 </body>

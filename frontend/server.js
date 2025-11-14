@@ -85,6 +85,12 @@ app.get("/pages/homeUser",verifyToken, (req, res) => {
 app.get("/pages/location", verifyToken,(req, res) => {
   res.sendFile(path.join(pagesPath, "map.html"));
 });
+/* ================================
+   ACCOUNT PAGE (ต้องล็อกอิน)
+================================ */
+app.get("/pages/account", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "accountUser.html"));
+});
 
 
 // (อันอื่นๆ ค่อยเติมทีหลังได้)

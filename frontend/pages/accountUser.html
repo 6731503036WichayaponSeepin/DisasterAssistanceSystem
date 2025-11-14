@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account</title>
+
+<style>
+:root{
+    --blue:#0A53E4;
+    --card-bg:#FFFFFF;
+    --radius:22px;
+    --font:'Inter', sans-serif;
+    --shadow:0 6px 18px rgba(0,0,0,0.16);
+    --red:#E51010;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
+
+body{
+    background:var(--blue);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+}
+
+/* MAIN CONTAINER */
+.container{
+    width:min(420px,100%);
+    background:var(--card-bg);
+    margin-top:40px;
+    margin-bottom:40px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+/* TOP BAR */
+.topbar{
+    background:var(--blue);
+    color:white;
+    padding:18px 20px;
+    font-size:22px;
+    font-weight:700;
+    text-align:center;
+    position:relative;
+}
+
+.back-btn{
+    position:absolute;
+    left:18px;
+    top:18px;
+    font-size:20px;
+    cursor:pointer;
+}
+
+/* CONTENT */
+.content{
+    padding:26px 22px 36px;
+}
+
+.label{
+    font-size:13px;
+    color:#333;
+    margin-bottom:6px;
+    font-weight:600;
+}
+
+.input{
+    width:100%;
+    padding:12px 14px;
+    background:#F3F4F6;
+    border:1px solid #D1D5DB;
+    border-radius:12px;
+    font-size:14px;
+    margin-bottom:20px;
+}
+
+/* SAVE BUTTON */
+.save-btn{
+    width:100%;
+    padding:12px;
+    background:#0A53E4;
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    margin-top:10px;
+}
+
+.save-btn:active{
+    transform:scale(0.97);
+}
+
+/* SIGN OUT BUTTON */
+.signout-btn{
+    width:100%;
+    padding:12px;
+    background:var(--red);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:600;
+    margin-top:20px;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+
+.signout-btn:active{
+    transform:scale(0.97);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="back-btn" id="goBack">←</div>
+        Account
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <div>
+            <div class="label">Name</div>
+            <input class="input" id="userName">
+        </div>
+
+        <div>
+            <div class="label">Phone Number</div>
+            <input class="input" id="userPhone">
+        </div>
+
+        <button class="save-btn" id="btnSave">Save</button>
+
+        <button class="signout-btn" id="btnLogout">
+            Sign Out
+        </button>
+
+    </div>
+</div>
+
+<script>
+/* ---------------- CONFIG ---------------- */
+const API_BASE = "http://localhost:8080";
+const TOKEN_KEY = "authToken";
+const ROLE_KEY  = "authRole";
+
+/* รองรับ Live Server */
+let PAGE_SIGNIN  = "/";
+let PAGE_HOME    = "/pages/homeUser";
+let PAGE_ACCOUNT = "/pages/account";
+
+if (location.port !== "5173") {
+    PAGE_SIGNIN  = "./signin.html";
+    PAGE_HOME    = "./homeUser.html";
+    PAGE_ACCOUNT = "./accountUser.html";
+}
+
+/* อ่าน query param */
+function getQueryParam(name){
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    let token = localStorage.getItem(TOKEN_KEY);
+    let role  = localStorage.getItem(ROLE_KEY);
+    const urlToken = getQueryParam("token");
+
+    /* รับ token จาก query */
+    if(!token && urlToken){
+        token = urlToken;
+        localStorage.setItem(TOKEN_KEY, token);
+    }
+
+    /* ถ้าไม่มี token → กลับไป signin */
+    if(!token){
+        window.location.href = PAGE_SIGNIN;
+        return;
+    }
+
+    /* โหลดข้อมูลผู้ใช้ */
+    loadUserData(token);
+
+    /* SAVE ปุ่มบันทึก */
+   document.getElementById("btnSave").onclick = async () => {
+    const name  = document.getElementById("userName").value.trim();
+    const phone = document.getElementById("userPhone").value.trim();
+
+    /* ========== VALIDATION ========== */
+
+    // ชื่อห้ามว่าง
+    if(name.length === 0){
+        alert("กรุณากรอกชื่อ");
+        return;
+    }
+
+    // ชื่อห้ามมีตัวเลข
+    if(/[0-9]/.test(name)){
+        alert("ชื่อห้ามมีตัวเลข");
+        return;
+    }
+
+    // เบอร์ต้องเป็นตัวเลขเท่านั้น
+    if(!/^[0-9]+$/.test(phone)){
+        alert("เบอร์โทรต้องเป็นตัวเลขเท่านั้น");
+        return;
+    }
+
+    // เบอร์ไทยต้อง 10 หลัก
+    if(phone.length !== 10){
+        alert("เบอร์โทรต้องมี 10 หลัก");
+        return;
+    }
+
+    /* ========== ส่งข้อมูลไป backend ========== */
+    const body = {
+        name: name,
+        phoneNumber: phone
+    };
+
+    const res = await fetch(API_BASE + "/api/users/detail", {
+        method: "PUT",
+        headers:{
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(body)
+    });
+
+    if(res.ok){
+        alert("บันทึกข้อมูลสำเร็จ");
+    }else{
+        alert("บันทึกข้อมูลไม่สำเร็จ");
+    }
+};
+
+    /* BACK button */
+    document.getElementById("goBack").onclick = () => {
+        window.location.href = PAGE_HOME + "?token=" + encodeURIComponent(token);
+    };
+
+    /* Sign Out */
+    document.getElementById("btnLogout").onclick = () => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = PAGE_SIGNIN;
+    };
+});
+
+/* โหลดข้อมูล */
+function loadUserData(token){
+    fetch(API_BASE + "/api/users/me", {
+        headers:{ "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("userName").value =
+            data.name || "";
+        document.getElementById("userPhone").value =
+            data.phoneNumber || "";
+    });
+}
+</script>
+
+
+</body>
+</html>
