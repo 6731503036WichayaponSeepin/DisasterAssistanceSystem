@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Status Request</title>
+
+<style>
+    :root{
+        --blue:#000000;
+        --card-bg:#FFFFFF;
+        --radius:28px;
+        --font:'Inter', sans-serif;
+        --shadow:0 6px 18px rgba(0,0,0,0.16);
+
+        --sos-red:#E51010;
+
+        /* 🎨 สีสำหรับแต่ละจุด (แก้เฉพาะตรงนี้ได้เลย) */
+        --point-1-color:#0A53E4;   /* จุด Send request */
+        --point-2-color:#6B7280;   /* จุด Accept request */
+        --point-3-color:#6B7280;   /* จุด Coming to help */
+        --point-4-color:#6B7280;   /* จุด Succeed */
+
+        /* 🎨 สีเส้น + ตัวอักษร */
+        --timeline-line-color:#CFCFCF;
+        --timeline-text-color:#111111;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
+
+    body{
+        background:#0a53e4;
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+    }
+
+    .container{
+        width:min(420px,100%);
+        background:var(--card-bg);
+        margin-top:40px;
+        padding:30px 24px;
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        margin-bottom:40px;
+        position:relative;
+    }
+
+    .back-btn{
+        font-size:26px;
+        cursor:pointer;
+        color:var(--blue);
+        margin-bottom:10px;
+    }
+
+    .title{
+        font-size:26px;
+        font-weight:800;
+        color:#000;
+        margin-bottom:26px;
+    }
+
+    /* SOS card */
+    .sos-card{
+        background:var(--sos-red);
+        border-radius:20px;
+        padding:20px 20px;
+        color:white;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        box-shadow:0 10px 20px rgba(0,0,0,0.25);
+        margin-bottom:40px;
+    }
+
+    .sos-title{
+        font-size:22px;
+        font-weight:700;
+    }
+
+    .sos-sub{
+        font-size:14px;
+        opacity:.9;
+        margin-top:4px;
+    }
+
+    /* TIMELINE */
+    .timeline{
+        margin-left:25px;
+        padding-left:10px;
+    }
+
+    .step-row{
+        display:flex;
+        align-items:center;
+        margin-bottom:0px;
+    }
+
+    .point{
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        margin-right:14px;
+    }
+
+    /* 🎨 จุดแต่ละจุดสีแยกกัน */
+    .p1{ background:var(--point-1-color); }
+    .p2{ background:var(--point-2-color); }
+    .p3{ background:var(--point-3-color); }
+    .p4{ background:var(--point-4-color); }
+
+    .step-text{
+        font-size:16px;
+        color:var(--timeline-text-color);
+    }
+
+    .line{
+        width:3px;
+        height:50px;
+        background:var(--timeline-line-color);
+        margin-left:7px;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="back-btn" onclick="history.back()">←</div>
+
+    <div class="title">Status Request</div>
+
+    <!-- SOS Card -->
+    <div class="sos-card">
+        <div>
+            <div class="sos-title">Request SOS</div>
+            <div class="sos-sub">Evacuate from the area</div>
+        </div>
+
+        <svg width="152" height="72" viewBox="0 0 152 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask0_113_1308" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="156" height="72">
+<path d="M0 0H155.462V71.1053H0V0Z" fill="white"/>
+</mask>
+<g mask="url(#mask0_113_1308)">
+<path d="M155.871 21.2074C148.073 20.299 140.326 18.4952 132.433 18.8612C132.528 20.6061 132.631 22.3315 132.745 24.0765C135.432 24.5405 138.138 24.9457 140.85 25.3182C141.009 27.9127 141.118 30.4942 141.188 33.0888C136.204 32.6574 131.239 32.0954 126.256 31.651C126.141 26.8736 125.841 22.1028 126.326 17.345C127.168 12.6591 132.222 9.73776 132.375 4.88849C130.997 2.28086 127.883 3.10432 125.522 2.79716C107.431 1.93448 89.3141 1.38551 71.2485 0H64.2227C59.3409 7.81635 53.7254 15.0968 48.7288 22.8217C33.4391 21.8544 18.2898 19.2337 3.00012 18.3384V26.5272C4.95919 34.7618 8.73056 42.6043 14.6588 48.5842C27.6831 62.3282 46.323 68.38 64.4524 70.6413H170.459C174.722 56.8777 178.283 42.8592 183.196 29.3244V25.2855C174.186 23.2987 164.965 22.6191 155.871 21.2074ZM96.0272 7.56801C105.153 8.04509 114.271 8.5091 123.41 8.88162C122.299 10.8161 120.959 12.6329 120.047 14.6655C119.932 20.0376 120.213 25.4227 120.091 30.7949C111.132 30.0041 102.224 28.8212 93.2577 28.0565C93.9342 21.1943 94.9424 14.3714 96.0272 7.56801ZM67.3623 6.79029C74.6434 5.6662 82.301 7.4373 89.7225 7.2347C89.129 13.927 87.9995 20.5604 87.087 27.22C76.4621 26.2527 65.8882 24.7235 55.2569 23.9327C59.2835 18.2077 63.0038 12.2408 67.3623 6.79029Z" fill="white"/>
+</g>
+</svg>
+
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline">
+
+        <div class="step-row">
+            <div class="point p1"></div>
+            <div class="step-text">Send a request for help</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p2"></div>
+            <div class="step-text">Accept request</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p3"></div>
+            <div class="step-text">Coming to help</div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="step-row">
+            <div class="point p4"></div>
+            <div class="step-text">Succeed</div>
+        </div>
+
+    </div>
+
+</div>
+<script>
+/*  
+  ================================
+     CONFIG
+  ================================
+*/
+const API_BASE = "http://localhost:8080"; // ← เปลี่ยนตาม backend ของคุณ
+const TOKEN = localStorage.getItem("authToken");
+
+const CASE_ID = new URLSearchParams(window.location.search).get("caseId");
+
+/*  
+  ================================
+     MAP สถานะ → จุดบน UI
+  ================================
+*/
+function updateStatusUI(status) {
+
+    // reset ก่อน
+    document.querySelector(".p1").style.background = "var(--point-2-color)";
+    document.querySelector(".p2").style.background = "var(--point-2-color)";
+    document.querySelector(".p3").style.background = "var(--point-2-color)";
+    document.querySelector(".p4").style.background = "var(--point-2-color)";
+
+    // update active ตามสถานะ
+    if (status === "NEW") {
+        document.querySelector(".p1").style.background = "var(--point-1-color)";
+    }
+    else if (status === "ASSIGNED") {
+        document.querySelector(".p1").style.background = "var(--point-1-color)";
+        document.querySelector(".p2").style.background = "var(--point-1-color)";
+    }
+    else if (status === "COMING") {
+        document.querySelector(".p1").style.background = "var(--point-1-color)";
+        document.querySelector(".p2").style.background = "var(--point-1-color)";
+        document.querySelector(".p3").style.background = "var(--point-1-color)";
+    }
+    else if (status === "DONE") {
+        document.querySelector(".p1").style.background = "var(--point-1-color)";
+        document.querySelector(".p2").style.background = "var(--point-1-color)";
+        document.querySelector(".p3").style.background = "var(--point-1-color)";
+        document.querySelector(".p4").style.background = "var(--point-1-color)";
+    }
+
+}
+
+/*  
+  ================================
+     FETCH สถานะจาก Backend
+  ================================
+*/
+async function loadStatus() {
+    if (!TOKEN) {
+        console.log("❌ No Token");
+        return;
+    }
+    if (!CASE_ID) {
+        console.log("❌ caseId missing in URL");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/cases/status/${CASE_ID}`, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + TOKEN,
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await res.json();
+        console.log("📥 STATUS:", data.status);
+
+        updateStatusUI(data.status);
+
+    } catch (err) {
+        console.error("❌ Error fetching status", err);
+    }
+}
+
+/*  
+  ================================
+     RUN ตอนโหลดหน้า
+  ================================
+*/
+document.addEventListener("DOMContentLoaded", () => {
+    loadStatus();
+});
+</script>
+
+</body>
+</html>
