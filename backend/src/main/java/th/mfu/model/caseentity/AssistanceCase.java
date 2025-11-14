@@ -1,4 +1,3 @@
-// th/mfu/model/caseentity/AssistanceCase.java
 package th.mfu.model.caseentity;
 
 import jakarta.persistence.*;
@@ -12,29 +11,22 @@ public class AssistanceCase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ใครเป็นคนแจ้ง ดึงจาก user ที่ล็อกอิน
+    // ผู้ใช้ที่แจ้งเคส
     @Column(name = "reporter_user_id", nullable = false)
     private Long reporterUserId;
 
-    // ถ้ามีที่อยู่ที่ user เลือกก็เก็บ ไม่มีก็ว่าง
-    @Column(name = "reporter_address_id")
-    private Long reporterAddressId;
+    // ทีมกู้ภัยที่รับเคส (ถ้าใช้)
+    @Column(name = "assigned_rescue_team_id")
+    private Long assignedRescueTeamId;
 
-    // เจ้าหน้าที่ที่ถูก assign
-    @Column(name = "assigned_rescue_id")
-    private Long assignedRescueId;
+    // FK -> location_data.id
+    @Column(name = "location_id")
+    private Long locationId;
 
-
-
-    private Double latitude;
-    private Double longitude;
-
-    // ประเภทเคสตามปุ่มในหน้าจอ
     @Enumerated(EnumType.STRING)
     @Column(name = "case_type")
     private CaseType caseType;
 
-    // ระบบประเมินให้
     @Enumerated(EnumType.STRING)
     private CaseSeverity severity = CaseSeverity.LOW;
 
@@ -44,87 +36,28 @@ public class AssistanceCase {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-        // ผูกทีมกู้ภัยที่รับเคส
-@Column(name = "assigned_rescue_team_id")
-private Long assignedRescueTeamId;
 
-public Long getAssignedRescueTeamId() { return assignedRescueTeamId; }
-public void setAssignedRescueTeamId(Long assignedRescueTeamId) { this.assignedRescueTeamId = assignedRescueTeamId; }
+    // ===== getters/setters =====
 
-    // ===== getters / setters =====
+    public Long getId() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getReporterUserId() { return reporterUserId; }
+    public void setReporterUserId(Long reporterUserId) { this.reporterUserId = reporterUserId; }
 
-    public Long getReporterUserId() {
-        return reporterUserId;
-    }
+    public Long getAssignedRescueTeamId() { return assignedRescueTeamId; }
+    public void setAssignedRescueTeamId(Long assignedRescueTeamId) { this.assignedRescueTeamId = assignedRescueTeamId; }
 
-    public void setReporterUserId(Long reporterUserId) {
-        this.reporterUserId = reporterUserId;
-    }
+    public Long getLocationId() { return locationId; }
+    public void setLocationId(Long locationId) { this.locationId = locationId; }
 
-    public Long getReporterAddressId() {
-        return reporterAddressId;
-    }
+    public CaseType getCaseType() { return caseType; }
+    public void setCaseType(CaseType caseType) { this.caseType = caseType; }
 
-    public void setReporterAddressId(Long reporterAddressId) {
-        this.reporterAddressId = reporterAddressId;
-    }
+    public CaseSeverity getSeverity() { return severity; }
+    public void setSeverity(CaseSeverity severity) { this.severity = severity; }
 
-    public Long getAssignedRescueId() {
-        return assignedRescueId;
-    }
+    public CaseStatus getStatus() { return status; }
+    public void setStatus(CaseStatus status) { this.status = status; }
 
-    public void setAssignedRescueId(Long assignedRescueId) {
-        this.assignedRescueId = assignedRescueId;
-    }
-
-  
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public CaseType getCaseType() {
-        return caseType;
-    }
-
-    public void setCaseType(CaseType caseType) {
-        this.caseType = caseType;
-    }
-
-    public CaseSeverity getSeverity() {
-        return severity;
-    }
-
-    public void setSeverity(CaseSeverity severity) {
-        this.severity = severity;
-    }
-
-    public CaseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CaseStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

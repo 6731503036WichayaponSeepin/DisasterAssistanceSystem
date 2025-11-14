@@ -84,46 +84,48 @@ public class UserLocationController {
     // -------------------------------------------------------
     // 🔵 โหลดตำแหน่งบ้านของ user ( lat / lng + address )
     // -------------------------------------------------------
-    @GetMapping("/home")
-    public ResponseEntity<?> getMyHomeLocation(Authentication authentication) {
+   @GetMapping("/home")
+public ResponseEntity<?> getMyHomeLocation(Authentication authentication) {
 
-        try {
-            if (authentication == null) {
-                return ResponseEntity.status(401).body("Unauthorized");
-            }
-
-            String phoneNumber = authentication.getName();
-
-            Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-            if (optUser.isEmpty()) {
-                return ResponseEntity.status(404).body("User not found");
-            }
-
-            User user = optUser.get();
-
-            Optional<LocationData> optLoc = locationRepo.findFirstByUserOrderByIdDesc(user);
-            if (optLoc.isEmpty()) {
-                return ResponseEntity.status(404).body("Location not found");
-            }
-
-            LocationData loc = optLoc.get();
-
-            Map<String, Object> res = new HashMap<>();
-            res.put("latitude", loc.getLatitude());
-            res.put("longitude", loc.getLongitude());
-            res.put("road", loc.getRoad());
-            res.put("subdistrict", loc.getSubdistrict());
-            res.put("district", loc.getDistrict());
-            res.put("province", loc.getProvince());
-            res.put("postcode", loc.getPostcode());
-
-            return ResponseEntity.ok(res);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(
-                    "Error loading location: " + e.getMessage()
-            );
+    try {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
+
+        String phoneNumber = authentication.getName();
+
+        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
+        if (optUser.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        User user = optUser.get();
+
+        Optional<LocationData> optLoc = locationRepo.findFirstByUserOrderByIdDesc(user);
+        if (optLoc.isEmpty()) {
+            return ResponseEntity.status(404).body("Location not found");
+        }
+
+        LocationData loc = optLoc.get();
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("id", loc.getId());                // ⭐⭐⭐⭐ ต้องเพิ่ม
+        res.put("latitude", loc.getLatitude());
+        res.put("longitude", loc.getLongitude());
+        res.put("road", loc.getRoad());
+        res.put("subdistrict", loc.getSubdistrict());
+        res.put("district", loc.getDistrict());
+        res.put("province", loc.getProvince());
+        res.put("postcode", loc.getPostcode());
+
+        return ResponseEntity.ok(res);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().body(
+                "Error loading location: " + e.getMessage()
+        );
     }
+}
+
 }
