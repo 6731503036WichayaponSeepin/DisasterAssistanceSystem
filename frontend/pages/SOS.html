@@ -211,41 +211,43 @@ const API_BASE = "http://localhost:8080"; // ← เปลี่ยนตาม 
 const TOKEN = localStorage.getItem("authToken");
 
 const CASE_ID = new URLSearchParams(window.location.search).get("caseId");
+const COLOR_ACTIVE = "#E51010";   // สีแดง SOS
+const COLOR_INACTIVE = "#6B7280"; // สีเทา default
+
+function updateStatusUI(status) {
+
+    // reset
+    document.querySelector(".p1").style.background = COLOR_INACTIVE;
+    document.querySelector(".p2").style.background = COLOR_INACTIVE;
+    document.querySelector(".p3").style.background = COLOR_INACTIVE;
+    document.querySelector(".p4").style.background = COLOR_INACTIVE;
+
+    // active
+    if (status === "NEW") {
+        document.querySelector(".p1").style.background = COLOR_ACTIVE;
+    }
+    else if (status === "ASSIGNED") {
+        document.querySelector(".p1").style.background = COLOR_ACTIVE;
+        document.querySelector(".p2").style.background = COLOR_ACTIVE;
+    }
+    else if (status === "COMING") {
+        document.querySelector(".p1").style.background = COLOR_ACTIVE;
+        document.querySelector(".p2").style.background = COLOR_ACTIVE;
+        document.querySelector(".p3").style.background = COLOR_ACTIVE;
+    }
+    else if (status === "DONE") {
+        document.querySelector(".p1").style.background = COLOR_ACTIVE;
+        document.querySelector(".p2").style.background = COLOR_ACTIVE;
+        document.querySelector(".p3").style.background = COLOR_ACTIVE;
+        document.querySelector(".p4").style.background = COLOR_ACTIVE;
+    }
+}
 
 /*  
   ================================
      MAP สถานะ → จุดบน UI
   ================================
 */
-function updateStatusUI(status) {
-
-    // reset ก่อน
-    document.querySelector(".p1").style.background = "var(--point-2-color)";
-    document.querySelector(".p2").style.background = "var(--point-2-color)";
-    document.querySelector(".p3").style.background = "var(--point-2-color)";
-    document.querySelector(".p4").style.background = "var(--point-2-color)";
-
-    // update active ตามสถานะ
-    if (status === "NEW") {
-        document.querySelector(".p1").style.background = "var(--point-1-color)";
-    }
-    else if (status === "ASSIGNED") {
-        document.querySelector(".p1").style.background = "var(--point-1-color)";
-        document.querySelector(".p2").style.background = "var(--point-1-color)";
-    }
-    else if (status === "COMING") {
-        document.querySelector(".p1").style.background = "var(--point-1-color)";
-        document.querySelector(".p2").style.background = "var(--point-1-color)";
-        document.querySelector(".p3").style.background = "var(--point-1-color)";
-    }
-    else if (status === "DONE") {
-        document.querySelector(".p1").style.background = "var(--point-1-color)";
-        document.querySelector(".p2").style.background = "var(--point-1-color)";
-        document.querySelector(".p3").style.background = "var(--point-1-color)";
-        document.querySelector(".p4").style.background = "var(--point-1-color)";
-    }
-
-}
 
 /*  
   ================================
@@ -339,14 +341,20 @@ document.getElementById("btnSendRequest").onclick = async () => {
         }
 
         // ⭐⭐⭐ redirect ที่ต้องใส่ ⭐⭐⭐
-       
+       updateStatusUI("NEW");
+alert("ส่งคำขอสำเร็จ! ระบบกำลังค้นหาทีมช่วยเหลือให้คุณ");
+
 
     } catch (err) {
         console.error(err);
-        alert("เกิดข้อผิดพลาด ไม่สามารถส่งคำขอได้");
+        alert("เกิดข้อผิดพลาด ไม่สามารถส่งคำขอซ้ำ");
     }
 };
 
+// อัปเดตสถานะทุก 5 วินาที
+setInterval(() => {
+    loadStatus();
+}, 5000);
 
 </script>
 
