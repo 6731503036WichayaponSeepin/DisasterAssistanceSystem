@@ -22,12 +22,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
+
 @RequestMapping("/api/cases")
 @CrossOrigin
 public class AssistanceCaseController {
+    
 
     @Autowired
     private AssistanceCaseRepository caseRepo;
@@ -41,6 +45,48 @@ public class AssistanceCaseController {
     @Autowired
     private LocationRepository locationRepo;
 
+
+    private double distanceKm(double lat1, double lon1, double lat2, double lon2) {
+    double R = 6371.0;
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLon = Math.toRadians(lon2 - lon1);
+    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+            * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+private void updateSeverityWithin1Km(AssistanceCase newCase) {
+
+    LocationData newLoc = newCase.getLocationId();
+    double lat1 = newLoc.getLatitude();
+    double lon1 = newLoc.getLongitude();
+
+    List<AssistanceCase> allCases = caseRepo.findAll();
+    List<AssistanceCase> nearby = new ArrayList<>();
+
+    for (AssistanceCase c : allCases) {
+        LocationData loc = c.getLocationId();
+        if (loc == null) continue;
+
+        double dist = distanceKm(lat1, lon1, loc.getLatitude(), loc.getLongitude());
+        if (dist <= 1.0) {
+            nearby.add(c);
+        }
+    }
+
+    int count = nearby.size();
+
+    CaseSeverity severity;
+    if (count >= 5) severity = CaseSeverity.HIGH;
+    else if (count >= 3) severity = CaseSeverity.MEDIUM;
+    else severity = CaseSeverity.LOW;
+
+    for (AssistanceCase c : nearby) {
+        c.setSeverity(severity);
+        caseRepo.save(c);
+    }
+}
 
     // ใช้เทสต์ว่า controller โดนโหลด
     @GetMapping("/ping")
@@ -72,6 +118,21 @@ public ResponseEntity<?> reportCase(@RequestBody CreateCaseRequest req) {
         return ResponseEntity.badRequest()
                 .body("locationId is required. Please pin location first.");
     }
+// ตรวจสอบว่าผู้ใช้มีเคสที่ยัง active อยู่หรือไม่
+List<CaseStatus> active = List.of(
+        CaseStatus.NEW,
+        CaseStatus.ASSIGNED,
+        CaseStatus.COMING
+);
+
+boolean hasActiveCase = caseRepo
+        .existsByReporterUserIdAndStatusIn(reporter.getId(), active);
+
+if (hasActiveCase) {
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body("You already have an active request.");
+}
 
     AssistanceCase ac = new AssistanceCase();
     ac.setReporterUserId(reporter.getId());
@@ -85,7 +146,7 @@ ac.setLocationId(loc);
     ac.setSeverity(CaseSeverity.LOW);
 
     AssistanceCase saved = caseRepo.save(ac);
-
+    updateSeverityWithin1Km(saved);
     return ResponseEntity.ok(saved);
 }
 
@@ -267,5 +328,37 @@ public ResponseEntity<?> getCaseById(@PathVariable Long id) {
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
 }
+@GetMapping("/my-active")
+public ResponseEntity<?> getMyActiveCase() {
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String phone = auth.getName();
+
+    User user = userRepo.findByDetail_PhoneNumber(phone)
+            .orElse(null);
+
+    if (user == null) {
+        return ResponseEntity.status(404).body("User not found");
+    }
+
+    // สถานะที่ถือว่ายัง active อยู่
+    List<CaseStatus> active = List.of(
+            CaseStatus.NEW,
+            CaseStatus.ASSIGNED,
+            CaseStatus.COMING
+    );
+
+    Optional<AssistanceCase> opt = caseRepo
+            .findFirstByReporterUserIdAndStatusInOrderByCreatedAtDesc(
+                    user.getId(), active
+            );
+
+    if (opt.isEmpty()) {
+        return ResponseEntity.noContent().build(); // ไม่มีเคส
+    }
+
+    return ResponseEntity.ok(opt.get()); // ส่งเคสกลับไป
+}
+
 
 }
