@@ -9,6 +9,15 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
+  .back-btn{
+    font-size:26px;
+    cursor:pointer;
+    color:#0A53E4;
+    margin-bottom:10px;
+}
+
+
+
     :root{
       --blue:#0A53E4;
       --card:#FFFFFF;
@@ -94,12 +103,15 @@
     /* Status */
     .status{margin-top:10px;font-size:11px;color:var(--subtext);min-height:14px;}
 
+
 </style>
 
 </head>
 <body>
-
-<div class="card">
+  
+  <div class="card">
+    
+    <div class="back-btn" onclick="history.back()">←</div>
 
   <div class="title">เลือกตำแหน่งบนแผนที่</div>
   <div class="subtitle">แตะบนแผนที่เพื่อปักหมุด หรือค้นหาสถานที่สำคัญ</div>
@@ -344,6 +356,9 @@ document.getElementById("btn-confirm").onclick = async () => {
 
   alert("บันทึกตำแหน่งสำเร็จ!");
 };
+
+
+
 
 </script>
 
