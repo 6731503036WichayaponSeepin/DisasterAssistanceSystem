@@ -351,113 +351,17 @@
 
     }); // END DOMContentLoaded
     /* ---------------- CREATE CASE: SOS ---------------- */
-    document.getElementById("cardSOS").onclick = async () => {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (!token) return window.location.href = PAGE_SIGNIN;
-
-        try {
-            const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
-                method: "GET",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!locRes.ok) {
-                alert("⚠ กรุณาปักหมุดที่อยู่ก่อนทำการแจ้งเหตุ!");
-                return;
-            }
-
-            const loc = await locRes.json();
-            const locationId = loc.id;
-
-            const res = await fetch(`${API_BASE}/api/cases/report`, {
-                method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    caseType: "SOS",
-                    locationId: locationId
-                })
-            });
-
-            const data = await res.json();
-            console.log("CREATE SOS RESULT:", data);
-
-            if (!res.ok) {
-                alert("❌ ไม่สามารถสร้างเคสได้: " + (data.message || data));
-                return;
-            }
-
-            // ⭐⭐⭐ ตรงนี้คือส่วนที่ต้องแก้ ⭐⭐⭐
-            window.location.href =
-                `/pages/SOS?token=${encodeURIComponent(token)}&caseId=${data.id}`;
-
-        } catch (err) {
-            console.error(err);
-            alert("เกิดข้อผิดพลาด");
-        }
-    };
-
-
-    /* ---------------- CREATE CASE: SUSTENANCE ---------------- */
-    /* ---------------- CREATE CASE: SUSTENANCE ---------------- */
-document.getElementById("cardSustenance").onclick = async () => {
+ /* ---------------- GO TO NEXT PAGE: SOS ---------------- */
+document.getElementById("cardSOS").onclick = () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return window.location.href = PAGE_SIGNIN;
-
-    try {
-        // 1) โหลด locationId ของ user
-        const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
-            method: "GET",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (!locRes.ok) {
-            alert("⚠ กรุณาปักหมุดที่อยู่ก่อนทำการแจ้งเหตุ!");
-            return;
-        }
-
-        const loc = await locRes.json();
-        const locationId = loc.id;
-
-        // 2) รายงานเคสประเภท Sustenance
-        const res = await fetch(`${API_BASE}/api/cases/report`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                caseType: "SUSTENANCE",
-                locationId: locationId
-            })
-        });
-
-        const data = await res.json();
-        console.log("CREATE SUSTENANCE RESULT:", data);
-
-        if (!res.ok) {
-            alert("❌ ไม่สามารถสร้างเคสได้: " + (data.message || data));
-            return;
-        }
-
-        // 3) ไปหน้า Sustenance (ถูกต้อง!!)
-        window.location.href =
-            `/pages/SUSTENANCE?token=${encodeURIComponent(token)}&caseId=${data.id}`;
-
-    } catch (err) {
-        console.error(err);
-        alert("เกิดข้อผิดพลาด");
-    }
+    window.location.href = `/pages/SOS?token=${encodeURIComponent(token)}`;
 };
 
+/* ---------------- GO TO NEXT PAGE: SUSTENANCE ---------------- */
+document.getElementById("cardSustenance").onclick = () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    window.location.href = `/pages/SUSTENANCE?token=${encodeURIComponent(token)}`;
+};
     </script>
 
 

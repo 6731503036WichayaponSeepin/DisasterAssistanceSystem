@@ -16,7 +16,7 @@
         --sos-red:#E51010;
 
         /* 🎨 สีสำหรับแต่ละจุด (แก้เฉพาะตรงนี้ได้เลย) */
-        --point-1-color:#0A53E4;   /* จุด Send request */
+        --point-1-color:#6B7280;   /* จุด Send request */
         --point-2-color:#6B7280;   /* จุด Accept request */
         --point-3-color:#6B7280;   /* จุด Coming to help */
         --point-4-color:#6B7280;   /* จุด Succeed */
@@ -125,8 +125,11 @@
 </head>
 
 <body>
+    
 
 <div class="container">
+
+    
 
     <div class="back-btn" onclick="history.back()">←</div>
 
@@ -180,6 +183,22 @@
         </div>
 
     </div>
+    <button id="btnSendRequest"
+        style="
+            width:100%;
+            padding:16px;
+            background:#E51010;
+            color:white;
+            font-size:18px;
+            font-weight:700;
+            border:none;
+            border-radius:16px;
+            margin-top:40px;
+            box-shadow:0 6px 16px rgba(0,0,0,0.25);
+            cursor:pointer;
+        ">
+        Send Request
+    </button>
 
 </div>
 <script>
@@ -244,11 +263,28 @@ async function loadStatus() {
     }
 
     try {
-       svg
+    const res = await fetch(`${API_BASE}/api/cases/${CASE_ID}`, {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + TOKEN,
+            "Content-Type": "application/json"
+        }
+    });
 
-    } catch (err) {
-        console.error("❌ Error fetching status", err);
+    const data = await res.json();
+
+    if (!res.ok) {
+        console.log("❌ Error fetching case:", data);
+        return;
     }
+
+    // อัปเดตจุดใน timeline ให้ตรงสถานะจริง
+    updateStatusUI(data.status);
+
+} catch (err) {
+    console.error("❌ Error fetching status", err);
+}
+
 }
 
 /*  
@@ -259,7 +295,60 @@ async function loadStatus() {
 document.addEventListener("DOMContentLoaded", () => {
     loadStatus();
 });
+
+document.getElementById("btnSendRequest").onclick = async () => {
+    const token = TOKEN;
+    if (!token) {
+        alert("No token — please login again");
+        return;
+    }
+
+    try {
+        const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!locRes.ok) {
+            alert("⚠ กรุณาปักหมุดที่อยู่ก่อนส่งคำขอ!");
+            return;
+        }
+
+        const location = await locRes.json();
+        const locationId = location.id;
+
+        const res = await fetch(`${API_BASE}/api/cases/report`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                caseType: "SOS",
+                locationId: locationId
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            alert("❌ ไม่สามารถสร้างเคสได้: " + (data.message || data));
+            return;
+        }
+
+        // ⭐⭐⭐ redirect ที่ต้องใส่ ⭐⭐⭐
+       
+
+    } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาด ไม่สามารถส่งคำขอได้");
+    }
+};
+
+
 </script>
 
 </body>
-</html>
+</html> 
