@@ -370,7 +370,7 @@
             }
 
             const loc = await locRes.json();
-            const locationId = loc.locationId ?? loc.id;
+            const locationId = loc.id;
 
             const res = await fetch(`${API_BASE}/api/cases/report`, {
                 method: "POST",
@@ -425,7 +425,7 @@ document.getElementById("cardSustenance").onclick = async () => {
         }
 
         const loc = await locRes.json();
-        const locationId = loc.locationId ?? loc.id;
+        const locationId = loc.id;
 
         // 2) รายงานเคสประเภท Sustenance
         const res = await fetch(`${API_BASE}/api/cases/report`, {

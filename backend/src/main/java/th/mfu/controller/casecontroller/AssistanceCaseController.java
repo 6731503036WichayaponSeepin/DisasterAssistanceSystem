@@ -9,10 +9,12 @@ import th.mfu.dto.CreateCaseRequest;
 import th.mfu.model.caseentity.AssistanceCase;
 import th.mfu.model.caseentity.CaseSeverity;
 import th.mfu.model.caseentity.CaseStatus;
+import th.mfu.model.locationdata.LocationData;
 import th.mfu.model.user.User;
 import th.mfu.model.rescue.Rescue;
 import th.mfu.model.rescue.RescueTeam;
 import th.mfu.repository.caserepo.AssistanceCaseRepository;
+import th.mfu.repository.locationdatarepository.LocationRepository;
 import th.mfu.repository.userrepository.UserRepository;
 import th.mfu.repository.rescuerepository.RescueRepository;
 
@@ -36,6 +38,10 @@ public class AssistanceCaseController {
     @Autowired
     private RescueRepository rescueRepo;
 
+    @Autowired
+    private LocationRepository locationRepo;
+
+
     // ใช้เทสต์ว่า controller โดนโหลด
     @GetMapping("/ping")
     public String ping() {
@@ -49,35 +55,40 @@ public class AssistanceCaseController {
      * ============================
      */
     @PostMapping("/report")
-    public ResponseEntity<?> reportCase(@RequestBody CreateCaseRequest req) {
+public ResponseEntity<?> reportCase(@RequestBody CreateCaseRequest req) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String phone = auth.getName(); // เบอร์โทรจาก Token
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String phone = auth.getName(); // เบอร์โทรจาก Token
 
-        // หา user จากเบอร์โทร
-        Optional<User> optReporter = userRepo.findByDetail_PhoneNumber(phone);
-        if (optReporter.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found for phone: " + phone);
-        }
-        User reporter = optReporter.get();
-
-        // ต้องมี locationId เสมอ
-        if (req.getLocationId() == null) {
-            return ResponseEntity.badRequest()
-                    .body("locationId is required. Please pin location first.");
-        }
-
-        AssistanceCase ac = new AssistanceCase();
-        ac.setReporterUserId(reporter.getId());
-        ac.setLocationId(req.getLocationId());
-        ac.setCaseType(req.getCaseType());
-        ac.setStatus(CaseStatus.NEW);
-        ac.setSeverity(CaseSeverity.LOW); // เริ่มต้นเป็น LOW
-
-        AssistanceCase saved = caseRepo.save(ac);
-
-        return ResponseEntity.ok(saved);
+    // หา user จากเบอร์โทร
+    Optional<User> optReporter = userRepo.findByDetail_PhoneNumber(phone);
+    if (optReporter.isEmpty()) {
+        return ResponseEntity.badRequest().body("User not found for phone: " + phone);
     }
+    User reporter = optReporter.get();
+
+    // ต้องมี locationId เสมอ
+    if (req.getLocationId() == null) {
+        return ResponseEntity.badRequest()
+                .body("locationId is required. Please pin location first.");
+    }
+
+    AssistanceCase ac = new AssistanceCase();
+    ac.setReporterUserId(reporter.getId());
+LocationData loc = locationRepo.findById(req.getLocationId())
+        .orElseThrow(() -> new RuntimeException("Location not found: " + req.getLocationId()));
+
+ac.setLocationId(loc);
+
+    ac.setCaseType(req.getCaseType());
+    ac.setStatus(CaseStatus.NEW);
+    ac.setSeverity(CaseSeverity.LOW);
+
+    AssistanceCase saved = caseRepo.save(ac);
+
+    return ResponseEntity.ok(saved);
+}
+
 
     /** ดึงเคสทั้งหมด */
     @GetMapping

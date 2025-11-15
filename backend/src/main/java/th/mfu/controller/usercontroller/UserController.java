@@ -11,10 +11,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import th.mfu.model.Detail;
-import th.mfu.model.user.Address;
+import th.mfu.model.locationdata.LocationData;
 import th.mfu.model.user.User;
 import th.mfu.repository.DetailRepository;
-import th.mfu.repository.userrepository.AddressRepository;
+import th.mfu.repository.locationdatarepository.LocationRepository;
 import th.mfu.repository.userrepository.UserRepository;
 import th.mfu.security.JwtUtil;
 
@@ -24,278 +24,114 @@ import th.mfu.security.JwtUtil;
 public class UserController {
 
     @Autowired private UserRepository userRepo;
-    @Autowired private AddressRepository addressRepo;
     @Autowired private DetailRepository detailRepo;
+    @Autowired private LocationRepository locationRepo;
     @Autowired private JwtUtil jwtUtil;
 
     // ===========================
-    //   REGISTER USER
+    //  REGISTER
     // ===========================
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
-        Map<String, Object> response = new HashMap<>();
 
-        if (user.getDetail() == null) {
-            response.put("status", "error");
-            response.put("message", "Detail is required");
-            return ResponseEntity.badRequest().body(response);
-        }
+        if (user.getDetail() == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Detail is required"));
 
         Detail detail = user.getDetail();
 
-        if (detail.getPhoneNumber() == null || detail.getPhoneNumber().isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "error",
-                "message", "Phone number is required"
-            ));
-        }
+        if (detail.getPhoneNumber() == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Phone required"));
 
-        if (detailRepo.findByPhoneNumber(detail.getPhoneNumber()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "error",
-                "message", "This phone number is already registered"
-            ));
-        }
+        if (detailRepo.findByPhoneNumber(detail.getPhoneNumber()).isPresent())
+            return ResponseEntity.badRequest().body(Map.of("error", "Phone already used"));
 
         Detail savedDetail = detailRepo.save(detail);
         user.setDetail(savedDetail);
 
+        // ⭐ ผู้ใช้ใหม่ยังไม่มีบ้าน (location = null)
+        user.setLocationId(null);
         user.setRole("USER");
 
-        User savedUser = userRepo.save(user);
+        User saved = userRepo.save(user);
 
         return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "message", "User registered successfully",
-            "user", savedUser
+                "message", "User registered",
+                "user", saved
         ));
     }
 
     // ===========================
-    //   LOGIN USER
+    //  LOGIN
     // ===========================
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginRequest) {
-        String name = loginRequest.get("name");
-        String phoneNumber = loginRequest.get("phone_number");
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginReq) {
 
-        if (name == null || phoneNumber == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "error",
-                "message", "Name and phone number are required"
-            ));
-        }
+        String name = loginReq.get("name");
+        String phone = loginReq.get("phone_number");
 
-        Optional<Detail> optDetail = detailRepo.findByNameAndPhoneNumber(name, phoneNumber);
-        if (optDetail.isEmpty()) {
-            return ResponseEntity.status(401).body(Map.of(
-                "status", "error",
-                "message", "Invalid name or phone number"
-            ));
-        }
+        Optional<Detail> optDetail = detailRepo.findByNameAndPhoneNumber(name, phone);
+        if (optDetail.isEmpty())
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
 
         Detail detail = optDetail.get();
 
         Optional<User> optUser = userRepo.findByDetail(detail);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.status(401).body(Map.of(
-                "status", "error",
-                "message", "User not found for this detail"
-            ));
-        }
+        if (optUser.isEmpty())
+            return ResponseEntity.status(401).body(Map.of("error", "User not found"));
 
         User user = optUser.get();
 
-        // Generate JWT
         String token = jwtUtil.generateToken(detail.getPhoneNumber(), user.getRole());
 
         return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "message", "Login successful",
-            "role", user.getRole(),
-            "name", detail.getName(),
-            "phoneNumber", detail.getPhoneNumber(),
-            "token", token
+                "message", "Login success",
+                "token", token,
+                "role", user.getRole(),
+                "name", detail.getName(),
+                "phoneNumber", detail.getPhoneNumber()
         ));
     }
 
     // ===========================
-    //   GET ALL USERS
-    // ===========================
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
-    }
-
-    // ===========================
-    //   GET PROFILE OF LOGGED USER
+    //  PROFILE
     // ===========================
     @GetMapping("/me")
-    public ResponseEntity<?> getMyProfile(Authentication authentication) {
-        try {
-            if (authentication == null) {
-                return ResponseEntity.status(401).body(Map.of(
-                    "error", "Unauthorized"
-                ));
-            }
+    public ResponseEntity<?> getMyProfile(Authentication auth) {
 
-            String phoneNumber = authentication.getName();
-
-            Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-            if (optUser.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of(
-                    "error", "User not found for phone: " + phoneNumber
-                ));
-            }
-
-            User user = optUser.get();
-            Detail detail = user.getDetail();
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("name", detail != null ? detail.getName() : "-");
-            response.put("phoneNumber", detail != null ? detail.getPhoneNumber() : "-");
-            response.put("role", user.getRole());
-            response.put("address", user.getAddress());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of(
-                "error", "Internal Server Error",
-                "message", e.getMessage()
-            ));
-        }
-    }
-
-    // ===========================
-    //   GET DETAIL OF SPECIFIC USER
-    // ===========================
-    @GetMapping("/{phoneNumber}/detail")
-    public ResponseEntity<?> getUserDetail(
-            @PathVariable String phoneNumber,
-            @RequestHeader("Authorization") String authHeader) {
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Missing or invalid token");
-        }
-
-        String token = authHeader.substring(7);
-        String phoneFromToken = jwtUtil.parseToken(token).getBody().getSubject();
-
-        if (!phoneNumber.equals(phoneFromToken)) {
-            return ResponseEntity.status(403).body("You are not authorized to view this data");
-        }
-
-        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.status(404).body("User not found");
-        }
-
-        User user = optUser.get();
-
-        if (user.getDetail() == null) {
-            return ResponseEntity.status(404).body(Map.of(
-                "status", "error",
-                "message", "User has no detail data"
-            ));
-        }
-
-        return ResponseEntity.ok(user.getDetail());
-    }
-
-    // ===========================
-    //   UPDATE USER DETAIL
-    // ===========================
-  @PutMapping("/detail")
-public ResponseEntity<?> updateMyDetail(
-        @RequestBody Detail newDetail,
-        Authentication authentication) {
-
-    if (authentication == null) {
-        return ResponseEntity.status(401).body("Unauthorized");
-    }
-
-    String phoneNumber = authentication.getName();
-
-    Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-    if (optUser.isEmpty()) {
-        return ResponseEntity.status(404).body("User not found");
-    }
-
-    User user = optUser.get();
-    Detail detail = user.getDetail();
-    if (detail == null) {
-        detail = new Detail();
-    }
-
-    // ---------------- VALIDATION เพิ่มใหม่ ----------------
-
-    if (newDetail.getName() == null || newDetail.getName().isBlank()) {
-        return ResponseEntity.badRequest().body("Name cannot be empty");
-    }
-
-    if (newDetail.getName().matches(".*\\d.*")) {
-        return ResponseEntity.badRequest().body("Name cannot contain numbers");
-    }
-
-    if (newDetail.getPhoneNumber() == null ||
-        !newDetail.getPhoneNumber().matches("\\d{10}")) {
-        return ResponseEntity.badRequest().body("Phone number must be 10 digits");
-    }
-
-    // -------------------------------------------------------
-
-    detail.setName(newDetail.getName());
-    detail.setPhoneNumber(newDetail.getPhoneNumber());
-
-    detailRepo.save(detail);
-
-    user.setDetail(detail);
-    userRepo.save(user);
-
-    return ResponseEntity.ok(Map.of(
-        "status", "success",
-        "message", "Detail updated successfully",
-        "detail", detail
-    ));
-}
-
-    // ===========================
-    //   UPDATE ADDRESS
-    // ===========================
-    @PutMapping("/address")
-    public ResponseEntity<?> updateMyAddress(@RequestBody Address newAddress, Authentication authentication) {
-        if (authentication == null) {
+        if (auth == null)
             return ResponseEntity.status(401).body("Unauthorized");
-        }
 
-        String phoneNumber = authentication.getName();
+        String phone = auth.getName();
 
-        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phoneNumber);
-        if (optUser.isEmpty()) {
+        Optional<User> optUser = userRepo.findByDetail_PhoneNumber(phone);
+        if (optUser.isEmpty())
             return ResponseEntity.status(404).body("User not found");
-        }
 
         User user = optUser.get();
+        Detail detail = user.getDetail();
 
-        Address address = user.getAddress();
-        if (address == null) {
-            address = new Address();
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", detail.getName());
+        result.put("phoneNumber", detail.getPhoneNumber());
+        result.put("role", user.getRole());
+
+        // ⭐ ใช้ locationData แทน address
+        LocationData loc = user.getLocationId();
+        if (loc != null) {
+            result.put("location", Map.of(
+                    "id", loc.getId(),
+                    "latitude", loc.getLatitude(),
+                    "longitude", loc.getLongitude(),
+                    "road", loc.getRoad(),
+                    "subdistrict", loc.getSubdistrict(),
+                    "district", loc.getDistrict(),
+                    "province", loc.getProvince(),
+                    "postcode", loc.getPostcode()
+            ));
+        } else {
+            result.put("location", null);
         }
 
-        address.setHouseNumber(newAddress.getHouseNumber());
-        address.setMoreDetails(newAddress.getMoreDetails());
-        address.setSubdistrict(newAddress.getSubdistrict());
-        addressRepo.save(address);
-
-        user.setAddress(address);
-        userRepo.save(user);
-
-        return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "message", "Address updated successfully",
-            "address", address
-        ));
+        return ResponseEntity.ok(result);
     }
 }

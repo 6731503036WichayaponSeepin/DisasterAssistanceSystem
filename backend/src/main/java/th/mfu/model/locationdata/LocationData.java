@@ -2,7 +2,6 @@ package th.mfu.model.locationdata;
 
 import jakarta.persistence.*;
 import th.mfu.model.user.User;
-import th.mfu.model.user.Address;
 
 @Entity
 @Table(name = "location_data")
@@ -18,10 +17,7 @@ public class LocationData {
     private User user;
 
     // (ถ้าจะลบ address ออกทีหลัง แจ้งได้)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = true)
-    private Address address;
-
+   
     @Column(nullable = false)
     private double latitude;
 
@@ -61,9 +57,9 @@ private String postcode;
 
     public void setUser(User user) { this.user = user; }
 
-    public Address getAddress() { return address; }
+    
 
-    public void setAddress(Address address) { this.address = address; }
+  
 
     public double getLatitude() { return latitude; }
 
