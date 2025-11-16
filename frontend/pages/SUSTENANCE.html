@@ -189,113 +189,178 @@
 </div>
 
 <script>
-// =====================
-// READ TOKEN
-// =====================
-let tokenFromUrl = new URLSearchParams(window.location.search).get("token");
-if (tokenFromUrl) {
-    localStorage.setItem("authToken", tokenFromUrl);
-}
-
 const API_BASE = "http://localhost:8080";
-const TOKEN = localStorage.getItem("authToken");
-const CASE_ID = new URLSearchParams(window.location.search).get("caseId");
 
-const COLOR_ACTIVE = "#FFC319";
-const COLOR_INACTIVE = "#6B7280";
+let ACTIVE_CASE_ID = null;
+let TOKEN = null;
 
-// =====================
-// Update UI
-// =====================
+/* ===========================
+   GET TOKEN
+=========================== */
+function getToken() {
+    const urlToken = new URLSearchParams(window.location.search).get("token");
+
+    if (urlToken) {
+        localStorage.setItem("authToken", urlToken);
+        return urlToken;
+    }
+
+    return localStorage.getItem("authToken");
+}
+
+/* ===========================
+   UPDATE TIMELINE UI
+=========================== */
 function updateStatusUI(status) {
-    document.querySelector(".p1").style.background = COLOR_INACTIVE;
-    document.querySelector(".p2").style.background = COLOR_INACTIVE;
-    document.querySelector(".p3").style.background = COLOR_INACTIVE;
-    document.querySelector(".p4").style.background = COLOR_INACTIVE;
 
-    if (status === "NEW") document.querySelector(".p1").style.background = COLOR_ACTIVE;
-    if (status === "ASSIGNED"){
-        document.querySelector(".p1").style.background = COLOR_ACTIVE;
-        document.querySelector(".p2").style.background = COLOR_ACTIVE;
+    console.log("🔶 SUSTENANCE STATUS:", status);
+
+    const colorActive = "#FFC319";   // active = yellow
+    const colorOff = "#6B7280";      // inactive = gray
+
+    const p1 = document.querySelector(".p1");
+    const p2 = document.querySelector(".p2");
+    const p3 = document.querySelector(".p3");
+    const p4 = document.querySelector(".p4");
+
+    const btn = document.getElementById("btnSendRequest");
+
+    // Reset
+    p1.style.background = colorOff;
+    p2.style.background = colorOff;
+    p3.style.background = colorOff;
+    p4.style.background = colorOff;
+
+    // Default = เมื่อมีเคส → ปิดปุ่ม
+    btn.disabled = true;
+    btn.style.opacity = 0.6;
+    btn.textContent = "Request Already Sent";
+
+    if (status === "NEW") {
+        p1.style.background = colorActive;
     }
-    if (status === "COMING"){
-        document.querySelector(".p1").style.background = COLOR_ACTIVE;
-        document.querySelector(".p2").style.background = COLOR_ACTIVE;
-        document.querySelector(".p3").style.background = COLOR_ACTIVE;
+    else if (status === "ASSIGNED") {
+        p1.style.background = colorActive;
+        p2.style.background = colorActive;
     }
-    if (status === "DONE"){
-        document.querySelector(".p1").style.background = COLOR_ACTIVE;
-        document.querySelector(".p2").style.background = COLOR_ACTIVE;
-        document.querySelector(".p3").style.background = COLOR_ACTIVE;
-        document.querySelector(".p4").style.background = COLOR_ACTIVE;
+    else if (status === "COMING") {
+        p1.style.background = colorActive;
+        p2.style.background = colorActive;
+        p3.style.background = colorActive;
+    }
+    else if (status === "DONE") {
+        p1.style.background = colorActive;
+        p2.style.background = colorActive;
+        p3.style.background = colorActive;
+        p4.style.background = colorActive;
+
+        // DONE → เปิดปุ่มให้ส่งได้อีก
+        btn.disabled = false;
+        btn.style.opacity = 1;
+        btn.textContent = "Send Request";
     }
 }
 
-// =====================
-// LOAD STATUS FROM API
-// =====================
-async function loadStatus() {
-    if (!TOKEN || !CASE_ID) return;
+/* ===========================
+   LOAD ACTIVE CASE
+=========================== */
+async function loadActiveCase() {
 
-    try {
-        const res = await fetch(`${API_BASE}/api/cases/${CASE_ID}`, {
-            method: "GET",
-            headers: { "Authorization": "Bearer " + TOKEN }
-        });
+    TOKEN = getToken();
 
-        const data = await res.json();
-        if (!res.ok) return;
+    const res = await fetch(`${API_BASE}/api/cases/my-active`, {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
 
-        updateStatusUI(data.status);
-
-    } catch (err) {
-        console.error(err);
+    if (res.status === 204) {
+        console.log("ไม่มีเคส active");
+        return;
     }
+
+    if (!res.ok) {
+        console.log("โหลด active case ไม่สำเร็จ");
+        return;
+    }
+
+    const data = await res.json();
+
+    console.log("ACTIVE SUSTENANCE CASE:", data);
+
+    ACTIVE_CASE_ID = data.id;
+
+    updateStatusUI(data.status);
 }
 
-document.addEventListener("DOMContentLoaded", loadStatus);
+/* ===========================
+   AUTO REFRESH STATUS
+=========================== */
+async function refreshCaseStatus() {
 
-// =====================
-// SEND REQUEST (SUSTENANCE)
-// =====================
+    if (!ACTIVE_CASE_ID) return;
+
+    const res = await fetch(`${API_BASE}/api/cases/${ACTIVE_CASE_ID}`, {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    updateStatusUI(data.status);
+}
+
+/* ===========================
+   SEND SUSTENANCE REQUEST
+=========================== */
 document.getElementById("btnSendRequest").onclick = async () => {
-    if (!TOKEN) return alert("No token");
 
-    try {
-        const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
-            method: "GET",
-            headers: { "Authorization": "Bearer " + TOKEN }
-        });
+    const TOKEN = getToken();
 
-        if (!locRes.ok) return alert("⚠ กรุณาปักหมุดก่อนส่งคำขอ!");
+    const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
 
-        const location = await locRes.json();
-
-        const res = await fetch(`${API_BASE}/api/cases/report`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + TOKEN,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                caseType: "SUSTENANCE",
-                locationId: location.id
-            })
-        });
-
-        const data = await res.json();
-        if (!res.ok) return alert("❌ Error: " + (data.message || data));
-
-        alert("ส่งคำขอของยังชีพสำเร็จ!");
-
-    } catch (err) {
-        console.log(err);
+    if (!locRes.ok) {
+        alert("⚠ กรุณาปักหมุดที่อยู่ก่อน!");
+        return;
     }
+
+    const location = await locRes.json();
+
+    const res = await fetch(`${API_BASE}/api/cases/report`, {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            caseType: "SUSTENANCE",
+            locationId: location.id
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.text();
+        alert("❌ ส่งคำขอไม่สำเร็จ: " + err);
+        return;
+    }
+
+    const newCase = await res.json();
+    ACTIVE_CASE_ID = newCase.id;
+
+    alert("ส่งคำขอของยังชีพสำเร็จ!");
 };
 
-// AUTO REFRESH
-setInterval(loadStatus, 5000);
+/* ===========================
+   INIT
+=========================== */
+document.addEventListener("DOMContentLoaded", () => {
+    TOKEN = getToken();
+    loadActiveCase();
+    setInterval(refreshCaseStatus, 5000);
+});
 </script>
+
+
 
 </body>
 </html>
