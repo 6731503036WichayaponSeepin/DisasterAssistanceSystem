@@ -194,28 +194,24 @@ const API_BASE = "http://localhost:8080";
 let ACTIVE_CASE_ID = null;
 let TOKEN = null;
 
-/* ===========================
+/* ============================
    GET TOKEN
-=========================== */
+============================ */
 function getToken() {
-    const urlToken = new URLSearchParams(window.location.search).get("token");
-
+    const urlToken = new URLSearchParams(location.search).get("token");
     if (urlToken) {
         localStorage.setItem("authToken", urlToken);
         return urlToken;
     }
-
     return localStorage.getItem("authToken");
 }
 
-/* ===========================
+/* ============================
    UPDATE TIMELINE UI
-=========================== */
+============================ */
 function updateStatusUI(status) {
 
-    console.log("🔶 SUSTENANCE STATUS:", status);
-
-    const colorActive = "#FFC319"; 
+    const colorActive = "#FFC319"; // สีของ SUSTENANCE
     const colorOff = "#6B7280";
 
     const p1 = document.querySelector(".p1");
@@ -224,44 +220,43 @@ function updateStatusUI(status) {
     const p4 = document.querySelector(".p4");
     const btn = document.getElementById("btnSendRequest");
 
-    // Reset
+    // reset
     p1.style.background = colorOff;
     p2.style.background = colorOff;
     p3.style.background = colorOff;
     p4.style.background = colorOff;
 
-    // Default lock
+    // default = ปิดปุ่มเมื่อมีเคส
     btn.disabled = true;
     btn.style.opacity = 0.6;
     btn.textContent = "Request Already Sent";
 
-    if (status === "NEW") {
-        p1.style.background = colorActive;
-    }
-    else if (status === "ASSIGNED") {
+    if (status === "NEW") p1.style.background = colorActive;
+    if (status === "ASSIGNED") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
     }
-    else if (status === "COMING") {
+    if (status === "COMING") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
         p3.style.background = colorActive;
     }
-    else if (status === "DONE") {
+    if (status === "DONE") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
         p3.style.background = colorActive;
         p4.style.background = colorActive;
 
+        // DONE → ส่งใหม่ได้
         btn.disabled = false;
         btn.style.opacity = 1;
         btn.textContent = "Send Request";
     }
 }
 
-/* ===========================
+/* ============================
    LOAD ACTIVE CASE
-=========================== */
+============================ */
 async function loadActiveCase() {
 
     TOKEN = getToken();
@@ -270,40 +265,41 @@ async function loadActiveCase() {
         headers: { "Authorization": "Bearer " + TOKEN }
     });
 
+    // ไม่มีเคส → ส่งได้ปกติ
     if (res.status === 204) {
-        console.log("ไม่มีเคส active");
-        return;
-    }
-
-    if (!res.ok) {
-        console.log("โหลด active case ไม่สำเร็จ");
+        document.getElementById("btnSendRequest").disabled = false;
+        document.getElementById("btnSendRequest").style.opacity = 1;
         return;
     }
 
     const data = await res.json();
+
     console.log("ACTIVE CASE:", data);
 
-    // ❗ ถ้า active case เป็น SOS → ห้ามส่ง Sustenance + ไม่ต้องแสดง timeline
-    if (data.caseType !== "SUSTENANCE") {
-        console.log("⚠ Active case is SOS → block SUSTENANCE page");
+    // ❗ ถ้าเคส active ไม่ใช่ SUSTENANCE → บล็อคหน้า SUSTENANCE
+    if (data.caseType === "SOS") {
+        console.log("⛔ Active case is SOS — block SUSTENANCE page");
 
         const btn = document.getElementById("btnSendRequest");
         btn.disabled = true;
         btn.style.opacity = 0.6;
-        btn.textContent = "Cannot Request (SOS Active)";
+        btn.textContent = "Cannot Request (Other Case Active)";
 
+        document.querySelector(".timeline").style.opacity = 0.3;
+        document.querySelector(".timeline").style.pointerEvents = "none";
         return;
     }
 
-    // ถ้าเป็นของ SUSTENANCE
+    // เคสเป็น SUSTENANCE → ทำงานตามปรกติ
     ACTIVE_CASE_ID = data.id;
     updateStatusUI(data.status);
 }
 
-/* ===========================
-   AUTO REFRESH CASE STATUS
-=========================== */
+/* ============================
+   AUTO REFRESH
+============================ */
 async function refreshCaseStatus() {
+
     if (!ACTIVE_CASE_ID) return;
 
     const res = await fetch(`${API_BASE}/api/cases/${ACTIVE_CASE_ID}`, {
@@ -316,9 +312,9 @@ async function refreshCaseStatus() {
     updateStatusUI(data.status);
 }
 
-/* ===========================
-   SEND SUSTENANCE REQUEST
-=========================== */
+/* ============================
+   SEND REQUEST (SUSTENANCE)
+============================ */
 document.getElementById("btnSendRequest").onclick = async () => {
 
     const TOKEN = getToken();
@@ -328,7 +324,7 @@ document.getElementById("btnSendRequest").onclick = async () => {
     });
 
     if (!locRes.ok) {
-        alert("⚠ กรุณาปักหมุดที่อยู่ก่อน!");
+        alert("⚠ กรุณาปักหมุดก่อนส่งคำขอ!");
         return;
     }
 
@@ -347,8 +343,7 @@ document.getElementById("btnSendRequest").onclick = async () => {
     });
 
     if (!res.ok) {
-        const err = await res.text();
-        alert("❌ ส่งคำขอไม่สำเร็จ: " + err);
+        alert("❌ ส่งคำขอไม่สำเร็จ: " + await res.text());
         return;
     }
 
@@ -358,16 +353,15 @@ document.getElementById("btnSendRequest").onclick = async () => {
     alert("ส่งคำขอของยังชีพสำเร็จ!");
 };
 
-/* ===========================
+/* ============================
    INIT
-=========================== */
+============================ */
 document.addEventListener("DOMContentLoaded", () => {
     TOKEN = getToken();
     loadActiveCase();
     setInterval(refreshCaseStatus, 5000);
 });
 </script>
-
 
 </body>
 </html>
