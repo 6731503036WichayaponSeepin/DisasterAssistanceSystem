@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Case Selection</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --blue: #0A53E4;
+            --red: #D81324;
+            --yellow: #F7B500;
+            --orange: #F97316;
+            --gray-bg: #f3f4f6;
+            --phone-radius: 26px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: #111827;
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .phone {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: var(--phone-radius);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            width: 100%;
+            height: 260px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 12px;
+            left: 14px;
+            z-index: 500;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 999px;
+            padding: 6px 14px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .bottom-sheet {
+            background: #ffffff;
+            border-radius: 24px 24px 0 0;
+            margin-top: -12px;
+            padding: 12px 16px 18px;
+        }
+
+        /* TAB (SOS / Sustenance) */
+        .tab-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #e5e7eb;
+            padding: 8px 12px;
+            border-radius: 999px;
+            width: fit-content;
+            margin: 10px auto 8px;
+        }
+
+        .pill-alert {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: var(--red);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .tab-btn {
+            border-radius: 999px;
+            border: none;
+            padding: 5px 18px;
+            font-size: 13px;
+            cursor: pointer;
+            background: transparent;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .tab-btn.active {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* HEADER ROW (Cases + summary) */
+        .cases-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 8px;
+            margin-bottom: 6px;
+        }
+
+        .sev-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sev-badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #111827;
+            display: inline-block;
+        }
+
+        .sev-high {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .sev-med {
+            background: var(--orange);
+            color: #fff;
+        }
+
+        .sev-low {
+            background: var(--yellow);
+            color: #111827;
+        }
+
+        .select-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e5e7eb;
+            padding: 8px 10px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .select-link {
+            color: var(--blue);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .selected-count {
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        /* CASE LIST */
+        #caseList {
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .case-box {
+            background: #e5e7eb;
+            border-radius: 12px;
+            padding: 10px 12px 10px;
+            margin-bottom: 10px;
+            position: relative;
+            border: 2px solid transparent;
+            cursor: default;
+        }
+
+        .case-box.selectable {
+            cursor: pointer;
+        }
+
+        .case-box.selected {
+            border-color: var(--blue);
+            background: #e0edff;
+        }
+
+        .case-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .case-address {
+            font-size: 13px;
+            color: #374151;
+            padding-right: 26px;
+        }
+
+        .severity-dot {
+            position: absolute;
+            right: 12px;
+            top: 18px;
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+        }
+
+        .sev-dot-high {
+            background: var(--red);
+        }
+
+        .sev-dot-med {
+            background: var(--orange);
+        }
+
+        .sev-dot-low {
+            background: var(--yellow);
+        }
+
+        /* NEXT BUTTON */
+        .next-wrapper {
+            padding-top: 8px;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            background: var(--blue);
+            cursor: pointer;
+        }
+
+        .next-btn.disabled {
+            background: #9ca3af;
+            cursor: default;
+        }
+
+        /* ซ่อนสำหรับลูกทีม */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ย้าย Zoom Control ไปขวาบน */
+        .leaflet-top.leaflet-left {
+            left: auto !important;
+            right: 10px !important;
+        }
+
+        .leaflet-control-zoom {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out {
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone">
+        <button class="back-btn" id="btnBack">← Back</button>
+
+        <div id="map"></div>
+
+        <div class="bottom-sheet">
+
+            <!-- SOS / SUSTENANCE switch -->
+            <div class="tab-row">
+                <button id="tabSOS" class="tab-btn active">SOS</button>
+                <button id="tabSUS" class="tab-btn">Sustenance</button>
+            </div>
+
+            <div class="cases-title">Cases</div>
+
+            <!-- summary -->
+            <div class="sev-row">
+                <span id="sevHigh" class="sev-badge sev-high">0 High</span>
+                <span id="sevMed" class="sev-badge sev-med">0 Medium</span>
+                <span id="sevLow" class="sev-badge sev-low">0 Low</span>
+            </div>
+
+            <!-- select bar -->
+            <div class="select-bar" id="selectBar">
+                <span class="select-link" id="btnSelect">Select</span>
+                <span class="selected-count" id="selectedCount">0 Selected</span>
+            </div>
+
+            <!-- case list -->
+            <div id="caseList"></div>
+
+            <!-- next button -->
+            <div class="next-wrapper">
+                <button id="btnNext" class="next-btn disabled">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // ---------------- TOKEN & ROLE ----------------
+        const params = new URLSearchParams(window.location.search);
+        let token = params.get("token");
+        if (token) {
+            localStorage.setItem("authToken", token);
+        }
+        token = localStorage.getItem("authToken");
+
+        if (!token) {
+            alert("Token missing! Please login again.");
+            window.location.href = "/pages/signin.html";
+        }
+
+        const isLeader = localStorage.getItem("isLeader") === "true";
+
+        // ---------------- MAP INIT ----------------
+        const map = L.map('map').setView([19.9, 99.83], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        let markers = {};        // caseId -> marker
+        let selectedIds = [];
+        let selectMode = false;
+        let currentType = "SOS";
+
+        const tabSOS = document.getElementById("tabSOS");
+        const tabSUS = document.getElementById("tabSUS");
+        const btnBack = document.getElementById("btnBack");
+        const btnSelect = document.getElementById("btnSelect");
+        const btnNext = document.getElementById("btnNext");
+        const selectBar = document.getElementById("selectBar");
+        const selectedCountLabel = document.getElementById("selectedCount");
+
+        // ---------------- BACK ----------------
+        btnBack.addEventListener("click", () => {
+            window.location.href = "/pages/homeRescue.html?token=" + encodeURIComponent(token);
+        });
+
+        // ---------------- ROLE: hide buttons if not leader ----------------
+        if (!isLeader) {
+            selectBar.classList.add("hidden");
+            btnNext.classList.add("hidden");
+        }
+
+        // ---------------- TAB EVENTS ----------------
+        tabSOS.addEventListener("click", () => {
+            currentType = "SOS";
+            tabSOS.classList.add("active");
+            tabSUS.classList.remove("active");
+            loadCases();
+        });
+
+        tabSUS.addEventListener("click", () => {
+            currentType = "SUSTENANCE";
+            tabSUS.classList.add("active");
+            tabSOS.classList.remove("active");
+            loadCases();
+        });
+
+        // ---------------- SELECT MODE ----------------
+        btnSelect.addEventListener("click", () => {
+            if (!isLeader) return;
+
+            selectMode = !selectMode;
+            btnSelect.textContent = selectMode ? "Selecting..." : "Select";
+
+            if (!selectMode) {
+                // ยกเลิกการเลือกทั้งหมด
+                selectedIds = [];
+                Object.values(markers).forEach(m => map.removeLayer(m));
+                markers = {};
+                document.querySelectorAll(".case-box").forEach(box => box.classList.remove("selected"));
+                updateSelectedUI();
+            } else {
+                updateSelectedUI();
+            }
+        });
+
+        // ---------------- NEXT ----------------
+        btnNext.addEventListener("click", () => {
+            if (!isLeader) return;
+            if (selectedIds.length === 0) return;
+
+            localStorage.setItem("selectedCases", JSON.stringify(selectedIds));
+            window.location.href = "/pages/selectedCases.html?token=" + encodeURIComponent(token);
+        });
+
+        // ---------------- LOAD CASES ----------------
+        async function loadCases() {
+            // รีเซ็ต
+            selectedIds = [];
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            markers = {};
+            updateSelectedUI();
+
+            try {
+                const res = await fetch(`http://localhost:8080/api/case-selection/type/${currentType}`, {
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        alert("Unauthorized. Please login again.");
+                        window.location.href = "/pages/signin.html";
+                        return;
+                    }
+                    alert("โหลดเคสไม่ได้: " + res.status);
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (!Array.isArray(data)) {
+                    alert("ข้อมูลจาก API ผิดรูปแบบ");
+                    return;
+                }
+
+                renderCases(data);
+
+                // ถ้ามีเคส ให้ zoom ไปจุดแรก
+                if (data.length > 0) {
+                    map.setView([data[0].lat, data[0].lon], 13);
+                    setTimeout(() => map.invalidateSize(), 200);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("เชื่อมต่อ API ไม่ได้");
+            }
+        }
+
+        function renderCases(data) {
+            const list = document.getElementById("caseList");
+            list.innerHTML = "";
+
+            // นับ severity
+            let high = 0, med = 0, low = 0;
+            data.forEach(c => {
+                if (c.severity === "HIGH") high++;
+                else if (c.severity === "MEDIUM") med++;
+                else low++;
+            });
+
+            // ตามเงื่อนไขที่คุณกำหนด
+            document.getElementById("sevHigh").textContent =
+                (high >= 5 ? "5 High" : `${high} High`);
+            document.getElementById("sevMed").textContent =
+                (med >= 3 ? "3 Medium" : `${med} Medium`);
+            document.getElementById("sevLow").textContent =
+                (low >= 1 ? "1 Low" : `${low} Low`);
+
+            data.forEach(c => {
+                const box = document.createElement("div");
+                box.className = "case-box";
+                if (isLeader) box.classList.add("selectable");
+                box.dataset.caseId = c.caseId;
+
+                const sevClass =
+                    c.severity === "HIGH" ? "sev-dot-high" :
+                        c.severity === "MEDIUM" ? "sev-dot-med" :
+                            "sev-dot-low";
+
+                box.innerHTML = `
+          <div class="case-row">
+            <span>${c.reporterName}</span>
+            <span>${c.reporterPhone}</span>
+          </div>
+          <div class="case-address">${c.address}</div>
+          <div class="severity-dot ${sevClass}"></div>
+        `;
+
+                box.addEventListener("click", () => onCaseClick(c, box));
+                list.appendChild(box);
+            });
+        }
+
+        function onCaseClick(c, boxEl) {
+            if (!isLeader) return;
+            if (!selectMode) return;
+
+            const id = c.caseId;
+
+            const already = selectedIds.includes(id);
+
+            if (already) {
+                // unselect
+                selectedIds = selectedIds.filter(x => x !== id);
+                boxEl.classList.remove("selected");
+                if (markers[id]) {
+                    map.removeLayer(markers[id]);
+                    delete markers[id];
+                }
+            } else {
+                selectedIds.push(id);
+                boxEl.classList.add("selected");
+
+                const marker = L.marker([c.lat, c.lon]).addTo(map);
+                marker.bindPopup(`${c.reporterName}<br>${c.address}`);
+                markers[id] = marker;
+
+                // ⭐ ทำให้แผนที่เคลื่อนตัวไปยังตำแหน่งเคส
+                map.flyTo([c.lat, c.lon], 15, {
+                    animate: true,
+                    duration: 0.8
+                });
+            }
+            updateSelectedUI();
+        }
+
+        function updateSelectedUI() {
+            selectedCountLabel.textContent = `${selectedIds.length} Selected`;
+            if (selectedIds.length > 0 && selectMode && isLeader) {
+                btnNext.classList.remove("disabled");
+            } else {
+                btnNext.classList.add("disabled");
+            }
+        }
+
+        // เริ่มต้นโหลดหน้า SOS
+        loadCases();
+    </script>
+</body>
+
+</html>

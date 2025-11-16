@@ -9,6 +9,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -212,32 +214,33 @@ public ResponseEntity<Map<String, Object>> loginRescue(@RequestBody Map<String, 
         // 🔹 ข้อมูลพื้นฐานสำหรับหน้า Home
         response.put("rescueDbId", rescue.getId());
         response.put("rescueId", rescue.getRescueId());
-        response.put("name", rescue.getName());
+        response.put("name", rescue.getDetail().getName());
         response.put("unit", rescue.getAffiliatedUnit() != null ? rescue.getAffiliatedUnit().getUnitName() : "-");
         response.put("role", rescue.getRole());
 
-        // ----------------------------------------------------------------
-        // 🔹 ข้อมูลทีมกู้ภัย (ที่ FE ใช้ในทั้งหน้า Home และ RescueTeam.html)
-        // ----------------------------------------------------------------
-        if (rescue.getRescueTeam() != null) {
+        // 🔹 ข้อมูลทีมกู้ภัย
+        RescueTeam team = rescue.getRescueTeam();
 
-            RescueTeam team = rescue.getRescueTeam();
+        if (team != null) {
 
-            response.put("rescueTeamId", team.getTeamId());
+            boolean isLeader = team.getLeader() != null
+                    && team.getLeader().getId().equals(rescue.getId());
+
+            response.put("rescueTeamId", team.getId());
             response.put("rescueTeamName", team.getName());
             response.put("districtName", team.getDistrict().getName());
-            response.put("isLeader", team.getLeader().getId().equals(rescue.getId()));
+            response.put("isLeader", isLeader);
 
-            // teamInfo (object)
             Map<String, Object> teamInfo = new HashMap<>();
-            teamInfo.put("teamId", team.getTeamId());
+            teamInfo.put("teamId", team.getId());
             teamInfo.put("teamName", team.getName());
             teamInfo.put("memberCount", team.getMembers() != null ? team.getMembers().size() : 0);
-            teamInfo.put("leader", team.getLeader().getName());
+            teamInfo.put("leader", team.getLeader().getDetail().getName());
+
             response.put("teamInfo", teamInfo);
 
         } else {
-            // ❗ ถ้าไม่อยู่ในทีม ให้ส่งค่า default
+            // ❗ ถ้าไม่อยู่ในทีม
             response.put("rescueTeamId", null);
             response.put("rescueTeamName", null);
             response.put("districtName", "-");
@@ -262,6 +265,18 @@ public ResponseEntity<?> getRescueAccount(@PathVariable Long id) {
     response.put("unit", rescue.getAffiliatedUnit().getUnitName());
 
     return ResponseEntity.ok(response);
+}
+
+@GetMapping("/me/isLeader")
+public ResponseEntity<?> isTeamLeader() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String code = auth.getName();
+
+    Rescue r = rescueRepo.findByRescueId(code).orElse(null);
+    if (r == null || r.getRescueTeam() == null) return ResponseEntity.ok(false);
+
+    boolean isLeader = r.getId().equals(r.getRescueTeam().getLeader().getId());
+    return ResponseEntity.ok(isLeader);
 }
 
 }

@@ -1,6 +1,15 @@
 package th.mfu.model.locationdata;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import th.mfu.model.user.User;
 
 @Entity
@@ -82,5 +91,18 @@ public void setProvince(String province) { this.province = province; }
 
 public String getPostcode() { return postcode; }
 public void setPostcode(String postcode) { this.postcode = postcode; }
+
+@Transient
+public String getFullAddress() {
+    StringBuilder sb = new StringBuilder();
+
+    if (road != null) sb.append(road).append(" ");
+    if (subdistrict != null) sb.append(subdistrict).append(" ");
+    if (district != null) sb.append(district).append(" ");
+    if (province != null) sb.append(province).append(" ");
+    if (postcode != null) sb.append(postcode);
+
+    return sb.toString().trim();
+}
 
 }

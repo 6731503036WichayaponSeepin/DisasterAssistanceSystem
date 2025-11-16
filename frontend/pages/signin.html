@@ -152,7 +152,7 @@
     const USER_LOGIN_API = "http://localhost:8080/api/users/login";
     const RESCUE_LOGIN_API = "http://localhost:8080/api/rescues/login";
 
-    const HOME_USER_PAGE = "/pages/homeUser";
+    const HOME_USER_PAGE = "/pages/homeUser.html";
     const HOME_RESCUE_PAGE = "/pages/homeRescue.html";
 
     function extractToken(j) {
@@ -225,10 +225,10 @@
         showMsg("สำเร็จ! กำลังนำทาง...", "ok");
 
         const goto = (role === "USER") ? HOME_USER_PAGE : HOME_RESCUE_PAGE;
-        const id = json.rescueDbId || "";
+    
 
         setTimeout(() => {
-          window.location.href = `${goto}?token=${encodeURIComponent(token)}&id=${id}`;
+          window.location.href = `${goto}?token=${encodeURIComponent(token)}`;
         }, 800);
 
       } catch (err) {

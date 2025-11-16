@@ -236,10 +236,12 @@
        LOAD PARAMS
     ------------------------------------------*/
     const params = new URLSearchParams(window.location.search);
-    const teamId = params.get("teamId");
     const districtName = params.get("district") || "-";
 
-    document.getElementById("teamIdLabel").textContent = teamId || "-";
+    const teamPk = params.get("teamPk");
+    const teamIdStr = params.get("teamId");
+
+    document.getElementById("teamIdLabel").textContent = teamIdStr || "-";
     document.getElementById("districtLabel").textContent = districtName;
 
     /* -----------------------------------------
@@ -369,7 +371,7 @@
         return;
       }
 
-      if (!teamId) {
+      if (!teamPk) {
         showMsg("ไม่พบ teamId", true);
         return;
       }
@@ -383,7 +385,7 @@
         for (const rid of ids) {
 
           const res = await fetch(
-            `${API_BASE}/api/rescue-teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(rid)}/add/${encodeURIComponent(leaderId)}`,
+            `${API_BASE}/api/rescue-teams/${encodeURIComponent(teamPk)}/members/${encodeURIComponent(rid)}/add/${encodeURIComponent(leaderId)}`,
             {
               method: "PUT",
               headers: { "Authorization": "Bearer " + token }
@@ -401,7 +403,7 @@
         showMsg("เพิ่มสมาชิกสำเร็จ", false);
 
         // ไปหน้า viewTeam
-        const url = `/pages/viewTeam.html?token=${encodeURIComponent(token)}&teamId=${encodeURIComponent(teamId)}&district=${encodeURIComponent(districtName)}&isLeader=true`;
+        const url = `/pages/viewTeam.html?token=${encodeURIComponent(token)}&teamId=${encodeURIComponent(teamPk)}&district=${encodeURIComponent(districtName)}&isLeader=true`;
 
         setTimeout(() => {
           window.location.href = url;

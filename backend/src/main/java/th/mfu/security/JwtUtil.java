@@ -14,26 +14,27 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "MySuperSecretKeyForJWTGeneration12345"; // ⚠️ ควรเก็บใน ENV จริง ๆ
-    private static final long EXPIRATION = 1000 * 60 * 60; // 1 ชั่วโมง
+    private static final String SECRET = "MySuperSecretKeyForJWTGeneration12345"; 
+    private static final long EXPIRATION = 1000 * 60 * 60;
 
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    // ✅ สร้าง token พร้อม role prefix "ROLE_"
+    // ✔ สร้าง token แบบถูกต้องตาม SecurityConfig
     public String generateToken(String identifier, String role) {
-        // Spring Security expects "ROLE_USER" or "ROLE_RESCUE"
+
+        // ถ้า role เป็น USER → แปลงเป็น ROLE_USER  
+        // ถ้า role เป็น RESCUE → แปลงเป็น ROLE_RESCUE  
         String prefixedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
 
         return Jwts.builder()
-                .setSubject(identifier) // phoneNumber หรือ rescueId
-                .claim("role", prefixedRole)
+                .setSubject(identifier)
+                .claim("role", prefixedRole)   // ⭐ ส่ง ROLE_USER / ROLE_RESCUE
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ✅ ดึงข้อมูลจาก token
     public Jws<Claims> parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -41,3 +42,5 @@ public class JwtUtil {
                 .parseClaimsJws(token);
     }
 }
+
+

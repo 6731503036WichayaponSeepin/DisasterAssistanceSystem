@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Selected Cases</title>
+
+    <style>
+        :root {
+            --red: #E02424;
+            --blue: #1D4ED8;
+            --navy: #1E1A72;
+            --yellow: #FBBF24;
+            --teal: #0EA5A3;
+            --white: #FFFFFF;
+            --gray: #F3F4F6;
+            --shadow: rgba(0, 0, 0, 0.15);
+        }
+
+        /* พื้นหลัง app */
+        body {
+            margin: 0;
+            background: #0b0f19;
+            display: flex;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ขนาดหน้าจอมือถือ */
+        .screen {
+            width: 390px;
+            min-height: 100vh;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        /* แถบ Header สีแดง */
+        .header {
+            background: var(--red);
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            gap: 12px;
+            border-radius: 0 0 26px 26px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ปุ่ม Back */
+        #btnBack {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* พื้นหลังขาวโค้ง */
+        .white-area {
+            background: white;
+            margin-top: -20px;
+            /* เดิม -12px เปลี่ยนเป็น -20px ให้โค้งต่ำลง */
+            padding: 32px 12px 50px;
+            /* เพิ่ม padding-top จาก 18 → 32px */
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* กล่องเคส */
+        .case-box {
+            background: var(--gray);
+            border-radius: 16px;
+            padding: 16px 14px;
+            margin: 26px 10px;
+            /* เพิ่ม margin-top ให้ห่างจากหัวข้อ */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            position: relative;
+            /* สำคัญ! เพื่อให้จุดแดงไม่หลุด */
+        }
+
+        /* ชื่อ + เบอร์ อยู่คนละข้าง */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        /* ที่อยู่ */
+        .case-address {
+            font-size: 13px;
+            color: #374151;
+            padding-right: 28px;
+            line-height: 20px;
+        }
+
+        /* จุดสีความรุนแรง */
+        .severity-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            position: absolute;
+            right: 12px;
+            top: 16px;
+        }
+
+        /* สีระดับ */
+        .sev-high {
+            background: #D81324;
+        }
+
+        .sev-med {
+            background: #F97316;
+        }
+
+        .sev-low {
+            background: #F7B500;
+        }
+
+        /* โซนปุ่มด้านล่าง */
+        .btn-area {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        /* ปุ่ม Cancel และ Confirm */
+        button.yellow,
+        button.green {
+            width: 70%;
+            padding: 14px 0;
+            border-radius: 10px;
+            border: none;
+            margin: 10px auto;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            box-shadow: 0 3px 6px var(--shadow);
+        }
+
+        /* ปุ่ม Cancel (สีแดงปกติ) */
+        .yellow {
+            background: #DC2626;
+            color: white;
+        }
+
+        /* ปุ่ม Confirm (สีเขียวปกติ) */
+        .green {
+            background: #16A34A;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="screen">
+
+        <div class="header">
+            <button id="btnBack">←</button>
+            <span>Selected cases</span>
+        </div>
+
+        <div class="white-area">
+
+            <div id="caseList"></div>
+
+            <div class="btn-area">
+                <button id="btnConfirm" class="green">Confirm</button>
+                <button id="btnCancel" class="yellow">Cancel</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+
+<script>
+    let token = localStorage.getItem("authToken");
+    let selectedIds = JSON.parse(localStorage.getItem("selectedCases")) || [];
+
+    if (!token) {
+        alert("Token missing!");
+        window.location.href = "/pages/signin.html";
+    }
+
+    // back btn
+    document.getElementById("btnBack").onclick = () => {
+        window.location.href = `caseSelection.html?token=${token}`;
+    };
+
+    // Load cases
+    if (selectedIds.length > 0) loadCases();
+
+    async function loadCases() {
+        const list = document.getElementById("caseList");
+
+        for (let id of selectedIds) {
+            let res = await fetch(`http://localhost:8080/api/cases/${id}`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!res.ok) continue;
+
+            let c = await res.json();
+
+            let sevClass =
+                c.severity === "HIGH" ? "high" :
+                    c.severity === "MEDIUM" ? "medium" : "low";
+
+            list.innerHTML += `
+                <div class="case-box">
+                    <div class="top-row">
+                        <span>${c.name}</span>
+                        <span>${c.phone}</span>
+                    </div>
+                    <div class="address">${c.address}</div>
+
+                    <div class="sev-dot ${sevClass}"></div>
+                </div>
+            `;
+        }
+    }
+
+    // Cancel
+    document.getElementById("btnCancel").onclick = () => {
+        localStorage.removeItem("selectedCases");
+        window.location.href = `caseSelection.html?token=${token}`;
+    };
+
+    // Confirm
+    document.getElementById("btnConfirm").onclick = async () => {
+        for (let id of selectedIds) {
+            await fetch(`http://localhost:8080/api/cases/${id}/follow`, {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + token }
+            });
+        }
+
+        alert("Assigned!");
+
+        localStorage.removeItem("selectedCases");
+        window.location.href = `caseSelection.html?token=${token}`;
+    };
+</script>
+
+</body>
+
+</html>

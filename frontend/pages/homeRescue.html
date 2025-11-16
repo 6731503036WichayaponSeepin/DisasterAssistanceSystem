@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Home</title>
+    <title>Rescue Home</title>
 
     <style>
         :root {
@@ -18,7 +18,6 @@
             --radius-container: 26px;
         }
 
-        /* RESET */
         * {
             margin: 0;
             padding: 0;
@@ -26,19 +25,17 @@
         }
 
         body {
-            font-family: Inter, sans-serif;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
             background: var(--red);
             display: flex;
             justify-content: center;
             padding: 30px 14px;
         }
 
-        /* MAIN WHITE CONTAINER (เหมือนในภาพ) */
         .container {
             width: 100%;
             max-width: 440px;
             position: relative;
-            /* ควบคุมไม่ให้แตกบน Desktop */
             background: white;
             border-radius: var(--radius-container);
             padding-bottom: 40px;
@@ -47,7 +44,6 @@
             overflow: hidden;
         }
 
-        /* HEADER */
         .header {
             background: var(--blue);
             color: white;
@@ -58,6 +54,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         .user-info {
@@ -95,6 +92,11 @@
             opacity: 0.9;
         }
 
+        .menu-btn {
+            cursor: pointer;
+            padding: 6px 0 6px 6px;
+        }
+
         .menu-btn span {
             display: block;
             width: 24px;
@@ -104,53 +106,49 @@
             border-radius: 10px;
         }
 
-        /* GRID MENU */
         .content {
             margin-top: 40px;
-            /* ดึงขึ้นมาให้ทับ header แบบในภาพ */
             padding: 28px 22px 0;
         }
 
         .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
 
-        /* CARD STYLE - แบบภาพ */
         .card {
-            border-radius: var(--radius-card);
-            padding: 18px 18px;
+            width: 100%;
+            border-radius: 22px;
+            padding: 22px;
             color: white;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            min-height: 140px;
             position: relative;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+            min-height: 140px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
         }
 
         .card-title {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
         }
 
         .card-sub {
-            font-size: 12px;
+            font-size: 14px;
             opacity: 0.9;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .card-icon {
             position: absolute;
-            right: 14px;
-            bottom: 14px;
-            font-size: 38px;
-            /* ให้ใหญ่แบบในภาพ */
+            right: 20px;
+            bottom: 20px;
+            font-size: 40px;
             opacity: 0.85;
         }
 
-        /* COLORS */
         .card--red {
             background: var(--red);
         }
@@ -168,7 +166,6 @@
             background: var(--teal);
         }
 
-        /* BADGE */
         .badge {
             position: absolute;
             top: 10px;
@@ -186,12 +183,11 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
         }
 
-        /* SIDE MENU อยู่ใน container */
+        /* SIDE MENU */
         .side-menu {
             position: absolute;
             top: 0;
             right: -260px;
-            /* ซ่อนเมนูอยู่หลัง container */
             width: 230px;
             height: 100%;
             background: #ffffff;
@@ -199,15 +195,12 @@
             padding: 20px;
             transition: right 0.3s ease;
             z-index: 50;
-            /* สูงกว่าเนื้อหาใน container */
         }
 
         .side-menu.open {
             right: 0;
-            /* เลื่อนออกมาจากขวาของกล่อง */
         }
 
-        /* OVERLAY ต้องอยู่เฉพาะใน container ไม่ใช่ทั้งเบราว์เซอร์ */
         .overlay {
             position: absolute;
             top: 0;
@@ -222,6 +215,32 @@
         .overlay.show {
             display: block;
         }
+
+        .menu-header {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .back-btn {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .menu-item {
+            padding: 10px 0;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .header-row div span#unitName {
+            display: none !important;
+        }
+
+        .header-row div:has(#unitName)::before {
+            content: "";
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -233,10 +252,11 @@
         <div class="header">
             <div class="header-row">
                 <div style="margin-top:10px; font-size:13px; opacity:0.9;">
-                    หน่วย: <span id="unitName">-</span><br>
+                    RESCUE <span id="unitName"></span><br>
                     ทีมกู้ภัย: <span id="teamName">-</span>
                     (สมาชิก <span id="teamCount">0</span> คน)
                 </div>
+
                 <div class="user-info">
                     <div class="avatar"></div>
                     <div>
@@ -253,12 +273,11 @@
 
         <!-- CONTENT -->
         <div class="content">
-
             <div class="grid">
 
-                <!-- 1. REQUEST -->
-                <div class="card card--red">
-                    <span class="badge">5</span>
+                <!-- REQUEST → ไปหน้า caseSelection -->
+                <div class="card card--red" id="cardRequest">
+                    <span class="badge">5</span> <!--  waiting -->
                     <div>
                         <div class="card-title">Request</div>
                         <div class="card-sub">Evacuate from the area</div>
@@ -266,30 +285,30 @@
                     <div class="card-icon">🚨</div>
                 </div>
 
-                <!-- 2. FOLLOW -->
-                <div class="card card--yellow">
+                <!-- FOLLOW -->
+                <!-- <div class="card card--yellow">
                     <div>
                         <div class="card-title">Follow Cases</div>
                         <div class="card-sub">Track rescue status</div>
                     </div>
                     <div class="card-icon">📍</div>
-                </div>
+                </div> -->
 
-                <!-- 3. IN ACTION -->
-                <div class="card card--navy">
-                    <div class="card-title">In Action</div>
+                <!-- IN ACTION -->
+                <div class="card card--navy" id="cardResponding">
+                    <div class="card-title">Responding</div>
                     <div class="card-icon">🤝</div>
                 </div>
 
-                <!-- 4. COMPLETED -->
+                <!-- COMPLETED -->
                 <div class="card card--teal">
                     <div class="card-title">Completed Cases</div>
                     <div class="card-icon">✔</div>
                 </div>
 
             </div>
-
         </div>
+
         <!-- SIDE MENU -->
         <div id="sideMenu" class="side-menu">
             <div class="menu-header">
@@ -297,11 +316,11 @@
             </div>
 
             <div class="menu-item" onclick="goToRescueTeam()">
-                <span class="icon">👥</span> Rescue team
+                👥 Rescue team
             </div>
 
             <div class="menu-item" onclick="goToAccount()">
-                <span class="icon">⚫</span> Account
+                ⚫ Account
             </div>
         </div>
 
@@ -311,17 +330,15 @@
     </div>
 
     <script>
-        // ✔ อ่าน token จาก URL และเก็บลง localStorage
+        // อ่าน token จาก URL แล้วเก็บเป็น authToken
         const urlParams = new URLSearchParams(window.location.search);
         const tokenFromURL = urlParams.get("token");
-
         if (tokenFromURL) {
             localStorage.setItem("authToken", tokenFromURL);
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
 
-            /* -------------------- MENU -------------------- */
             const menuBtn = document.getElementById("menuBtn");
             const sideMenu = document.getElementById("sideMenu");
             const menuOverlay = document.getElementById("menuOverlay");
@@ -341,7 +358,7 @@
             closeMenu.addEventListener("click", closeMenuFn);
             menuOverlay.addEventListener("click", closeMenuFn);
 
-            /* -------------------- NAVIGATION -------------------- */
+            // NAV
             window.goToAccount = function () {
                 const token = localStorage.getItem("authToken");
                 window.location.href = "/pages/accountRescue.html?token=" + encodeURIComponent(token);
@@ -352,16 +369,38 @@
                 window.location.href = "/pages/rescueTeam.html?token=" + encodeURIComponent(token);
             };
 
+            // ปุ่ม Request → caseSelection
+            document.getElementById("cardRequest").addEventListener("click", () => {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    alert("Token หาย! กรุณาเข้าสู่ระบบใหม่");
+                    return;
+                }
+                window.location.href = "/pages/caseSelection.html?token=" + encodeURIComponent(token);
+            });
+
+            document.getElementById("cardResponding").addEventListener("click", () => {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    alert("Token หาย! กรุณาเข้าสู่ระบบใหม่");
+                    return;
+                }
+                window.location.href = "/pages/comingHelp.html?token=" + encodeURIComponent(token);
+            });
+
             const token = localStorage.getItem("authToken");
-            const rescueDbId = localStorage.getItem("rescueDbId");
+            let rescueDbId = localStorage.getItem("rescueDbId");
 
             if (!token) {
                 alert("Token หาย! กรุณาเข้าสู่ระบบใหม่");
+                window.location.href = "/pages/signin.html";
                 return;
             }
 
             if (!rescueDbId) {
+                // ถ้าไม่มีใน localStorage ให้หยุด (ระบบ login เดิมของคุณควรเป็นคน set rescueDbId)
                 alert("ไม่พบข้อมูลผู้กู้ภัย กรุณาเข้าสู่ระบบใหม่");
+                window.location.href = "/pages/signin.html";
                 return;
             }
 
@@ -381,16 +420,17 @@
                 }
 
                 const data = await res.json();
-                console.log("API DATA:", data);
+
+                // sync ข้อมูลลง localStorage
+                localStorage.setItem("rescueDbId", data.rescueDbId);
+                localStorage.setItem("isLeader", data.isLeader ? "true" : "false");
 
                 // SET UI
                 document.getElementById("userName").textContent = data.name || "-";
                 document.getElementById("userPhone").textContent = data.rescueId || "-";
                 document.getElementById("unitName").textContent = data.unit || "-";
-
                 document.getElementById("teamName").textContent =
                     data.rescueTeamName ?? "ไม่อยู่ในทีม";
-
                 document.getElementById("teamCount").textContent =
                     data.teamInfo?.memberCount ?? 0;
 
@@ -400,7 +440,6 @@
             }
         });
     </script>
-
 
 </body>
 

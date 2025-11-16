@@ -95,8 +95,11 @@ public class RescueTeamController {
     public Map<String, Object> getTeamMembers(@PathVariable String teamId,
                                               @PathVariable String viewerRescueId) {
 
-        RescueTeam team = teamRepo.findByTeamId(teamId)
+        Long teamPk = Long.valueOf(teamId);
+
+        RescueTeam team = teamRepo.findById(teamPk)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found: " + teamId));
+
 
         Rescue viewer = rescueRepo.findByRescueId(viewerRescueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rescue not found: " + viewerRescueId));
@@ -151,8 +154,10 @@ public class RescueTeamController {
         Rescue leader = rescueRepo.findByRescueId(leaderRescueId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Leader not found"));
 
-        RescueTeam team = teamRepo.findByTeamId(teamId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found"));
+        Long teamPk = Long.valueOf(teamId);
+        RescueTeam team = teamRepo.findById(teamPk)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found"));
+
 
         if (!isLeader(leader, team)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the team leader can add members.");
@@ -190,8 +195,10 @@ public class RescueTeamController {
         Rescue leader = rescueRepo.findByRescueId(leaderRescueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Leader not found"));
 
-        RescueTeam team = teamRepo.findByTeamId(teamId)
+        Long teamPk = Long.valueOf(teamId);
+        RescueTeam team = teamRepo.findById(teamPk)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found"));
+
 
         if (!isLeader(leader, team)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the team leader can remove members.");
@@ -221,7 +228,8 @@ public class RescueTeamController {
         Rescue leader = rescueRepo.findByRescueId(leaderRescueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Leader not found"));
 
-        RescueTeam team = teamRepo.findByTeamId(teamId)
+        Long teamPk = Long.valueOf(teamId);
+        RescueTeam team = teamRepo.findById(teamPk)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found"));
 
         if (!isLeader(leader, team)) {

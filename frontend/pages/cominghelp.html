@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Selected Cases</title>
+
+    <style>
+        :root {
+            --red: #E02424;
+            --blue: #1D4ED8;
+            --navy: #1E1A72;
+            --yellow: #FBBF24;
+            --teal: #0EA5A3;
+            --white: #FFFFFF;
+            --gray: #F3F4F6;
+            --shadow: rgba(0, 0, 0, 0.15);
+        }
+
+        /* พื้นหลัง app */
+        body {
+            margin: 0;
+            background: #0b0f19;
+            display: flex;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ขนาดหน้าจอมือถือ */
+        .screen {
+            width: 390px;
+            min-height: 100vh;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        /* แถบ Header สีแดง */
+        .header {
+            background: var(--red);
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            gap: 12px;
+            border-radius: 0 0 26px 26px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ปุ่ม Back */
+        #btnBack {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* พื้นหลังขาวโค้ง */
+        .white-area {
+            background: white;
+            margin-top: -20px;
+            /* เดิม -12px เปลี่ยนเป็น -20px ให้โค้งต่ำลง */
+            padding: 32px 12px 50px;
+            /* เพิ่ม padding-top จาก 18 → 32px */
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* กล่องเคส */
+        .case-box {
+            background: var(--gray);
+            border-radius: 16px;
+            padding: 16px 14px;
+            margin: 26px 10px;
+            /* เพิ่ม margin-top ให้ห่างจากหัวข้อ */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            position: relative;
+            /* สำคัญ! เพื่อให้จุดแดงไม่หลุด */
+        }
+
+        /* ชื่อ + เบอร์ อยู่คนละข้าง */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        /* ที่อยู่ */
+        .case-address {
+            font-size: 13px;
+            color: #374151;
+            padding-right: 28px;
+            line-height: 20px;
+        }
+
+        /* จุดสีความรุนแรง */
+        .severity-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            position: absolute;
+            right: 12px;
+            top: 16px;
+        }
+
+        /* สีระดับ */
+        .sev-high {
+            background: #D81324;
+        }
+
+        .sev-med {
+            background: #F97316;
+        }
+
+        .sev-low {
+            background: #F7B500;
+        }
+
+        /* โซนปุ่มด้านล่าง */
+        .btn-area {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        /* ปุ่ม Confirm */
+        button.green {
+            width: 70%;
+            padding: 14px 0;
+            border-radius: 10px;
+            border: none;
+            margin: 10px auto;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            box-shadow: 0 3px 6px var(--shadow);
+        }
+
+        /* ปุ่ม Confirm (สีเขียวปกติ) */
+        .green {
+            background: #16A34A;
+            color: white;
+        }
+
+        #btnConfirm:disabled {
+            background: gray;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="screen">
+
+        <div class="header">
+            <button id="btnBack">←</button>
+            <span>Selected cases</span>
+        </div>
+
+        <div class="white-area">
+
+            <div id="caseList"></div>
+
+            <div class="btn-area">
+                <button id="btnConfirm" class="green">Confirm</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // ====== ดึง token ทั้งจาก URL และ localStorage ======
+        const params = new URLSearchParams(window.location.search);
+        let token = params.get("token") || localStorage.getItem("authToken");
+
+        if (!token) {
+            alert("Token missing!");
+            window.location.href = "/pages/signin.html";
+        } else {
+            // sync เก็บไว้ใน localStorage ด้วย
+            localStorage.setItem("authToken", token);
+        }
+
+        // ปุ่มย้อนกลับ → กลับ home พร้อม token
+        document.getElementById("btnBack").onclick = () => {
+            window.location.href = `homeRescue.html?token=${token}`;
+        };
+
+        const caseListEl = document.getElementById("caseList");
+        const confirmBtn = document.getElementById("btnConfirm");
+
+        // โหลดเคสที่ทีมนี้ ถูก assign อยู่
+        loadAssignedCases();
+
+        async function loadAssignedCases() {
+            console.log("Fetching assigned cases...");
+
+            const res = await fetch("http://localhost:8080/api/cases/my?status=ASSIGNED", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!res.ok) {
+                console.error("Failed to load assigned cases");
+                caseListEl.innerHTML = "<p>Failed to load cases.</p>";
+                confirmBtn.disabled = true;
+                return;
+            }
+
+            const assignedCases = await res.json();
+            console.log("Assigned:", assignedCases);
+
+            if (!Array.isArray(assignedCases) || assignedCases.length === 0) {
+                caseListEl.innerHTML = "<p>No assigned cases.</p>";
+                confirmBtn.disabled = true; // ไม่มีเคส → กดไม่ได้
+                return;
+            }
+
+            // ดึงรายละเอียดแต่ละเคส
+            for (const ac of assignedCases) {
+                const detailRes = await fetch(`http://localhost:8080/api/cases/${ac.id}`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                if (!detailRes.ok) continue;
+
+                const c = await detailRes.json();
+                console.log("Case detail:", c);
+
+                const sevClass =
+                    c.severity === "HIGH" ? "sev-high" :
+                        c.severity === "MEDIUM" ? "sev-med" : "sev-low";
+
+                caseListEl.innerHTML += `
+                    <div class="case-box">
+                        <div class="top-row">
+                            <span>${c.name}</span>
+                            <span>${c.phone}</span>
+                        </div>
+                        <div class="case-address">${c.address}</div>
+                        <div class="severity-dot ${sevClass}"></div>
+                    </div>
+                `;
+            }
+        }
+
+        // ====== กด Confirm (ให้หัวหน้าทีมใช้) ======
+        confirmBtn.onclick = async () => {
+            // popup ยืนยันก่อน
+            const ok = window.confirm("ยืนยันว่าจะออกปฏิบัติการช่วยเหลือเคสทั้งหมดที่แสดงอยู่หรือไม่? (กดยืนยันแล้วจะไม่สามารถย้อนกลับได้)");
+            if (!ok) return;
+
+            confirmBtn.disabled = true; // กันกดซ้ำทันที
+
+            // ดึงรายการเคส ASSIGNED อีกครั้ง เพื่อความชัวร์
+            const res = await fetch("http://localhost:8080/api/cases/my?status=ASSIGNED", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!res.ok) {
+                alert("ไม่สามารถดึงรายการเคสได้");
+                confirmBtn.disabled = false;
+                return;
+            }
+
+            const assignedCases = await res.json();
+
+            if (!Array.isArray(assignedCases) || assignedCases.length === 0) {
+                alert("ไม่มีเคสในสถานะ ASSIGNED แล้ว");
+                window.location.href = `homeRescue.html?token=${token}`;
+                return;
+            }
+
+            // เรียก /coming ทุกเคส
+            for (const ac of assignedCases) {
+                const resp = await fetch(`http://localhost:8080/api/cases/${ac.id}/coming`, {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                if (!resp.ok) {
+                    const msg = await resp.text();
+                    console.error("Error updating case", ac.id, msg);
+                    alert("บางเคสไม่สามารถอัปเดตได้: " + msg);
+                    // ถ้าอยากหยุดเลยก็ break; ได้ แต่ผมปล่อยให้ไปต่อทุกเคส
+                }
+            }
+
+            alert("อัปเดตสถานะเป็น COMING แล้ว");
+
+            // เคสในหน้านี้จะหายไป (ไม่ใช่ ASSIGNED แล้ว) → กลับหน้า home
+            window.location.href = `homeRescue.html?token=${token}`;
+        };
+    </script>
+
+</body>
+
+</html>

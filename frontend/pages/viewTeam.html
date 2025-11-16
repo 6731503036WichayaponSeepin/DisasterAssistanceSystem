@@ -346,8 +346,12 @@
       });
 
       const d = await r.json();
+
+      // ⭐ ใช้ rescueId จาก backend (ต้องเป็น RS-xxx)
       currentRescueId = d.rescueId;
+
       localStorage.setItem("rescueId", currentRescueId);
+
       return currentRescueId;
     }
 
@@ -582,5 +586,4 @@
 
   </script>
 </body>
-
 </html>

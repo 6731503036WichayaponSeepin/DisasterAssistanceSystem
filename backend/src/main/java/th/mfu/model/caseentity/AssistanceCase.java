@@ -1,9 +1,20 @@
 package th.mfu.model.caseentity;
 
-import jakarta.persistence.*;
-import th.mfu.model.locationdata.LocationData;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import th.mfu.model.locationdata.LocationData;
 
 @Entity
 @Table(name = "assistance_case")
@@ -13,22 +24,17 @@ public class AssistanceCase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ผู้ใช้ที่แจ้งเคส
     @Column(name = "reporter_user_id", nullable = false)
     private Long reporterUserId;
 
-    // ทีมกู้ภัยที่รับเคส (ถ้าใช้)
     @Column(name = "assigned_rescue_team_id")
     private Long assignedRescueTeamId;
 
-    // FK -> location_data.id
-   @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
     private LocationData locationId;
 
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "case_type")
     private CaseType caseType;
 
     @Enumerated(EnumType.STRING)
@@ -39,6 +45,24 @@ public class AssistanceCase {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+
+    /* =======================
+       Virtual Fields for FE
+    ======================== */
+
+    @Transient
+    private String reporterName;
+
+    @Transient
+    private String reporterPhone;
+
+    @Transient
+    private String fullAddress;
+
+    /* =======================
+       GETTERS / SETTERS
+    ======================== */
 
     public Long getId() {
         return id;
@@ -104,8 +128,33 @@ public class AssistanceCase {
         this.createdAt = createdAt;
     }
 
+    public String getReporterName() {
+        return reporterName;
+    }
 
-    // ===== getters/setters =====
+    public void setReporterName(String reporterName) {
+        this.reporterName = reporterName;
+    }
 
-    
+    public String getReporterPhone() {
+        return reporterPhone;
+    }
+
+    public void setReporterPhone(String reporterPhone) {
+        this.reporterPhone = reporterPhone;
+    }
+
+    public String getFullAddress() {
+        return fullAddress;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
+    }
+
+    @Transient
+public String getAddress() {
+    return this.fullAddress;
+}
+
 }

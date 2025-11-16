@@ -276,94 +276,127 @@
 
     </div>
 
-    <script>
-    const API_BASE = "http://localhost:8080";
-    const TOKEN_KEY = "authToken";
+ <script>
+const API_BASE = "http://localhost:8080";
+const TOKEN_KEY = "authToken";
 
-    let PAGE_SIGNIN  = "/";
-    let PAGE_ADDRESS = "/pages/location";
+let token = null;
 
-    if (location.port !== "5173") {
-        PAGE_SIGNIN  = "./signin.html";
-        PAGE_ADDRESS = "./map.html";
+let PAGE_SIGNIN  = "/";
+let PAGE_ADDRESS = "/pages/location";
+
+if (location.port !== "5173") {
+    PAGE_SIGNIN  = "./signin.html";
+    PAGE_ADDRESS = "./map.html";
+}
+
+// อ่าน Query Param
+function getQueryParam(name){
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* ============================
+       โหลด Token จาก URL → LocalStorage
+    ============================ */
+    const urlToken = getQueryParam("token");
+
+    if (urlToken) {
+        localStorage.setItem(TOKEN_KEY, urlToken);
     }
 
-    function getQueryParam(name){
-        return new URLSearchParams(window.location.search).get(name);
+    token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+        window.location.href = PAGE_SIGNIN;
+        return;
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-
-        let token = localStorage.getItem(TOKEN_KEY);
-        const urlToken = getQueryParam("token");
-
-        if (!token && urlToken){
-            token = urlToken;
-            localStorage.setItem(TOKEN_KEY, token);
+    /* ============================
+       ดึงข้อมูลผู้ใช้
+    ============================ */
+    fetch(API_BASE + "/api/users/me", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
         }
+    })
+    .then(res => res.json())
+    .then(user => {
+        document.getElementById("userName").textContent =
+            user.name ?? "Unknown User";
+        document.getElementById("userPhone").textContent =
+            user.phoneNumber ?? "No Phone";
+    });
 
-        if (!token){
-            window.location.href = PAGE_SIGNIN;
-            return;
-        }
+    /* ============================
+       MENU
+    ============================ */
+    const menuBtn = document.getElementById("menuButton");
+    const menuBox = document.getElementById("dropdownMenu");
 
-        /* ---------------- FETCH USER INFO ---------------- */
-        fetch(API_BASE + "/api/users/me", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            }
-        })
-        .then(res => res.json())
-        .then(user => {
-            document.getElementById("userName").textContent =
-                user.name ?? "Unknown User";
-            document.getElementById("userPhone").textContent =
-                user.phoneNumber ?? "No Phone";
-        });
+    menuBtn.onclick = () => {
+        menuBox.style.display =
+            menuBox.style.display === "block" ? "none" : "block";
+    };
 
-        /* ---------------- MENU ---------------- */
-        const menuBtn = document.getElementById("menuButton");
-        const menuBox = document.getElementById("dropdownMenu");
+    /* ============================
+       ACCOUNT PAGE
+    ============================ */
+    document.getElementById("btnAccount").onclick = () => {
+        window.location.href = `/pages/account.html?token=${encodeURIComponent(token)}`;
+    };
 
-        menuBtn.onclick = () => {
-            menuBox.style.display =
-                menuBox.style.display === "block" ? "none" : "block";
-        };
+    /* ============================
+       ADDRESS PAGE
+    ============================ */
+    document.getElementById("btnAddress").onclick = () => {
+        window.location.href =
+            `${PAGE_ADDRESS}?token=${encodeURIComponent(token)}`;
+    };
 
-        /* ---------------- ACCOUNT PAGE (มีปัญหา) ---------------- */
-        document.getElementById("btnAccount").onclick = () => {
-            window.location.href = "/pages/account?token=" + encodeURIComponent(token);
-        };
+    /* ============================
+       LOGOUT
+    ============================ */
+    document.getElementById("btnLogout").onclick = () => {
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = PAGE_SIGNIN;
+    };
 
-        /* ---------------- ADDRESS PAGE ---------------- */
-        document.getElementById("btnAddress").onclick = () => {
-            window.location.href =
-                PAGE_ADDRESS + "?token=" + encodeURIComponent(token);
-        };
+}); // END DOMContentLoaded
 
-        /* ---------------- LOGOUT ---------------- */
-        document.getElementById("btnLogout").onclick = () => {
-            localStorage.removeItem(TOKEN_KEY);
-            window.location.href = PAGE_SIGNIN;
-        };
 
-    }); // END DOMContentLoaded
-    /* ---------------- CREATE CASE: SOS ---------------- */
- /* ---------------- GO TO NEXT PAGE: SOS ---------------- */
+
+/* ============================
+   CREATE CASE → SOS
+============================ */
 document.getElementById("cardSOS").onclick = () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    window.location.href = `/pages/SOS?token=${encodeURIComponent(token)}`;
+    const t = localStorage.getItem("authToken");
+
+    if (!t) {
+        alert("Token missing! Please login again.");
+        window.location.href = "/";
+        return;
+    }
+
+    window.location.href = `/pages/SOS.html?token=${encodeURIComponent(t)}`;
 };
 
-/* ---------------- GO TO NEXT PAGE: SUSTENANCE ---------------- */
+
+
+
+/* ============================
+   CREATE CASE → SUSTENANCE
+============================ */
 document.getElementById("cardSustenance").onclick = () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    window.location.href = `/pages/SUSTENANCE?token=${encodeURIComponent(token)}`;
-};
-    </script>
 
+    window.location.href =
+        `/pages/SUSTENANCE.html?token=${encodeURIComponent(token)}`;
+};
+</script>
 
 
     </body>

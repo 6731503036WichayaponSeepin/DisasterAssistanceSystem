@@ -237,7 +237,9 @@ document.getElementById("confirmBtn").addEventListener("click", async ()=>{
     showMsg("สร้างทีมสำเร็จ กำลังเลือกสมาชิก...",false);
 
     // ไปหน้าเลือกสมาชิก
-    const url = `/pages/selectMember.html?token=${encodeURIComponent(token)}&teamId=${encodeURIComponent(finalTeamId)}&district=${encodeURIComponent(districtName)}&isLeader=true`;
+    const teamPk = data.id;
+    
+    const url = `/pages/selectMember.html?token=${encodeURIComponent(token)}&teamPk=${teamPk}&teamId=${encodeURIComponent(finalTeamId)}&district=${encodeURIComponent(districtName)}&isLeader=true`;
     setTimeout(()=>{ window.location.href = url; },700);
 
   }catch(err){

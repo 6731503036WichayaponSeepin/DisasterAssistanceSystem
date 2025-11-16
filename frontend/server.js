@@ -1,7 +1,6 @@
 // server.js
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const app = express();
 const PORT = 5173;
@@ -11,11 +10,6 @@ const SECRET_KEY = "MySuperSecretKeyForJWTGeneration12345";
 const pagesPath = path.join(__dirname, "pages");
 const cssPath   = path.join(__dirname, "css");
 const jsPath    = path.join(__dirname, "js");
-
-if (!fs.existsSync(pagesPath)) {
-  console.error("❌ Folder 'pages' not found!");
-  process.exit(1);
-}
 
 // serve css/js ก่อน
 app.use("/css", express.static(cssPath));
@@ -31,11 +25,9 @@ app.get("/", (req, res) => {
 app.get("/pages/signin.html", (req, res) => {
   res.sendFile(path.join(pagesPath, "signin.html"));
 });
-
 app.get("/pages/signupUser.html", (req, res) => {
   res.sendFile(path.join(pagesPath, "signupUser.html"));
 });
-
 app.get("/pages/signupRescue.html", (req, res) => {
   res.sendFile(path.join(pagesPath, "signupRescue.html"));
 });
@@ -49,9 +41,7 @@ function verifyToken(req, res, next) {
     (req.headers.authorization && req.headers.authorization.split(" ")[1]);
 
   if (!token) {
-    return res
-      .status(403)
-      .send("<h2>⛔ Access Denied: Token not provided</h2>");
+    return res.status(403).send("<h2>⛔ Access Denied: Token not provided</h2>");
   }
 
   try {
@@ -63,31 +53,30 @@ function verifyToken(req, res, next) {
   }
 }
 
-//app.use("/pages", express.static(pagesPath));
 /* -------------------------
-   Protected pages (อยู่เหนือ static!)
+   Protected pages (ต้องอยู่เหนือ static)
 -------------------------- */
-app.get("/pages/homeUser", verifyToken, (req, res) => {
+app.get("/pages/homeUser.html", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "homeUser.html"));
+});
+
+app.get("/pages/account.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "accountUser.html"));
 });
 
 app.get("/pages/location", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "map.html"));
 });
 
-app.get("/pages/SOS", verifyToken, (req, res) => {
+app.get("/pages/SOS.html", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "SOS.html"));
 });
 
-app.get("/pages/SUSTENANCE", verifyToken, (req, res) => {
+app.get("/pages/SUSTENANCE.html", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "SUSTENANCE.html"));
 });
 
-
-app.get("/pages/account", verifyToken, (req, res) => {
-  res.sendFile(path.join(pagesPath, "accountUser.html"));
-});
-
+// Rescue pages
 app.get("/pages/homeRescue.html",verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "homeRescue.html"));
 });
@@ -106,13 +95,20 @@ app.get("/pages/selectMember.html",verifyToken, (req, res) => {
 app.get("/pages/viewTeam.html",verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "viewTeam.html"));
 });
-
-
-
+app.get("/pages/caseSelection.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "caseSelection.html"));
+});
+app.get("/pages/selectedCases.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "selectedCases.html"));
+});
+app.get("/pages/comingHelp.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "comingHelp.html"));
+});
 
 /* -------------------------
-   Static fallback (อยู่ล่างสุด)
+   Static fallback (ต้องล่างสุด)
 -------------------------- */
+//app.use("/pages", express.static(pagesPath));
 
 app.listen(PORT, () => {
   console.log(`🚀 Frontend running at http://localhost:${PORT}`);
