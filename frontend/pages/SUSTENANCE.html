@@ -215,14 +215,13 @@ function updateStatusUI(status) {
 
     console.log("🔶 SUSTENANCE STATUS:", status);
 
-    const colorActive = "#FFC319";   // active = yellow
-    const colorOff = "#6B7280";      // inactive = gray
+    const colorActive = "#FFC319"; 
+    const colorOff = "#6B7280";
 
     const p1 = document.querySelector(".p1");
     const p2 = document.querySelector(".p2");
     const p3 = document.querySelector(".p3");
     const p4 = document.querySelector(".p4");
-
     const btn = document.getElementById("btnSendRequest");
 
     // Reset
@@ -231,7 +230,7 @@ function updateStatusUI(status) {
     p3.style.background = colorOff;
     p4.style.background = colorOff;
 
-    // Default = เมื่อมีเคส → ปิดปุ่ม
+    // Default lock
     btn.disabled = true;
     btn.style.opacity = 0.6;
     btn.textContent = "Request Already Sent";
@@ -254,7 +253,6 @@ function updateStatusUI(status) {
         p3.style.background = colorActive;
         p4.style.background = colorActive;
 
-        // DONE → เปิดปุ่มให้ส่งได้อีก
         btn.disabled = false;
         btn.style.opacity = 1;
         btn.textContent = "Send Request";
@@ -283,19 +281,29 @@ async function loadActiveCase() {
     }
 
     const data = await res.json();
+    console.log("ACTIVE CASE:", data);
 
-    console.log("ACTIVE SUSTENANCE CASE:", data);
+    // ❗ ถ้า active case เป็น SOS → ห้ามส่ง Sustenance + ไม่ต้องแสดง timeline
+    if (data.caseType !== "SUSTENANCE") {
+        console.log("⚠ Active case is SOS → block SUSTENANCE page");
 
+        const btn = document.getElementById("btnSendRequest");
+        btn.disabled = true;
+        btn.style.opacity = 0.6;
+        btn.textContent = "Cannot Request (SOS Active)";
+
+        return;
+    }
+
+    // ถ้าเป็นของ SUSTENANCE
     ACTIVE_CASE_ID = data.id;
-
     updateStatusUI(data.status);
 }
 
 /* ===========================
-   AUTO REFRESH STATUS
+   AUTO REFRESH CASE STATUS
 =========================== */
 async function refreshCaseStatus() {
-
     if (!ACTIVE_CASE_ID) return;
 
     const res = await fetch(`${API_BASE}/api/cases/${ACTIVE_CASE_ID}`, {
@@ -359,7 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(refreshCaseStatus, 5000);
 });
 </script>
-
 
 
 </body>

@@ -206,33 +206,30 @@
 <script>
 const API_BASE = "http://localhost:8080";
 
-
 let ACTIVE_CASE_ID = null;
-
 let TOKEN = null;
-/* ============================================
-   โหลด Token จาก URL หรือ LocalStorage
-============================================ */
+
+/* ======================================================
+   🔑 โหลด Token 
+====================================================== */
 function getToken() {
     const urlToken = new URLSearchParams(window.location.search).get("token");
-
     if (urlToken) {
         localStorage.setItem("authToken", urlToken);
         return urlToken;
     }
-
-    const stored = localStorage.getItem("authToken");
-    return stored;
+    return localStorage.getItem("authToken");
 }
 
-/* ============================================
-   🎨 อัปเดตสีสถานะของ Timeline
-============================================ */
+/* ======================================================
+   🎨 อัปเดต UI ของ SOS Timeline
+====================================================== */
 function updateStatusUI(status) {
-    console.log("🔵 STATUS:", status);
 
-    const colorActive = "#E51010";
-    const colorOff = "#6B7280";
+    console.log("🔴 SOS STATUS:", status);
+
+    const colorActive = "#E51010";  // สีแดง active
+    const colorOff = "#6B7280";     // สีเทา inactive
 
     const p1 = document.querySelector(".p1");
     const p2 = document.querySelector(".p2");
@@ -240,65 +237,57 @@ function updateStatusUI(status) {
     const p4 = document.querySelector(".p4");
     const btn = document.getElementById("btnSendRequest");
 
-    // reset
+    // Reset ทั้งหมดให้เป็นเทา
     p1.style.background = colorOff;
     p2.style.background = colorOff;
     p3.style.background = colorOff;
     p4.style.background = colorOff;
 
-    // ปิดปุ่มทันทีเมื่อมีเคส
+    // Default → ถ้ามีเคสอยู่ ให้ปิดปุ่ม
     btn.disabled = true;
     btn.style.opacity = 0.6;
     btn.textContent = "Request Already Sent";
 
     if (status === "NEW") {
         p1.style.background = colorActive;
-    } 
+    }
     else if (status === "ASSIGNED") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
-    } 
+    }
     else if (status === "COMING") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
         p3.style.background = colorActive;
-    } 
+    }
     else if (status === "DONE") {
         p1.style.background = colorActive;
         p2.style.background = colorActive;
         p3.style.background = colorActive;
         p4.style.background = colorActive;
 
-        // DONE → เปิดปุ่มให้ส่งคำขอใหม่ได้อีกครั้ง
+        // DONE → เปิดปุ่มส่ง request ใหม่ได้
         btn.disabled = false;
         btn.style.opacity = 1;
         btn.textContent = "Send Request";
     }
 }
 
-
-/* ============================================
-   โหลดเคส ACTIVE ของ user
-============================================ */
-/* ============================================
-   โหลดเคส ACTIVE ของ user
-============================================ */
-/* ============================================
-   โหลดเคส ACTIVE ของ user
-============================================ */
+/* ======================================================
+   โหลดเคส ACTIVE ของ User
+====================================================== */
 async function loadActiveCase() {
 
-    const TOKEN = getToken();
+    TOKEN = getToken();
 
     const res = await fetch(`${API_BASE}/api/cases/my-active`, {
         method: "GET",
         headers: { "Authorization": "Bearer " + TOKEN }
     });
 
-    // ถ้าไม่มีเคส active = 204 No Content
     if (res.status === 204) {
         console.log("ไม่มีเคส active");
-        return;
+        return; // ส่ง SOS ได้ปกติ
     }
 
     if (!res.ok) {
@@ -307,25 +296,36 @@ async function loadActiveCase() {
     }
 
     const data = await res.json();
-
     console.log("ACTIVE CASE:", data);
 
     ACTIVE_CASE_ID = data.id;
 
+    /* ===================================================
+       ❗ เคสนี้ไม่ใช่ SOS → ห้ามแสดง timeline นี้
+    ==================================================== */
+    if (data.caseType !== "SOS") {
+        console.log("⚠ Active case is NOT SOS — block this page");
+
+        const btn = document.getElementById("btnSendRequest");
+        btn.disabled = true;
+        btn.style.opacity = 0.6;
+        btn.textContent = "Cannot Request (Other Case Active)";
+
+        // ซ่อน timeline เพื่อไม่ให้สับสน
+        document.querySelector(".timeline").style.opacity = 0.3;
+        document.querySelector(".timeline").style.pointerEvents = "none";
+
+        return;
+    }
+
+    // ถ้าเป็น SOS → อัปเดต UI ปกติ
     updateStatusUI(data.status);
-    console.log("ACTIVE CASE:", data);
 }
 
-
-
-
-
-/* ============================================
-   Refresh สถานะจาก backend ทุก 5 วิ
-============================================ */
+/* ======================================================
+   Refresh status ทุก 5 วิ
+====================================================== */
 async function refreshCaseStatus() {
-
-    const TOKEN = getToken();
 
     if (!ACTIVE_CASE_ID) return;
 
@@ -336,13 +336,16 @@ async function refreshCaseStatus() {
     if (!res.ok) return;
 
     const data = await res.json();
+
+    // เช็คว่าตรงกันไหม
+    if (data.caseType !== "SOS") return;
+
     updateStatusUI(data.status);
 }
 
-
-/* ============================================
-   เมื่อกด "Send Request"
-============================================ */
+/* ======================================================
+   ปุ่มส่ง SOS Request
+====================================================== */
 document.getElementById("btnSendRequest").onclick = async () => {
 
     const TOKEN = getToken();
@@ -350,6 +353,7 @@ document.getElementById("btnSendRequest").onclick = async () => {
     const locRes = await fetch(`${API_BASE}/api/user-location/home`, {
         headers: { "Authorization": "Bearer " + TOKEN }
     });
+
     if (!locRes.ok) {
         alert("⚠ กรุณาปักหมุดที่อยู่ก่อน!");
         return;
@@ -357,7 +361,6 @@ document.getElementById("btnSendRequest").onclick = async () => {
 
     const location = await locRes.json();
 
-    // ส่ง request SOS
     const res = await fetch(`${API_BASE}/api/cases/report`, {
         method: "POST",
         headers: {
@@ -372,27 +375,25 @@ document.getElementById("btnSendRequest").onclick = async () => {
 
     if (!res.ok) {
         const err = await res.text();
-        alert("ส่งคำขอไม่สำเร็จ: " + err);
+        alert("❌ ส่งคำขอไม่สำเร็จ: " + err);
         return;
     }
 
     const newCase = await res.json();
     ACTIVE_CASE_ID = newCase.id;
 
-    alert("ส่งเคสสำเร็จ!");
-
+    alert("ส่งคำขอ SOS สำเร็จ!");
 };
 
-
-
-/* ============================================
-   เริ่มทำงาน
-============================================ */
+/* ======================================================
+   INIT
+====================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-    TOKEN = getToken();      // ⭐ โหลด token ก่อน!!
-    loadActiveCase();        // ⭐ ตอนนี้ TOKEN ไม่เป็น null
+    TOKEN = getToken();
+    loadActiveCase();
     setInterval(refreshCaseStatus, 5000);
 });
 </script>
+
 </body>
 </html>
