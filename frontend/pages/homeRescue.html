@@ -301,7 +301,7 @@
                 </div>
 
                 <!-- COMPLETED -->
-                <div class="card card--teal">
+                <div class="card card--teal" id="cardCompleted">
                     <div class="card-title">Completed Cases</div>
                     <div class="card-icon">✔</div>
                 </div>
@@ -387,6 +387,16 @@
                 }
                 window.location.href = "/pages/comingHelp.html?token=" + encodeURIComponent(token);
             });
+
+            document.getElementById("cardCompleted").addEventListener("click", () => {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    alert("Token หาย! กรุณาเข้าสู่ระบบใหม่");
+                    return;
+                }
+                window.location.href = "/pages/doneCases.html?token=" + encodeURIComponent(token);
+            });
+
 
             const token = localStorage.getItem("authToken");
             let rescueDbId = localStorage.getItem("rescueDbId");

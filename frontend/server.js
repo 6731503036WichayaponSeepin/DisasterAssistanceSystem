@@ -104,6 +104,9 @@ app.get("/pages/selectedCases.html", verifyToken, (req, res) => {
 app.get("/pages/comingHelp.html", verifyToken, (req, res) => {
   res.sendFile(path.join(pagesPath, "comingHelp.html"));
 });
+app.get("/pages/doneCases.html", verifyToken, (req, res) => {
+  res.sendFile(path.join(pagesPath, "doneCases.html"));
+});
 
 /* -------------------------
    Static fallback (ต้องล่างสุด)

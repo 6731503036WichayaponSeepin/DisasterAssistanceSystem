@@ -24,14 +24,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            .cors(c -> c.configurationSource(corsConfigurationSource()))
+            .csrf(c -> c.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-                /* =============================
-                 * PUBLIC
-                 * ============================= */
+                /* ========= PUBLIC ========= */
                 .requestMatchers(
                     "/api/users/login",
                     "/api/users/register",
@@ -41,42 +39,30 @@ public class SecurityConfig {
                     "/api/units"
                 ).permitAll()
 
-                /* =============================
-                 * STATIC FILES
-                 * ============================= */
+                /* ========= STATIC ========= */
                 .requestMatchers(
                     "/", "/index.html",
                     "/css/**", "/js/**",
                     "/images/**", "/assets/**", "/static/**"
                 ).permitAll()
 
-                /* =============================
-                 * LOCATION API (USER + RESCUE)
-                 * ============================= */
+                /* ========= COMMON ========= */
                 .requestMatchers("/api/location/**")
                     .hasAnyAuthority("ROLE_USER", "ROLE_RESCUE")
 
-                /* =============================
-                 * USER ONLY (SOS PAGE)
-                 * ============================= */
+                /* ========= USER ========= */
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/address/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/user-location/**").hasAuthority("ROLE_USER")
-                
                 .requestMatchers(HttpMethod.GET, "/api/cases/my-active").hasAuthority("ROLE_USER")
-                
-                .requestMatchers(HttpMethod.GET, "/api/cases/*").hasAuthority("ROLE_USER")
                 .requestMatchers(HttpMethod.POST, "/api/cases/report").hasAuthority("ROLE_USER")
 
-                /* =============================
-                 * RESCUE ONLY
-                 * ============================= */
+                /* ========= RESCUE ========= */
                 .requestMatchers("/api/rescues/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescue/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescue-teams/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescues/avaliable").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/case-selection/**").hasAuthority("ROLE_RESCUE")
-
 
                 .requestMatchers(HttpMethod.GET, "/api/cases/my").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.GET, "/api/cases/available").hasAuthority("ROLE_RESCUE")
@@ -84,18 +70,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/cases/*/follow").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.POST, "/api/cases/*/coming").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.POST, "/api/cases/*/confirm").hasAuthority("ROLE_RESCUE")
-                    .requestMatchers(HttpMethod.GET, "/api/cases").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.GET, "/api/cases/status/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.GET, "/api/cases/{id}").hasAuthority("ROLE_RESCUE")
                 .requestMatchers(HttpMethod.POST, "/api/cases/{id}/coming").hasAuthority("ROLE_RESCUE")
-                /* =============================
-                 * BLOCK OTHERS
-                 * ============================= */
-                .anyRequest().denyAll()
+                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/done").hasAuthority("ROLE_RESCUE")
+                /* ========= CASE DETAIL (USER + RESCUE) ========= */
+                .requestMatchers(HttpMethod.GET, "/api/cases/*")
+                    .hasAnyAuthority("ROLE_USER", "ROLE_RESCUE")
+
+                /* ========= BLOCK EVERYTHING ELSE ========= */
+                .anyRequest().authenticated()
             )
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement(sess ->
+                sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -114,7 +102,6 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }

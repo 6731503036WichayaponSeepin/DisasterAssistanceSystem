@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Completed Cases</title>
+
+    <style>
+        :root {
+            --red: #E02424;
+            --blue: #1D4ED8;
+            --navy: #1E1A72;
+            --yellow: #FBBF24;
+            --teal: #0EA5A3;
+            --white: #FFFFFF;
+            --gray: #F3F4F6;
+            --shadow: rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            margin: 0;
+            background: #0b0f19;
+            display: flex;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .screen {
+            width: 390px;
+            min-height: 100vh;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--red);
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            gap: 12px;
+            border-radius: 0 0 26px 26px;
+            position: relative;
+            z-index: 10;
+        }
+
+        #btnBack {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .white-area {
+            background: white;
+            margin-top: -20px;
+            padding: 32px 12px 50px;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .case-box {
+            background: var(--gray);
+            border-radius: 16px;
+            padding: 16px 14px;
+            margin: 26px 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            position: relative;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .case-address {
+            font-size: 13px;
+            color: #374151;
+            padding-right: 28px;
+            line-height: 20px;
+        }
+
+        .severity-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            position: absolute;
+            right: 12px;
+            top: 16px;
+        }
+
+        .sev-high {
+            background: #D81324;
+        }
+
+        .sev-med {
+            background: #F97316;
+        }
+
+        .sev-low {
+            background: #F7B500;
+        }
+
+        .btn-area {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button.green {
+            width: 70%;
+            padding: 14px 0;
+            border-radius: 10px;
+            border: none;
+            margin: 10px auto;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            box-shadow: 0 3px 6px var(--shadow);
+        }
+
+        .green {
+            background: #16A34A;
+            color: white;
+        }
+
+        #btnConfirm:disabled {
+            background: gray;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        hr {
+            margin: 30px 0;
+        }
+
+        h3 {
+            margin-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="screen">
+
+        <div class="header">
+            <button id="btnBack">←</button>
+            <span>Completed Cases</span>
+        </div>
+
+        <div class="white-area">
+
+            <div id="comingList"></div>
+
+            <div class="btn-area">
+                <button id="btnConfirm" class="green">Confirm</button>
+            </div>
+
+            <hr>
+
+            <h3>History</h3>
+
+            <div id="historyList"></div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        let token = params.get("token") || localStorage.getItem("authToken");
+        if (!token) {
+            alert("Token missing");
+            location.href = "/pages/signin.html";
+        }
+        localStorage.setItem("authToken", token);
+
+        document.getElementById("btnBack").onclick = () => {
+            location.href = `homeRescue.html?token=${token}`;
+        };
+
+        const comingList = document.getElementById("comingList");
+        const historyList = document.getElementById("historyList");
+        const confirmBtn = document.getElementById("btnConfirm");
+
+        loadComingCases();
+        loadHistory();
+
+        async function loadComingCases() {
+            const res = await fetch("http://localhost:8080/api/cases/my?status=COMING", {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (!res.ok) {
+                comingList.innerHTML = "<p>Failed to load cases.</p>";
+                confirmBtn.disabled = true;
+                return;
+            }
+
+            const cases = await res.json();
+
+            if (cases.length === 0) {
+                comingList.innerHTML = "<p>No active COMING cases.</p>";
+                confirmBtn.style.display = "none"; // ไม่มีงาน → ไม่ต้องมีปุ่ม confirm
+                return;
+            }
+
+            for (const ac of cases) {
+                const detail = await getCaseDetail(ac.id);
+                comingList.innerHTML += caseBox(detail);
+            }
+
+            checkLeaderShowButton();
+        }
+
+        async function loadHistory() {
+            const res = await fetch("http://localhost:8080/api/cases/my?status=DONE", {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (!res.ok) {
+                historyList.innerHTML = "<p>Failed to load history.</p>";
+                return;
+            }
+
+            const cases = await res.json();
+            for (const ac of cases) {
+                const detail = await getCaseDetail(ac.id);
+                historyList.innerHTML += caseBox(detail);
+            }
+        }
+
+        function caseBox(c) {
+            const sev =
+                c.severity === "HIGH" ? "sev-high" :
+                    c.severity === "MEDIUM" ? "sev-med" : "sev-low";
+
+            return `
+                <div class="case-box">
+                    <div class="top-row">
+                        <span>${c.name}</span>
+                        <span>${c.phone}</span>
+                    </div>
+                    <div class="case-address">${c.address}</div>
+                    <div class="severity-dot ${sev}"></div>
+                </div>
+            `;
+        }
+
+        async function getCaseDetail(id) {
+            const res = await fetch(`http://localhost:8080/api/cases/${id}`, {
+                headers: { Authorization: "Bearer " + token }
+            });
+            return res.json();
+        }
+
+        async function checkLeaderShowButton() {
+            const res = await fetch("http://localhost:8080/api/rescues/me", {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            const me = await res.json();
+
+            if (!me.rescueTeam || me.rescueTeam.leaderId !== me.id) {
+                confirmBtn.style.display = "none"; // ลูกทีมจะไม่เห็นปุ่ม
+            }
+        }
+
+        confirmBtn.onclick = async () => {
+            const ok = confirm("ยืนยันว่าจะเปลี่ยนทุกเคสเป็น DONE?");
+            if (!ok) return;
+
+            const res = await fetch("http://localhost:8080/api/cases/my?status=COMING", {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            const cases = await res.json();
+
+            for (const ac of cases) {
+                await fetch(`http://localhost:8080/api/cases/${ac.id}/done`, {
+                    method: "POST",
+                    headers: { Authorization: "Bearer " + token }
+                });
+            }
+
+            alert("อัปเดตเป็น DONE แล้ว!");
+            location.reload();
+        };
+    </script>
+
+</body>
+
+</html>

@@ -259,7 +259,66 @@ ac.setLocationId(loc);
 
         return ResponseEntity.ok(caseRepo.save(c));
     }
+/** ============================
+     *  หัวหน้าทีมกด "งานเสร็จ" (DONE)
+     * ============================ */
+    @Transactional
+    @PostMapping("/{id}/done")
+    public ResponseEntity<?> doneCase(@PathVariable Long id) {
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String rescueCode = auth.getName();
+
+        // หา rescue จาก token
+        Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+        if (rescue == null) {
+            return ResponseEntity.badRequest().body("Rescue not found");
+        }
+
+        if (rescue.getRescueTeam() == null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Please join a team before confirming DONE.");
+        }
+
+        RescueTeam team = rescue.getRescueTeam();
+
+        // ✅ ต้องเป็นหัวหน้าทีมเท่านั้น
+        if (!team.getLeader().getId().equals(rescue.getId())) {
+            return ResponseEntity
+                    .status(403)
+                    .body("Only the team leader can set DONE.");
+        }
+
+        AssistanceCase c = caseRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Case not found: " + id));
+
+        // ✅ ต้องมีทีมรับเคส
+        if (c.getAssignedRescueTeamId() == null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("This case is not assigned to any team.");
+        }
+
+        // ✅ Assigned team ต้องเป็นทีมนี้
+        if (!c.getAssignedRescueTeamId().equals(team.getId())) {
+            return ResponseEntity
+                    .status(403)
+                    .body("Only the assigned team can set DONE.");
+        }
+
+        // ✅ ต้องอยู่สถานะ COMING เท่านั้น
+        if (c.getStatus() != CaseStatus.COMING) {
+            return ResponseEntity
+                    .status(409)
+                    .body("Invalid status. Must be COMING before DONE.");
+        }
+
+        // เปลี่ยนสถานะเป็น DONE
+        c.setStatus(CaseStatus.DONE);
+
+        return ResponseEntity.ok(caseRepo.save(c));
+    }
 
     /** ============================
      *  ดูเคสของทีมฉัน
@@ -356,7 +415,8 @@ public ResponseEntity<?> getMyActiveCase() {
     List<CaseStatus> active = List.of(
             CaseStatus.NEW,
             CaseStatus.ASSIGNED,
-            CaseStatus.COMING
+            CaseStatus.COMING,
+            CaseStatus.DONE
     );
 
     Optional<AssistanceCase> opt = caseRepo
