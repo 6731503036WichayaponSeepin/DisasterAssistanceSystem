@@ -415,8 +415,8 @@ public ResponseEntity<?> getMyActiveCase() {
     List<CaseStatus> active = List.of(
             CaseStatus.NEW,
             CaseStatus.ASSIGNED,
-            CaseStatus.COMING,
-            CaseStatus.DONE
+            CaseStatus.COMING
+    
     );
 
     Optional<AssistanceCase> opt = caseRepo

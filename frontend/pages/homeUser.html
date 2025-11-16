@@ -290,12 +290,68 @@ if (location.port !== "5173") {
     PAGE_ADDRESS = "./map.html";
 }
 
-// อ่าน Query Param
+/* ============================
+     อ่าน Query Param
+============================ */
 function getQueryParam(name){
     return new URLSearchParams(window.location.search).get(name);
 }
 
+/* ============================
+     ฟังก์ชันล็อก / ปลดล็อก Address
+============================ */
+function lockAddressButton() {
+    const btn = document.getElementById("btnAddress");
+    btn.disabled = true;
+    btn.style.opacity = 0.6;
+    btn.textContent = "Address locked (case active)";
+}
+
+function unlockAddressButton() {
+    const btn = document.getElementById("btnAddress");
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.textContent = "➕ Address";
+}
+
+/* ============================
+     เช็ค active case จาก backend
+============================ */
+async function checkActiveCase() {
+    const t = localStorage.getItem("authToken");
+
+    if (!t) {
+        unlockAddressButton();
+        return;
+    }
+
+    const res = await fetch(`${API_BASE}/api/cases/my-active`, {
+        headers: { "Authorization": "Bearer " + t }
+    });
+
+    // ❗ token ไม่ถูกต้อง → ปลดล็อกทันที (ห้ามล็อกโดยไม่มีเหตุผล)
+    if (res.status === 401 || res.status === 403) {
+        unlockAddressButton();
+        return;
+    }
+
+    // ❗ ไม่มีเคส active
+    if (res.status === 204) {
+        unlockAddressButton();
+        return;
+    }
+
+    // ✔ มี active case → ล็อกปุ่ม
+    lockAddressButton();
+}
+
+/* ============================
+     DOM Loaded
+============================ */
 document.addEventListener("DOMContentLoaded", () => {
+
+    // 🔥 CHECK CASE ตอนโหลดหน้า
+    checkActiveCase();
 
     /* ============================
        โหลด Token จาก URL → LocalStorage
@@ -314,32 +370,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ============================
-       ดึงข้อมูลผู้ใช้
+         ดึงข้อมูลผู้ใช้
     ============================ */
-   fetch(API_BASE + "/api/users/me", {
-    method: "GET",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-    }
-})
-.then(async res => {
-    if (!res.ok) {
-        // token ผิด → logout ทันที
-        localStorage.removeItem(TOKEN_KEY);
-        window.location.href = PAGE_SIGNIN;
-        return;
-    }
-    return res.json();
-})
-.then(user => {
-    if (!user) return;
+    fetch(API_BASE + "/api/users/me", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(async res => {
+        if (!res.ok) {
+            localStorage.removeItem(TOKEN_KEY);
+            window.location.href = PAGE_SIGNIN;
+            return;
+        }
+        return res.json();
+    })
+    .then(user => {
+        if (!user) return;
 
-    document.getElementById("userName").textContent =
-        user.name ?? "Unknown User";
-    document.getElementById("userPhone").textContent =
-        user.phoneNumber ?? "No Phone";
-});
+        document.getElementById("userName").textContent =
+            user.name ?? "Unknown User";
+        document.getElementById("userPhone").textContent =
+            user.phoneNumber ?? "No Phone";
+    });
 
     /* ============================
        MENU
@@ -360,9 +415,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     /* ============================
-       ADDRESS PAGE
+       ADDRESS PAGE (ถ้าไม่ถูกล็อก)
     ============================ */
     document.getElementById("btnAddress").onclick = () => {
+        const b = document.getElementById("btnAddress");
+        if (b.disabled) return;
+
         window.location.href =
             `${PAGE_ADDRESS}?token=${encodeURIComponent(token)}`;
     };
@@ -378,9 +436,8 @@ document.addEventListener("DOMContentLoaded", () => {
 }); // END DOMContentLoaded
 
 
-
 /* ============================
-   CREATE CASE → SOS
+     CREATE CASE → SOS
 ============================ */
 document.getElementById("cardSOS").onclick = () => {
     const t = localStorage.getItem("authToken");
@@ -396,7 +453,7 @@ document.getElementById("cardSOS").onclick = () => {
 
 
 /* ============================
-   CREATE CASE → SUSTENANCE
+     CREATE CASE → SUSTENANCE
 ============================ */
 document.getElementById("cardSustenance").onclick = () => {
     const token = localStorage.getItem(TOKEN_KEY);

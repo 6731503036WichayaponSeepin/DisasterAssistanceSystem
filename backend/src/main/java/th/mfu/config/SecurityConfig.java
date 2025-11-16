@@ -29,7 +29,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                /* ========= PUBLIC ========= */
+                /* 🟩 PUBLIC (ไม่ต้องล็อกอิน) */
                 .requestMatchers(
                     "/api/users/login",
                     "/api/users/register",
@@ -39,46 +39,77 @@ public class SecurityConfig {
                     "/api/units"
                 ).permitAll()
 
-                /* ========= STATIC ========= */
+                /* 🟩 STATIC */
                 .requestMatchers(
                     "/", "/index.html",
                     "/css/**", "/js/**",
                     "/images/**", "/assets/**", "/static/**"
                 ).permitAll()
 
-                /* ========= COMMON ========= */
+                /* 🟧 COMMON API (ทุก role ใช้ได้) */
                 .requestMatchers("/api/location/**")
                     .hasAnyAuthority("ROLE_USER", "ROLE_RESCUE")
 
-                /* ========= USER ========= */
-                .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
-                .requestMatchers("/api/address/**").hasAuthority("ROLE_USER")
-                .requestMatchers("/api/user-location/**").hasAuthority("ROLE_USER")
-                .requestMatchers(HttpMethod.GET, "/api/cases/my-active").hasAuthority("ROLE_USER")
-                .requestMatchers(HttpMethod.POST, "/api/cases/report").hasAuthority("ROLE_USER")
+                /* =========================================================
+                 * 🟥 RESCUE ONLY (อยู่ก่อน USER เสมอ!!!)
+                 * ========================================================= */
 
-                /* ========= RESCUE ========= */
+                // 🚨 Rescue ดูรายการเคส (ทีมตัวเอง)
+                .requestMatchers(HttpMethod.GET, "/api/cases/my")
+                    .hasAuthority("ROLE_RESCUE")
+
+                // 🚨 Rescue ดูเคสว่าง
+                .requestMatchers(HttpMethod.GET, "/api/cases/available")
+                    .hasAuthority("ROLE_RESCUE")
+
+                // 🚨 Rescue ดูสถานะเคสละเอียด
+                .requestMatchers(HttpMethod.GET, "/api/cases/status/**")
+                    .hasAuthority("ROLE_RESCUE")
+
+                // 🚨 Rescue เลือกเคส (หน้ามือถือ)
+                .requestMatchers("/api/case-selection/**")
+                    .hasAuthority("ROLE_RESCUE")
+
+                // 🚨 Rescue กด follow / coming / done
+                .requestMatchers(HttpMethod.POST, "/api/cases/*/follow").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.POST, "/api/cases/*/coming").hasAuthority("ROLE_RESCUE")
+                .requestMatchers(HttpMethod.POST, "/api/cases/*/done").hasAuthority("ROLE_RESCUE")
+
+                // 🚨 Rescue API ที่เกี่ยวข้องกับ account rescue
                 .requestMatchers("/api/rescues/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescue/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescue-teams/**").hasAuthority("ROLE_RESCUE")
                 .requestMatchers("/api/rescues/avaliable").hasAuthority("ROLE_RESCUE")
-                .requestMatchers("/api/case-selection/**").hasAuthority("ROLE_RESCUE")
-
-                .requestMatchers(HttpMethod.GET, "/api/cases/my").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.GET, "/api/cases/available").hasAuthority("ROLE_RESCUE")
-
-                .requestMatchers(HttpMethod.POST, "/api/cases/*/follow").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.POST, "/api/cases/*/coming").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.POST, "/api/cases/*/confirm").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.GET, "/api/cases/status/**").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.GET, "/api/cases/{id}").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/coming").hasAuthority("ROLE_RESCUE")
-                .requestMatchers(HttpMethod.POST, "/api/cases/{id}/done").hasAuthority("ROLE_RESCUE")
-                /* ========= CASE DETAIL (USER + RESCUE) ========= */
                 .requestMatchers(HttpMethod.GET, "/api/cases/*")
-                    .hasAnyAuthority("ROLE_USER", "ROLE_RESCUE")
+                                .hasAnyAuthority("ROLE_RESCUE", "ROLE_USER")
+                /* =========================================================
+                 * 🟦 USER ONLY 
+                 * ========================================================= */
 
-                /* ========= BLOCK EVERYTHING ELSE ========= */
+                // 👤 User ดู active case ของตัวเอง
+                .requestMatchers(HttpMethod.GET, "/api/cases/my-active")
+                    .hasAuthority("ROLE_USER")
+
+                // 👤 User ดู latest (ถ้าระบบใช้)
+                .requestMatchers(HttpMethod.GET, "/api/cases/latest")
+                    .hasAuthority("ROLE_USER")
+
+                // 👤 User ดึงรายละเอียดเคสของตัวเอง (timeline)
+                .requestMatchers(HttpMethod.GET, "/api/cases/*")
+                    .hasAuthority("ROLE_USER")
+
+                // 👤 User ส่ง SOS / SUSTENANCE
+                .requestMatchers(HttpMethod.POST, "/api/cases/report")
+                    .hasAuthority("ROLE_USER")
+
+                // 👤 User account
+                .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/address/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/user-location/**").hasAuthority("ROLE_USER")
+
+                /* =========================================================
+                 * OTHER (ต้องล็อกอิน)
+                 * ========================================================= */
                 .anyRequest().authenticated()
             )
 
