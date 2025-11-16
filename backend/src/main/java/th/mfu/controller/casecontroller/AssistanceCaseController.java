@@ -304,41 +304,38 @@ ac.setLocationId(loc);
                 && rescue.getId().equals(rescue.getRescueTeam().getLeader().getId());
     }
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCaseDetails(@PathVariable Long id) {
+public ResponseEntity<?> getCaseDetails(@PathVariable Long id) {
 
-        AssistanceCase c = caseRepo.findById(id)
-                .orElse(null);
+    AssistanceCase c = caseRepo.findById(id)
+            .orElse(null);
 
-        if (c == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // ===== ดึง User =====
-        User reporter = userRepo.findById(c.getReporterUserId()).orElse(null);
-
-        // ===== ดึง Location =====
-        LocationData loc = c.getLocationId();
-
-        // ===== build full address =====
-        String address = "";
-        if (loc != null) {
-            if (loc.getRoad() != null) address += loc.getRoad() + ", ";
-            if (loc.getSubdistrict() != null) address += loc.getSubdistrict() + ", ";
-            if (loc.getDistrict() != null) address += loc.getDistrict() + ", ";
-            if (loc.getProvince() != null) address += loc.getProvince() + " ";
-            if (loc.getPostcode() != null) address += loc.getPostcode();
-        }
-
-        // ===== response JSON =====
-        Map<String, Object> res = new HashMap<>();
-        res.put("id", c.getId());
-        res.put("name", reporter != null ? reporter.getDetail().getName() : "Unknown");
-        res.put("phone", reporter != null ? reporter.getDetail().getPhoneNumber() : "-");
-        res.put("severity", c.getSeverity().name());
-        res.put("address", address);
-
-        return ResponseEntity.ok(res);
+    if (c == null) {
+        return ResponseEntity.notFound().build();
     }
+
+    User reporter = userRepo.findById(c.getReporterUserId()).orElse(null);
+    LocationData loc = c.getLocationId();
+
+    String address = "";
+    if (loc != null) {
+        if (loc.getRoad() != null) address += loc.getRoad() + ", ";
+        if (loc.getSubdistrict() != null) address += loc.getSubdistrict() + ", ";
+        if (loc.getDistrict() != null) address += loc.getDistrict() + ", ";
+        if (loc.getProvince() != null) address += loc.getProvince() + " ";
+        if (loc.getPostcode() != null) address += loc.getPostcode();
+    }
+
+    Map<String, Object> res = new HashMap<>();
+    res.put("id", c.getId());
+    res.put("status", c.getStatus().name());   // ⭐⭐⭐ ต้องมีบรรทัดนี้ ⭐⭐⭐
+    res.put("severity", c.getSeverity().name());
+    res.put("name", reporter != null ? reporter.getDetail().getName() : "Unknown");
+    res.put("phone", reporter != null ? reporter.getDetail().getPhoneNumber() : "-");
+    res.put("address", address);
+
+    return ResponseEntity.ok(res);
+}
+
 
 
 

@@ -316,20 +316,30 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ============================
        ดึงข้อมูลผู้ใช้
     ============================ */
-    fetch(API_BASE + "/api/users/me", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-    })
-    .then(res => res.json())
-    .then(user => {
-        document.getElementById("userName").textContent =
-            user.name ?? "Unknown User";
-        document.getElementById("userPhone").textContent =
-            user.phoneNumber ?? "No Phone";
-    });
+   fetch(API_BASE + "/api/users/me", {
+    method: "GET",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+    }
+})
+.then(async res => {
+    if (!res.ok) {
+        // token ผิด → logout ทันที
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = PAGE_SIGNIN;
+        return;
+    }
+    return res.json();
+})
+.then(user => {
+    if (!user) return;
+
+    document.getElementById("userName").textContent =
+        user.name ?? "Unknown User";
+    document.getElementById("userPhone").textContent =
+        user.phoneNumber ?? "No Phone";
+});
 
     /* ============================
        MENU

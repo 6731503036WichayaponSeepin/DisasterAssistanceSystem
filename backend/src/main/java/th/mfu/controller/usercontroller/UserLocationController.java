@@ -65,14 +65,17 @@ public class UserLocationController {
             location.setProvince(req.getProvince());
             location.setPostcode(req.getPostcode());
 
-            LocationData saved = locationRepo.save(location);
+           LocationData saved = locationRepo.save(location);
 
-            Map<String, Object> res = new HashMap<>();
-            res.put("status", "success");
-            res.put("locationId", saved.getId());
+// ⭐ อัปเดต foreign key ในตาราง user
+user.setLocationId(saved);
+userRepo.save(user);
 
-            return ResponseEntity.ok(res);
+Map<String, Object> res = new HashMap<>();
+res.put("status", "success");
+res.put("locationId", saved.getId());
 
+return ResponseEntity.ok(res);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(

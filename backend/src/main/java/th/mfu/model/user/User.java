@@ -27,8 +27,8 @@ public class User {
 
     // 🔹 ผู้ใช้มีที่อยู่
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id", nullable = false)
-    private LocationData locationId;
+   @JoinColumn(name = "location_id", nullable = true)
+private LocationData locationId;
 
 
     // 🔹 Role

@@ -280,6 +280,12 @@ function updateStatusUI(status) {
 /* ============================================
    โหลดเคส ACTIVE ของ user
 ============================================ */
+/* ============================================
+   โหลดเคส ACTIVE ของ user
+============================================ */
+/* ============================================
+   โหลดเคส ACTIVE ของ user
+============================================ */
 async function loadActiveCase() {
 
     const TOKEN = getToken();
@@ -289,17 +295,29 @@ async function loadActiveCase() {
         headers: { "Authorization": "Bearer " + TOKEN }
     });
 
-
+    // ถ้าไม่มีเคส active = 204 No Content
     if (res.status === 204) {
         console.log("ไม่มีเคส active");
-        return; // ไม่มีเคส ส่งใหม่ได้
+        return;
+    }
+
+    if (!res.ok) {
+        console.log("โหลด active case ไม่สำเร็จ");
+        return;
     }
 
     const data = await res.json();
+
+    console.log("ACTIVE CASE:", data);
+
     ACTIVE_CASE_ID = data.id;
 
     updateStatusUI(data.status);
+    console.log("ACTIVE CASE:", data);
 }
+
+
+
 
 
 /* ============================================

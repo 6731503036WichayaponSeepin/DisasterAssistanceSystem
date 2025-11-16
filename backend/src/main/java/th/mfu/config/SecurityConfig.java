@@ -62,8 +62,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/address/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/user-location/**").hasAuthority("ROLE_USER")
-
+                
                 .requestMatchers(HttpMethod.GET, "/api/cases/my-active").hasAuthority("ROLE_USER")
+                
                 .requestMatchers(HttpMethod.GET, "/api/cases/*").hasAuthority("ROLE_USER")
                 .requestMatchers(HttpMethod.POST, "/api/cases/report").hasAuthority("ROLE_USER")
 
