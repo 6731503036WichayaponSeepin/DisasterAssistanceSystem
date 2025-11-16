@@ -220,7 +220,7 @@
         }
 
         async function loadHistory() {
-            const res = await fetch("http://localhost:8080/api/cases/my?status=DONE", {
+            const res = await fetch("http://localhost:8080/api/cases/history", {
                 headers: { Authorization: "Bearer " + token }
             });
 

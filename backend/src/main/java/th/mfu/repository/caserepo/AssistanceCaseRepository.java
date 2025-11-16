@@ -24,4 +24,5 @@ public interface AssistanceCaseRepository extends JpaRepository<AssistanceCase, 
 
     List<AssistanceCase> findByAssignedRescueTeamIdIsNull();
     List<AssistanceCase> findByAssignedRescueTeamIdIsNullAndStatus(CaseStatus status);
+    
 }

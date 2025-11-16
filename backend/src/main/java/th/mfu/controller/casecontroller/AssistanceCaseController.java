@@ -430,6 +430,49 @@ public ResponseEntity<?> getMyActiveCase() {
 
     return ResponseEntity.ok(opt.get()); // ส่งเคสกลับไป
 }
+@GetMapping("/history")
+public ResponseEntity<?> getTeamHistory() {
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String rescueCode = auth.getName();
+
+    Rescue rescue = rescueRepo.findByRescueId(rescueCode).orElse(null);
+    if (rescue == null) return ResponseEntity.status(401).build();
+
+    RescueTeam team = rescue.getRescueTeam();
+    if (team == null) return ResponseEntity.ok(List.of());
+
+    List<AssistanceCase> list = caseRepo.findByAssignedRescueTeamIdAndStatus(
+            team.getId(), CaseStatus.DONE);
+
+    List<Map<String,Object>> result = new ArrayList<>();
+
+    for (AssistanceCase c : list) {
+        Map<String,Object> m = new HashMap<>();
+
+        User reporter = userRepo.findById(c.getReporterUserId()).orElse(null);
+        LocationData loc = c.getLocationId();
+
+        m.put("id", c.getId());
+        m.put("severity", c.getSeverity().name());
+        m.put("name", reporter != null ? reporter.getDetail().getName() : "-");
+        m.put("phone", reporter != null ? reporter.getDetail().getPhoneNumber() : "-");
+
+        String address = "";
+        if (loc != null) {
+            if (loc.getRoad() != null) address += loc.getRoad() + ", ";
+            if (loc.getSubdistrict() != null) address += loc.getSubdistrict() + ", ";
+            if (loc.getDistrict() != null) address += loc.getDistrict() + ", ";
+            if (loc.getProvince() != null) address += loc.getProvince() + " ";
+            if (loc.getPostcode() != null) address += loc.getPostcode();
+        }
+        m.put("address", address);
+
+        result.add(m);
+    }
+
+    return ResponseEntity.ok(result);
+}
 
 
 }
